@@ -72,6 +72,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
             sequelize,
             tableName: 'User',
             schema: 'public',
+            freezeTableName: true,
             timestamps: false,
             indexes: [
                 {
