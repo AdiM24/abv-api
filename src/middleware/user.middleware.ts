@@ -9,6 +9,7 @@ class UsersMiddleware {
         next: express.NextFunction
     ) => {
         const user = await UsersService.getUserByEmail(req.body.email);
+        
         if (user) {
             res.status(400).send({error: `User email already exists`});
         } else {

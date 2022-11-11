@@ -22,10 +22,14 @@ class AuthService {
             }
         })
 
+        if (!user) {
+            return 'Incorect username or password';
+        }
+
         const isMatch = await comparePassword(userLoginInfo.password, user.password);
 
         if (!isMatch) {
-            throw new Error('Incorrect username or password');
+            return 'Incorrect username or password';
         }
 
         const token = jwt.sign({_id: user.user_id?.toString(), email: user.email}, SECRET_KEY, {
