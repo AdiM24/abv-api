@@ -15,7 +15,6 @@ class AuthService {
 
         const models = initModels(sequelize);
 
-
         const user = await models.User.findOne({
             where: {
                 email: userLoginInfo.email,

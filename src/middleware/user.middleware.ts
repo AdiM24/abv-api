@@ -1,5 +1,5 @@
 import express from "express";
-import UsersService from "../services/users.service";
+import UserService from "../services/users.service";
 
 class UsersMiddleware {
 
@@ -8,7 +8,7 @@ class UsersMiddleware {
         res: express.Response,
         next: express.NextFunction
     ) => {
-        const user = await UsersService.getUserByEmail(req.body.email);
+        const user = await UserService.getUserByEmail(req.body.email);
         
         if (user) {
             res.status(400).send({error: `User email already exists`});

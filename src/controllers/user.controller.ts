@@ -1,24 +1,24 @@
 import express from "express";
-import UsersService from "../services/users.service";
+import UserService from "../services/users.service";
 import debug from "debug";
 
 const log: debug.IDebugger = debug("app:users-controller");
 
 class UsersController {
   async getUsers(req: express.Request, res: express.Response) {
-    const users = await UsersService.getAll();
+    const users = await UserService.getAll();
 
     res.status(200).send(users);
   }
 
   async createUser(req: express.Request, res: express.Response) {
-    const msg = await UsersService.createUser(req.body);
+    const msg = await UserService.createUser(req.body);
 
     res.status(201).send({ msg });
   }
 
   async createUsers(req: express.Request, res: express.Response) {
-    const msg = await UsersService.createUsers(req.body);
+    const msg = await UserService.createUsers(req.body);
 
     res.status(201).send({ msg });
   }

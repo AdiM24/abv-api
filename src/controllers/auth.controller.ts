@@ -5,7 +5,6 @@ class AuthController {
   async login(req: express.Request, res: express.Response) {
     const token = await AuthService.login(req.body);
 
-    console.log(token);
     if (typeof token === "string") {
       res.status(400).send(token);
     }

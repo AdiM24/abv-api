@@ -7,7 +7,7 @@ import { UserDto } from "../dtos/user.dto";
 
 const log: debug.IDebugger = debug("app:users-controller");
 
-class UsersService {
+class UserService {
   async getAll() {
     const models = initModels(sequelize);
 
@@ -64,4 +64,4 @@ class UsersService {
   }
 }
 
-export default new UsersService();
+export default new UserService();
