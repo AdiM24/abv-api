@@ -3,9 +3,23 @@ import PartnerService from "../services/partner.service";
 
 class PartnerController {
   async addPartner(req: express.Request, res: express.Response) {
-    const addedPartnerStatus = await PartnerService.addPartner(req.body);
+    const addedPartnerId = await PartnerService.addPartner(req.body);
 
-    res.send(addedPartnerStatus).status(201);
+    res.status(201).send({ created: addedPartnerId, msg: "Partner created" });
+  }
+
+  async getPartners(req: express.Request, res: express.Response) {
+    const partners = await PartnerService.getPartners();
+
+    res.status(200).send(partners);
+  }
+
+  async getPartner(req: express.Request, res: express.Response) {
+    const partnerId = req.body.id;
+
+    if (!partnerId) {
+      res.send({ errorCode: 400, msg: "Partner could not be found" });
+    }
   }
 }
 

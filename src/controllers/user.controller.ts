@@ -1,6 +1,6 @@
 import express from "express";
-import UserService from "../services/users.service";
 import debug from "debug";
+import UserService from "../services/user.service";
 
 const log: debug.IDebugger = debug("app:users-controller");
 

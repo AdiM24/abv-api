@@ -1,5 +1,5 @@
 import express from "express";
-import UserService from "../services/users.service";
+import UserService from "../services/user.service";
 
 class UsersMiddleware {
 

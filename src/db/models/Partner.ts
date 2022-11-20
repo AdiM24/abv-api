@@ -1,15 +1,14 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { Address, AddressId } from './Address';
+import type { BankAccount, BankAccountId } from './BankAccount';
 import type { Contact, ContactId } from './Contact';
-import type { PartnerAddressMap, PartnerAddressMapId } from './PartnerAddressMap';
-import type { PartnerBankAccountMap, PartnerBankAccountMapId } from './PartnerBankAccountMap';
 
 export interface PartnerAttributes {
   partner_id: number;
   name: string;
   unique_identification_number: string;
   trade_register_registration_number: string;
-  contact_id?: number;
   credit: number;
   remaining_credit: number;
   vat_payer: boolean;
@@ -23,7 +22,7 @@ export interface PartnerAttributes {
 
 export type PartnerPk = "partner_id";
 export type PartnerId = Partner[PartnerPk];
-export type PartnerOptionalAttributes = "partner_id" | "contact_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc";
+export type PartnerOptionalAttributes = "partner_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc";
 export type PartnerCreationAttributes = Optional<PartnerAttributes, PartnerOptionalAttributes>;
 
 export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes> implements PartnerAttributes {
@@ -31,7 +30,6 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   name!: string;
   unique_identification_number!: string;
   trade_register_registration_number!: string;
-  contact_id?: number;
   credit!: number;
   remaining_credit!: number;
   vat_payer!: boolean;
@@ -42,35 +40,42 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   created_at_utc!: Date;
   modified_at_utc!: Date;
 
-  // Partner belongsTo Contact via contact_id
-  contact!: Contact;
-  getContact!: Sequelize.BelongsToGetAssociationMixin<Contact>;
-  setContact!: Sequelize.BelongsToSetAssociationMixin<Contact, ContactId>;
-  createContact!: Sequelize.BelongsToCreateAssociationMixin<Contact>;
-  // Partner hasMany PartnerAddressMap via partner_id
-  PartnerAddressMaps!: PartnerAddressMap[];
-  getPartnerAddressMaps!: Sequelize.HasManyGetAssociationsMixin<PartnerAddressMap>;
-  setPartnerAddressMaps!: Sequelize.HasManySetAssociationsMixin<PartnerAddressMap, PartnerAddressMapId>;
-  addPartnerAddressMap!: Sequelize.HasManyAddAssociationMixin<PartnerAddressMap, PartnerAddressMapId>;
-  addPartnerAddressMaps!: Sequelize.HasManyAddAssociationsMixin<PartnerAddressMap, PartnerAddressMapId>;
-  createPartnerAddressMap!: Sequelize.HasManyCreateAssociationMixin<PartnerAddressMap>;
-  removePartnerAddressMap!: Sequelize.HasManyRemoveAssociationMixin<PartnerAddressMap, PartnerAddressMapId>;
-  removePartnerAddressMaps!: Sequelize.HasManyRemoveAssociationsMixin<PartnerAddressMap, PartnerAddressMapId>;
-  hasPartnerAddressMap!: Sequelize.HasManyHasAssociationMixin<PartnerAddressMap, PartnerAddressMapId>;
-  hasPartnerAddressMaps!: Sequelize.HasManyHasAssociationsMixin<PartnerAddressMap, PartnerAddressMapId>;
-  countPartnerAddressMaps!: Sequelize.HasManyCountAssociationsMixin;
-  // Partner hasMany PartnerBankAccountMap via partner_id
-  PartnerBankAccountMaps!: PartnerBankAccountMap[];
-  getPartnerBankAccountMaps!: Sequelize.HasManyGetAssociationsMixin<PartnerBankAccountMap>;
-  setPartnerBankAccountMaps!: Sequelize.HasManySetAssociationsMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  addPartnerBankAccountMap!: Sequelize.HasManyAddAssociationMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  addPartnerBankAccountMaps!: Sequelize.HasManyAddAssociationsMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  createPartnerBankAccountMap!: Sequelize.HasManyCreateAssociationMixin<PartnerBankAccountMap>;
-  removePartnerBankAccountMap!: Sequelize.HasManyRemoveAssociationMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  removePartnerBankAccountMaps!: Sequelize.HasManyRemoveAssociationsMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  hasPartnerBankAccountMap!: Sequelize.HasManyHasAssociationMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  hasPartnerBankAccountMaps!: Sequelize.HasManyHasAssociationsMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  countPartnerBankAccountMaps!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany Address via partner_id
+  Addresses!: Address[];
+  getAddresses!: Sequelize.HasManyGetAssociationsMixin<Address>;
+  setAddresses!: Sequelize.HasManySetAssociationsMixin<Address, AddressId>;
+  addAddress!: Sequelize.HasManyAddAssociationMixin<Address, AddressId>;
+  addAddresses!: Sequelize.HasManyAddAssociationsMixin<Address, AddressId>;
+  createAddress!: Sequelize.HasManyCreateAssociationMixin<Address>;
+  removeAddress!: Sequelize.HasManyRemoveAssociationMixin<Address, AddressId>;
+  removeAddresses!: Sequelize.HasManyRemoveAssociationsMixin<Address, AddressId>;
+  hasAddress!: Sequelize.HasManyHasAssociationMixin<Address, AddressId>;
+  hasAddresses!: Sequelize.HasManyHasAssociationsMixin<Address, AddressId>;
+  countAddresses!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany BankAccount via partner_id
+  BankAccounts!: BankAccount[];
+  getBankAccounts!: Sequelize.HasManyGetAssociationsMixin<BankAccount>;
+  setBankAccounts!: Sequelize.HasManySetAssociationsMixin<BankAccount, BankAccountId>;
+  addBankAccount!: Sequelize.HasManyAddAssociationMixin<BankAccount, BankAccountId>;
+  addBankAccounts!: Sequelize.HasManyAddAssociationsMixin<BankAccount, BankAccountId>;
+  createBankAccount!: Sequelize.HasManyCreateAssociationMixin<BankAccount>;
+  removeBankAccount!: Sequelize.HasManyRemoveAssociationMixin<BankAccount, BankAccountId>;
+  removeBankAccounts!: Sequelize.HasManyRemoveAssociationsMixin<BankAccount, BankAccountId>;
+  hasBankAccount!: Sequelize.HasManyHasAssociationMixin<BankAccount, BankAccountId>;
+  hasBankAccounts!: Sequelize.HasManyHasAssociationsMixin<BankAccount, BankAccountId>;
+  countBankAccounts!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany Contact via partner_id
+  Contacts!: Contact[];
+  getContacts!: Sequelize.HasManyGetAssociationsMixin<Contact>;
+  setContacts!: Sequelize.HasManySetAssociationsMixin<Contact, ContactId>;
+  addContact!: Sequelize.HasManyAddAssociationMixin<Contact, ContactId>;
+  addContacts!: Sequelize.HasManyAddAssociationsMixin<Contact, ContactId>;
+  createContact!: Sequelize.HasManyCreateAssociationMixin<Contact>;
+  removeContact!: Sequelize.HasManyRemoveAssociationMixin<Contact, ContactId>;
+  removeContacts!: Sequelize.HasManyRemoveAssociationsMixin<Contact, ContactId>;
+  hasContact!: Sequelize.HasManyHasAssociationMixin<Contact, ContactId>;
+  hasContacts!: Sequelize.HasManyHasAssociationsMixin<Contact, ContactId>;
+  countContacts!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Partner {
     return Partner.init({
@@ -91,14 +96,6 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
     trade_register_registration_number: {
       type: DataTypes.STRING,
       allowNull: false
-    },
-    contact_id: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-      references: {
-        model: 'Contact',
-        key: 'contact_id'
-      }
     },
     credit: {
       type: DataTypes.DECIMAL(19,4),
@@ -133,12 +130,12 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
     created_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     },
     modified_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     }
   }, {
     sequelize,

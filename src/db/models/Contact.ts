@@ -13,11 +13,12 @@ export interface ContactAttributes {
   department?: string;
   created_at_utc: Date;
   modified_at_utc: Date;
+  partner_id?: number;
 }
 
 export type ContactPk = "contact_id";
 export type ContactId = Contact[ContactPk];
-export type ContactOptionalAttributes = "contact_id" | "phone" | "first_name" | "last_name" | "personal_identification_number" | "car_registration_number" | "department" | "created_at_utc" | "modified_at_utc";
+export type ContactOptionalAttributes = "contact_id" | "phone" | "first_name" | "last_name" | "personal_identification_number" | "car_registration_number" | "department" | "created_at_utc" | "modified_at_utc" | "partner_id";
 export type ContactCreationAttributes = Optional<ContactAttributes, ContactOptionalAttributes>;
 
 export class Contact extends Model<ContactAttributes, ContactCreationAttributes> implements ContactAttributes {
@@ -31,19 +32,13 @@ export class Contact extends Model<ContactAttributes, ContactCreationAttributes>
   department?: string;
   created_at_utc!: Date;
   modified_at_utc!: Date;
+  partner_id?: number;
 
-  // Contact hasMany Partner via contact_id
-  Partners!: Partner[];
-  getPartners!: Sequelize.HasManyGetAssociationsMixin<Partner>;
-  setPartners!: Sequelize.HasManySetAssociationsMixin<Partner, PartnerId>;
-  addPartner!: Sequelize.HasManyAddAssociationMixin<Partner, PartnerId>;
-  addPartners!: Sequelize.HasManyAddAssociationsMixin<Partner, PartnerId>;
-  createPartner!: Sequelize.HasManyCreateAssociationMixin<Partner>;
-  removePartner!: Sequelize.HasManyRemoveAssociationMixin<Partner, PartnerId>;
-  removePartners!: Sequelize.HasManyRemoveAssociationsMixin<Partner, PartnerId>;
-  hasPartner!: Sequelize.HasManyHasAssociationMixin<Partner, PartnerId>;
-  hasPartners!: Sequelize.HasManyHasAssociationsMixin<Partner, PartnerId>;
-  countPartners!: Sequelize.HasManyCountAssociationsMixin;
+  // Contact belongsTo Partner via partner_id
+  partner!: Partner;
+  getPartner!: Sequelize.BelongsToGetAssociationMixin<Partner>;
+  setPartner!: Sequelize.BelongsToSetAssociationMixin<Partner, PartnerId>;
+  createPartner!: Sequelize.BelongsToCreateAssociationMixin<Partner>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Contact {
     return Contact.init({
@@ -84,12 +79,20 @@ export class Contact extends Model<ContactAttributes, ContactCreationAttributes>
     created_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     },
     modified_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+    },
+    partner_id: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      references: {
+        model: 'Partner',
+        key: 'partner_id'
+      }
     }
   }, {
     sequelize,

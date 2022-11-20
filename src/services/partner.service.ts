@@ -18,66 +18,11 @@ class PartnerService {
   async addPartner(partnerToAdd: CreatePartnerDto) {
     const models = initModels(sequelize);
     const partner = models.Partner;
-    const contact = models.Contact;
-    const address = models.Address;
-    const bankAccount = models.BankAccount;
+    const contactEntity = models.Contact;
+    const addressEntity = models.Address;
+    const bankAccountEntity = models.BankAccount;
 
     try {
-      let addressId: number = null;
-      let bankAccountId: number = null;
-
-      if (partnerToAdd.contact) {
-        partnerToAdd.contact_id = (
-          await addOrUpdate<CreateContactDto, Contact>(
-            partnerToAdd.contact,
-            {
-              personal_identification_number:
-                partnerToAdd.contact.personal_identification_number,
-            },
-            contact,
-            () => {
-              partnerToAdd.contact.modified_at_utc = new Date(
-                new Date().toUTCString()
-              );
-            }
-          )
-        )?.get().contact_id;
-      }
-
-      if (partnerToAdd.address) {
-        addressId = (
-          await addOrUpdate<CreateAddressDto, Address>(
-            partnerToAdd.address,
-            {
-              address: partnerToAdd.address.address,
-            },
-            address,
-            () => {
-              partnerToAdd.address.modified_at_utc = new Date(
-                new Date().toUTCString()
-              );
-            }
-          )
-        ).get().address_id;
-      }
-
-      if (partnerToAdd.bank_account) {
-        bankAccountId = (
-          await addOrUpdate<CreateBankAccountDto, BankAccount>(
-            partnerToAdd.bank_account,
-            {
-              iban: partnerToAdd.bank_account.iban,
-            },
-            bankAccount,
-            () => {
-              partnerToAdd.address.modified_at_utc = new Date(
-                new Date().toUTCString()
-              );
-            }
-          )
-        )?.get().bank_account_id;
-      }
-
       const createdPartnerId = (
         await addOrUpdate<CreatePartnerDto, Partner>(
           partnerToAdd,
@@ -92,34 +37,79 @@ class PartnerService {
         )
       )?.get().partner_id;
 
-      if (bankAccountId) {
-        models.PartnerBankAccountMap.findOrCreate({
-          where: {
-            bank_account_id: bankAccountId,
-            partner_id: createdPartnerId,
+      if (partnerToAdd.contact) {
+        const contact = partnerToAdd.contact;
+        contact.partner_id = createdPartnerId;
+
+        await addOrUpdate<CreateContactDto, Contact>(
+          contact,
+          {
+            personal_identification_number:
+              contact.personal_identification_number,
           },
-          defaults: {
-            bank_account_id: bankAccountId,
-            partner_id: createdPartnerId,
-          },
-        });
+          contactEntity,
+          () => {
+            partnerToAdd.contact.modified_at_utc = new Date(
+              new Date().toUTCString()
+            );
+          }
+        );
       }
 
-      if (addressId) {
-        models.PartnerAddressMap.findOrCreate({
-          where: {
-            address_id: addressId,
-            partner_id: createdPartnerId,
+      if (partnerToAdd.address) {
+        const address = partnerToAdd.address;
+        address.partner_id = createdPartnerId;
+
+        await addOrUpdate<CreateAddressDto, Address>(
+          partnerToAdd.address,
+          {
+            address: partnerToAdd.address.address,
           },
-          defaults: {
-            address_id: addressId,
-            partner_id: createdPartnerId,
-          },
-        });
+          addressEntity,
+          () => {
+            partnerToAdd.address.modified_at_utc = new Date(
+              new Date().toUTCString()
+            );
+          }
+        );
       }
+
+      if (partnerToAdd.bank_account) {
+        const bankAccount = partnerToAdd.bank_account;
+        bankAccount.partner_id = createdPartnerId;
+
+        await addOrUpdate<CreateBankAccountDto, BankAccount>(
+          partnerToAdd.bank_account,
+          {
+            iban: partnerToAdd.bank_account.iban,
+          },
+          bankAccountEntity,
+          () => {
+            partnerToAdd.address.modified_at_utc = new Date(
+              new Date().toUTCString()
+            );
+          }
+        );
+      }
+
+      return createdPartnerId;
     } catch (err) {
       console.error(err);
     }
+  }
+
+  async getPartners() {
+    const models = initModels(sequelize);
+
+    const partners = await Partner.findAll({
+      include: [
+        { model: Address, as: "Addresses" },
+        { model: BankAccount, as: "BankAccounts" },
+        { model: Contact, as: "Contacts" },
+      ],
+    });
+
+    return partners;
   }
 }
 

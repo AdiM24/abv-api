@@ -1,17 +1,18 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
-import type { PartnerBankAccountMap, PartnerBankAccountMapId } from './PartnerBankAccountMap';
+import type { Partner, PartnerId } from './Partner';
 
 export interface BankAccountAttributes {
   bank_account_id: number;
   iban: string;
   bank_name: string;
   currency: string;
+  partner_id?: number;
 }
 
 export type BankAccountPk = "bank_account_id";
 export type BankAccountId = BankAccount[BankAccountPk];
-export type BankAccountOptionalAttributes = "bank_account_id";
+export type BankAccountOptionalAttributes = "bank_account_id" | "partner_id";
 export type BankAccountCreationAttributes = Optional<BankAccountAttributes, BankAccountOptionalAttributes>;
 
 export class BankAccount extends Model<BankAccountAttributes, BankAccountCreationAttributes> implements BankAccountAttributes {
@@ -19,19 +20,13 @@ export class BankAccount extends Model<BankAccountAttributes, BankAccountCreatio
   iban!: string;
   bank_name!: string;
   currency!: string;
+  partner_id?: number;
 
-  // BankAccount hasMany PartnerBankAccountMap via bank_account_id
-  PartnerBankAccountMaps!: PartnerBankAccountMap[];
-  getPartnerBankAccountMaps!: Sequelize.HasManyGetAssociationsMixin<PartnerBankAccountMap>;
-  setPartnerBankAccountMaps!: Sequelize.HasManySetAssociationsMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  addPartnerBankAccountMap!: Sequelize.HasManyAddAssociationMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  addPartnerBankAccountMaps!: Sequelize.HasManyAddAssociationsMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  createPartnerBankAccountMap!: Sequelize.HasManyCreateAssociationMixin<PartnerBankAccountMap>;
-  removePartnerBankAccountMap!: Sequelize.HasManyRemoveAssociationMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  removePartnerBankAccountMaps!: Sequelize.HasManyRemoveAssociationsMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  hasPartnerBankAccountMap!: Sequelize.HasManyHasAssociationMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  hasPartnerBankAccountMaps!: Sequelize.HasManyHasAssociationsMixin<PartnerBankAccountMap, PartnerBankAccountMapId>;
-  countPartnerBankAccountMaps!: Sequelize.HasManyCountAssociationsMixin;
+  // BankAccount belongsTo Partner via partner_id
+  partner!: Partner;
+  getPartner!: Sequelize.BelongsToGetAssociationMixin<Partner>;
+  setPartner!: Sequelize.BelongsToSetAssociationMixin<Partner, PartnerId>;
+  createPartner!: Sequelize.BelongsToCreateAssociationMixin<Partner>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof BankAccount {
     return BankAccount.init({
@@ -52,6 +47,14 @@ export class BankAccount extends Model<BankAccountAttributes, BankAccountCreatio
     currency: {
       type: DataTypes.STRING(5),
       allowNull: false
+    },
+    partner_id: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      references: {
+        model: 'Partner',
+        key: 'partner_id'
+      }
     }
   }, {
     sequelize,
