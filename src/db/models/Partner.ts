@@ -18,11 +18,12 @@ export interface PartnerAttributes {
   credit_exceedance_percentage?: number;
   created_at_utc: Date;
   modified_at_utc: Date;
+  address?: string;
 }
 
 export type PartnerPk = "partner_id";
 export type PartnerId = Partner[PartnerPk];
-export type PartnerOptionalAttributes = "partner_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc";
+export type PartnerOptionalAttributes = "partner_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc" | "address";
 export type PartnerCreationAttributes = Optional<PartnerAttributes, PartnerOptionalAttributes>;
 
 export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes> implements PartnerAttributes {
@@ -39,6 +40,7 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   credit_exceedance_percentage?: number;
   created_at_utc!: Date;
   modified_at_utc!: Date;
+  address?: string;
 
   // Partner hasMany Address via partner_id
   Addresses!: Address[];
@@ -130,12 +132,16 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
     created_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
     },
     modified_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     sequelize,

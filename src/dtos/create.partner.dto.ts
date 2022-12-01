@@ -3,7 +3,7 @@ export interface CreatePartnerDto {
   unique_identification_number: string;
   trade_register_registration_number: string;
   contact: CreateContactDto;
-  address: CreateAddressDto;
+  address: string;
   bank_account: CreateBankAccountDto;
   credit: number;
   remaining_credit: number;
@@ -13,6 +13,7 @@ export interface CreatePartnerDto {
   invoice_deadline_days: number;
   credit_exceedance_percentage: number;
   modified_at_utc?: Date;
+  address_point: CreateAddressDto;
 }
 
 export interface CreateContactDto {

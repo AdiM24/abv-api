@@ -31,8 +31,7 @@ class UserService {
     user.password = await cryptPassword(user.password);
 
     try {
-      await models.User.create(user);
-
+      const created = await models.User.create(user);
       return "Successfully created";
     } catch (err) {
       log(err);
@@ -48,6 +47,8 @@ class UserService {
       });
 
       await models.User.bulkCreate(users);
+
+      return "Successfully created";
     } catch (err) {
       return err;
     }

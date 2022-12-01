@@ -12,11 +12,11 @@ export class PartnerRoutes extends CommonRoutesConfig {
     this.app
       .route("/partners")
       .post( PartnerController.addPartner)
-      .get(PartnerController.getPartners);
+      .get(PartnerController.getPartners)
 
     this.app
       .route("/partners/:id")
-      .get(AuthMiddleware.auth, PartnerController.getPartner);
+      .get(PartnerController.getPartner);
 
     return this.app;
   }

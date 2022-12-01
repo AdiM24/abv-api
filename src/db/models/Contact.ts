@@ -79,12 +79,12 @@ export class Contact extends Model<ContactAttributes, ContactCreationAttributes>
     created_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
     },
     modified_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
     },
     partner_id: {
       type: DataTypes.BIGINT,
