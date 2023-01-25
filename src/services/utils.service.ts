@@ -25,3 +25,7 @@ export async function addOrUpdate<
     console.error(`Error during execution: ${err}`);
   }
 }
+
+export function convertToUtc(date: Date) {
+  return new Date(date.toISOString());
+}

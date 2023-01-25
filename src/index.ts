@@ -7,6 +7,8 @@ import { CommonRoutesConfig } from "./common/common.routes.config";
 import { UserRoutes } from "./routes/user.routes.config";
 import { AuthRoutes } from "./routes/auth.routes.config";
 import { PartnerRoutes } from "./routes/partner.routes.config";
+import { ProductRoutes } from "./routes/product.routes.config";
+import {InvoiceRoutes} from "./routes/invoice.routes.config";
 
 dotenv.config();
 
@@ -31,6 +33,8 @@ app.use(expressWinston.logger(loggerOptions));
 routes.push(new UserRoutes(app));
 routes.push(new AuthRoutes(app));
 routes.push(new PartnerRoutes(app));
+routes.push(new ProductRoutes(app));
+routes.push(new InvoiceRoutes(app));
 
 const runningMessage = `Server running at http://localhost:${port}`;
 app.get("/", (req: express.Request, res: express.Response) => {

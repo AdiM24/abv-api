@@ -47,12 +47,12 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
     created_at_utc: {
       type: DataTypes.DATEONLY,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     },
     updated_at_utc: {
       type: DataTypes.DATEONLY,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     },
     email: {
       type: DataTypes.STRING(100),

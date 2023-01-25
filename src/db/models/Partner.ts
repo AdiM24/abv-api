@@ -132,12 +132,12 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
     created_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     },
     modified_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     },
     address: {
       type: DataTypes.STRING,

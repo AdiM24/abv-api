@@ -1,5 +1,5 @@
 import express from "express";
-import { ResponseError } from "../common/models/common.types";
+import {ResponseError} from "../common/models/common.types";
 import partnerService from "../services/partner.service";
 import PartnerService from "../services/partner.service";
 
@@ -7,11 +7,16 @@ class PartnerController {
   async addPartner(req: express.Request, res: express.Response) {
     const addedPartnerId = await PartnerService.addPartner(req.body);
 
-    res.status(201).send({ created: addedPartnerId, msg: "Partner created" });
+    res.status(201).send({created: addedPartnerId, msg: "Partner created"});
+  }
+
+  async getAutocompleteOptions(req: express.Request, res: express.Response) {
+    res.status(200).send(await PartnerService.getPartnerAutocompleteOptions(req.query?.searchKey.toString()))
   }
 
   async getPartners(req: express.Request, res: express.Response) {
-    var partners = Object.keys(req.query).length
+
+    const partners = Object.keys(req.query).length
       ? await PartnerService.getFilteredPartners(req.query)
       : await PartnerService.getPartners();
 
@@ -31,6 +36,24 @@ class PartnerController {
     const partner = await partnerService.getPartner(partnerId)
 
     return res.status(200).send(partner);
+  }
+
+  async updatePartnerAddresses(req: express.Request, res: express.Response) {
+    const result = await PartnerService.updatePartnerAddresses(req.body)
+
+    return res.status(200).send(result);
+  }
+
+  async updatePartnerBankAccounts(req: express.Request, res: express.Response) {
+    const result = await PartnerService.updatePartnerBankAccounts(req.body)
+
+    return res.status(200).send(result);
+  }
+
+  async updatePartnerContacts(req: express.Request, res: express.Response) {
+    const result = await PartnerService.updatePartnerContacts(req.body)
+
+    return res.status(200).send(result);
   }
 }
 

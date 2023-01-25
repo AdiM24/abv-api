@@ -1,23 +1,10 @@
-import { sequelize } from "../db/sequelize";
-import {
-  Address,
-  BankAccount,
-  Contact,
-  initModels,
-  Partner,
-} from "../db/models/init-models";
-import {
-  CreateAddressDto,
-  CreateBankAccountDto,
-  CreateContactDto,
-  CreatePartnerDto,
-} from "../dtos/create.partner.dto";
-import { addOrUpdate } from "./utils.service";
-import { Op } from "sequelize";
-import {
-  getDateRangeQuery,
-  getLikeQuery,
-} from "../common/utils/query-utils.service";
+import {sequelize} from "../db/sequelize";
+import {Address, BankAccount, Contact, initModels, Partner,} from "../db/models/init-models";
+import {CreateAddressDto, CreateBankAccountDto, CreateContactDto, CreatePartnerDto,} from "../dtos/create.partner.dto";
+import {addOrUpdate} from "./utils.service";
+import {Op} from "sequelize";
+import {getDateRangeQuery, getLikeQuery,} from "../common/utils/query-utils.service";
+import {UpdateAddressDto, UpdateBankAccountDto, UpdateContactDto,} from "../dtos/update.partner.dto";
 
 class PartnerService {
   async addPartner(partnerToAdd: CreatePartnerDto) {
@@ -33,7 +20,7 @@ class PartnerService {
           partnerToAdd,
           {
             unique_identification_number:
-              partnerToAdd.unique_identification_number,
+            partnerToAdd.unique_identification_number,
           },
           partner,
           () => {
@@ -50,7 +37,7 @@ class PartnerService {
           contact,
           {
             personal_identification_number:
-              contact.personal_identification_number,
+            contact.personal_identification_number,
           },
           contactEntity,
           () => {
@@ -108,9 +95,9 @@ class PartnerService {
 
     const partners = await models.Partner.findAll({
       include: [
-        { model: Address, as: "Addresses" },
-        { model: BankAccount, as: "BankAccounts" },
-        { model: Contact, as: "Contacts" },
+        {model: Address, as: "Addresses"},
+        {model: BankAccount, as: "BankAccounts"},
+        {model: Contact, as: "Contacts"},
       ],
     });
 
@@ -119,6 +106,29 @@ class PartnerService {
     });
 
     return partners;
+  }
+
+  async getPartnerAutocompleteOptions(searchKey: string) {
+    const models = initModels(sequelize);
+
+    let partners: Partner[] = [];
+
+    try {
+      partners = await models.Partner.findAll({
+          where: {
+            name: getLikeQuery(searchKey)
+          },
+        }
+      )
+    } catch (err) {
+      console.error(err);
+    }
+
+    return partners.map((partner: Partner) => ({
+      partner_id: partner.partner_id,
+      partner_name: partner.name
+    }))
+
   }
 
   async getPartner(id: number) {
@@ -130,15 +140,15 @@ class PartnerService {
           partner_id: id,
         },
         include: [
-          { model: Address, as: "Addresses" },
-          { model: BankAccount, as: "BankAccounts" },
-          { model: Contact, as: "Contacts" },
+          {model: Address, as: "Addresses"},
+          {model: BankAccount, as: "BankAccounts"},
+          {model: Contact, as: "Contacts"},
         ],
       })
     )?.get();
 
     if (!partner) {
-      return `No partner found for id ${id}`;
+      return {errorCode: 404, message: `No partner found for id ${id}`};
     }
 
     return partner;
@@ -147,7 +157,7 @@ class PartnerService {
   async getFilteredPartners(queryParams: any) {
     const models = initModels(sequelize);
 
-    let queryObject = {} as any;
+    const queryObject = {} as any;
 
     if (queryParams.created_at_from || queryParams.created_at_to)
       queryObject.created_at_utc = getDateRangeQuery(
@@ -162,15 +172,122 @@ class PartnerService {
         queryParams.unique_identification_number
       );
 
-    const partners = await Partner.findAll({
+    return await Partner.findAll({
       where: {
         [Op.and]: {
           ...queryObject,
         },
       },
     });
+  }
 
-    return partners;
+  async updatePartnerAddresses(addresses: UpdateAddressDto[]) {
+    const models = initModels(sequelize);
+
+    let existingAddress: UpdateAddressDto = {} as UpdateAddressDto;
+
+    return await Promise.all(
+      addresses.map(async (address: UpdateAddressDto) => {
+        existingAddress = await models.Address.findOne({
+          where: {
+            address_id: address.address_id,
+            partner_id: address.partner_id,
+          },
+        });
+
+        if (!existingAddress) {
+          return;
+        }
+
+        address.partner_id = existingAddress.partner_id;
+        address.address_id = existingAddress.address_id;
+
+        await models.Address.update(address, {
+          where: {
+            address_id: address.address_id,
+            partner_id: address.partner_id,
+          },
+          returning: true,
+        });
+
+        return address;
+      })
+    );
+  }
+
+  async updatePartnerContacts(contacts: UpdateContactDto[]) {
+    const models = initModels(sequelize);
+
+    let existingContact: UpdateContactDto = {} as UpdateContactDto;
+
+    return await Promise.all(
+      contacts.map(async (contact: UpdateContactDto) => {
+        existingContact = await models.Contact.findOne({
+          where: {
+            contact_id: contact.contact_id,
+            partner_id: contact.partner_id,
+          },
+        });
+
+        if (!existingContact) {
+          return;
+        }
+
+        contact.partner_id = existingContact.partner_id;
+        contact.contact_id = existingContact.contact_id;
+
+        await models.Contact.update(contact, {
+          where: {
+            contact_id: contact.contact_id,
+            partner_id: contact.partner_id,
+          },
+          returning: true,
+        });
+
+        return contact;
+      })
+    );
+  }
+
+  async updatePartnerBankAccounts(bankAccounts: UpdateBankAccountDto[]) {
+    const models = initModels(sequelize);
+
+    let existingBankAccount: UpdateBankAccountDto = {} as UpdateBankAccountDto;
+
+    return await Promise.all(
+      bankAccounts.map(async (bankAccount: UpdateBankAccountDto) => {
+        existingBankAccount = await models.BankAccount.findOne({
+          where: {
+            bank_account_id: bankAccount.bank_account_id,
+            partner_id: bankAccount.partner_id,
+          },
+        });
+
+        if (!existingBankAccount) {
+          return;
+        }
+
+        await models.BankAccount.update(bankAccount, {
+          where: {
+            bank_account_id: bankAccount.bank_account_id,
+            partner_id: bankAccount.partner_id,
+          },
+          returning: true,
+        });
+
+        return bankAccount;
+      })
+    );
+  }
+
+  async getPartnerByTin(tin: string) {
+    const models = initModels(sequelize);
+
+    return (await models.Partner.findOne({
+      where: {
+        unique_identification_number: tin
+      }
+    }));
   }
 }
 
