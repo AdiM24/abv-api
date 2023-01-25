@@ -15,10 +15,10 @@ class InvoiceMiddleware {
     const createdAt = new Date(req.body.created_at_utc).getTime();
     const deadlineAt = new Date(req.body.deadline_at_utc).getTime();
 
-    if (deadlineAt > createdAt) {
+    if (deadlineAt < createdAt) {
       return res.status(400).send({
         errorCode: 400,
-        message: "Deadline date cannot be greater than creation date"
+        message: "Creation date cannot be greater than deadline date!"
       })
     }
 
