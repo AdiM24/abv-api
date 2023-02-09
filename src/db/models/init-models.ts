@@ -57,15 +57,19 @@ export function initModels(sequelize: Sequelize) {
   const User = _User.initModel(sequelize);
 
   InvoiceProduct.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
-  Invoice.hasMany(InvoiceProduct, { as: "InvoiceProduct", foreignKey: "invoice_id"});
+  Invoice.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "invoice_id"});
   Address.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(Address, { as: "Addresses", foreignKey: "partner_id"});
   BankAccount.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(BankAccount, { as: "BankAccounts", foreignKey: "partner_id"});
   Contact.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(Contact, { as: "Contacts", foreignKey: "partner_id"});
+  Invoice.belongsTo(Partner, { as: "buyer", foreignKey: "buyer_id"});
+  Partner.hasMany(Invoice, { as: "Invoices", foreignKey: "buyer_id"});
+  Invoice.belongsTo(Partner, { as: "client", foreignKey: "client_id"});
+  Partner.hasMany(Invoice, { as: "client_Invoices", foreignKey: "client_id"});
   InvoiceProduct.belongsTo(Product, { as: "product", foreignKey: "product_id"});
-  Product.hasMany(InvoiceProduct, { as: "InvoiceProduct", foreignKey: "product_id"});
+  Product.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "product_id"});
 
   return {
     Address: Address,

@@ -25,12 +25,12 @@ export class InvoiceProduct extends Model<InvoiceProductAttributes, InvoiceProdu
   selling_price!: number;
   sold_at_utc?: string;
 
-  // InvoiceProducts belongsTo Invoice via invoice_id
+  // InvoiceProduct belongsTo Invoice via invoice_id
   invoice!: Invoice;
   getInvoice!: Sequelize.BelongsToGetAssociationMixin<Invoice>;
   setInvoice!: Sequelize.BelongsToSetAssociationMixin<Invoice, InvoiceId>;
   createInvoice!: Sequelize.BelongsToCreateAssociationMixin<Invoice>;
-  // InvoiceProducts belongsTo Product via product_id
+  // InvoiceProduct belongsTo Product via product_id
   product!: Product;
   getProduct!: Sequelize.BelongsToGetAssociationMixin<Product>;
   setProduct!: Sequelize.BelongsToSetAssociationMixin<Product, ProductId>;
@@ -66,13 +66,13 @@ export class InvoiceProduct extends Model<InvoiceProductAttributes, InvoiceProdu
       defaultValue: 0
     },
     selling_price: {
-      type: DataTypes.DECIMAL(19,4),
+      type: DataTypes.DECIMAL,
       allowNull: false
     },
     sold_at_utc: {
       type: DataTypes.DATE,
       allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
     }
   }, {
     sequelize,
@@ -81,7 +81,7 @@ export class InvoiceProduct extends Model<InvoiceProductAttributes, InvoiceProdu
     timestamps: false,
     indexes: [
       {
-        name: "InvoiceProduct_pk",
+        name: "InvoiceProducts_pk",
         unique: true,
         fields: [
           { name: "invoice_product_id" },

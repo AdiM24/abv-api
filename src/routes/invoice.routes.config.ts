@@ -11,7 +11,21 @@ export class InvoiceRoutes extends CommonRoutesConfig {
   configureRoutes(): express.Application {
     this.app
       .route("/invoices")
-      .post(InvoiceMiddleware.validateDeadlineLaterThanCreationDate, InvoiceController.addInvoice)
+      .get(InvoiceController.getInvoices)
+      .post(
+        InvoiceMiddleware.validateIssuedInvoiceCreationDate,
+        InvoiceMiddleware.validateDeadlineLaterThanCreationDate,
+        InvoiceMiddleware.validateInvoiceDoesNotExist,
+        InvoiceController.addInvoice
+      )
+
+    this.app
+      .route("/invoices/:id")
+      .get(InvoiceController.getInvoiceWithDetails)
+
+    this.app
+      .route("/invoices/issued/number")
+      .post(InvoiceController.findNextNumberForSeries)
 
     return this.app;
   }

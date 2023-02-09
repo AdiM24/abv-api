@@ -4,13 +4,27 @@ import {Op} from "sequelize";
 import {getDateRangeQuery, getLikeQuery,} from "../common/utils/query-utils.service";
 import {CreateProductDto} from "../dtos/create.product.dto";
 import {UpdateProductDto} from "../dtos/update.product.dto";
-import {convertToUtc} from "./utils.service";
 
 class ProductService {
   async addProduct(productToAdd: CreateProductDto) {
     const models = initModels(sequelize);
     try {
-      models.Product.create(productToAdd);
+      const [product, created] = await models.Product.findOrCreate({
+        where: {
+          product_name: productToAdd.product_name
+        },
+        defaults: {...productToAdd, created_at_utc: new Date().toUTCString(), modified_at_utc: new Date().toUTCString()}
+      });
+
+      if (!created) {
+        product.quantity += Number(productToAdd.quantity);
+
+        await product.save();
+
+        return product;
+      }
+
+      return product;
     } catch (err) {
       console.error(err);
     }
@@ -69,6 +83,24 @@ class ProductService {
     return product;
   }
 
+  async getProductByName(name: string) {
+    const models = initModels(sequelize);
+
+    const product = (
+      await models.Product.findOne({
+        where: {
+          product_name: name
+        }
+      })
+    )?.get();
+
+    if (!product) {
+      return `No product found for name ${name}`;
+    }
+
+    return product
+  }
+
   async getFilteredProducts(queryParams: any) {
     const models = initModels(sequelize);
 
@@ -95,7 +127,7 @@ class ProductService {
   async updateProduct(product: UpdateProductDto) {
     const models = initModels(sequelize);
 
-    product.modified_at_utc = convertToUtc(new Date(product.modified_at_utc));
+    product.modified_at_utc = new Date(product.modified_at_utc).toUTCString();
 
     try {
       return await models.Product.update(product, {
@@ -138,10 +170,32 @@ class ProductService {
 
       existingProduct.quantity -= product.quantity;
       await existingProduct.save();
+      return {product_id: existingProduct.product_id};
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async addProductQuantity(product: { product_name: string, quantity: number }) {
+    const models = initModels(sequelize);
+
+    try {
+      const existingProduct: Product = await models.Product.findOne({
+        where: {
+          product_name: getLikeQuery(product.product_name)
+        }
+      });
+
+      if (!existingProduct) {
+        return false;
+      }
+      existingProduct.quantity += product.quantity;
+      await existingProduct.save();
       return true;
     } catch (err) {
       console.error(err);
     }
+
   }
 }
 

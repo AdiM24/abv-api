@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import {Op} from "sequelize";
 
 export const getDateRangeQuery = (rangeValueFrom: any, rangeValueTo: any) => {
   const rangeFilter = {} as any;
@@ -12,9 +12,21 @@ export const getDateRangeQuery = (rangeValueFrom: any, rangeValueTo: any) => {
 };
 
 export const getLikeQuery = (searchString: string) => {
+  if (!searchString) return;
+
   const iLikeQuery = {} as any;
 
-  if (searchString) iLikeQuery[Op.iLike] = `%${searchString}%`;
+  iLikeQuery[Op.iLike] = `%${searchString}%`;
 
   return iLikeQuery;
 };
+
+export const getStrictQuery = (searchString: string) => {
+  if (!searchString) return;
+
+  const strictQuery = {} as any;
+
+  strictQuery[Op.eq] = searchString;
+
+  return strictQuery;
+}

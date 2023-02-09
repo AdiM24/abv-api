@@ -3,6 +3,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import type { Address, AddressId } from './Address';
 import type { BankAccount, BankAccountId } from './BankAccount';
 import type { Contact, ContactId } from './Contact';
+import type { Invoice, InvoiceId } from './Invoice';
 
 export interface PartnerAttributes {
   partner_id: number;
@@ -78,6 +79,30 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   hasContact!: Sequelize.HasManyHasAssociationMixin<Contact, ContactId>;
   hasContacts!: Sequelize.HasManyHasAssociationsMixin<Contact, ContactId>;
   countContacts!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany Invoice via buyer_id
+  Invoices!: Invoice[];
+  getInvoices!: Sequelize.HasManyGetAssociationsMixin<Invoice>;
+  setInvoices!: Sequelize.HasManySetAssociationsMixin<Invoice, InvoiceId>;
+  addInvoice!: Sequelize.HasManyAddAssociationMixin<Invoice, InvoiceId>;
+  addInvoices!: Sequelize.HasManyAddAssociationsMixin<Invoice, InvoiceId>;
+  createInvoice!: Sequelize.HasManyCreateAssociationMixin<Invoice>;
+  removeInvoice!: Sequelize.HasManyRemoveAssociationMixin<Invoice, InvoiceId>;
+  removeInvoices!: Sequelize.HasManyRemoveAssociationsMixin<Invoice, InvoiceId>;
+  hasInvoice!: Sequelize.HasManyHasAssociationMixin<Invoice, InvoiceId>;
+  hasInvoices!: Sequelize.HasManyHasAssociationsMixin<Invoice, InvoiceId>;
+  countInvoices!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany Invoice via client_id
+  client_Invoices!: Invoice[];
+  getClient_Invoices!: Sequelize.HasManyGetAssociationsMixin<Invoice>;
+  setClient_Invoices!: Sequelize.HasManySetAssociationsMixin<Invoice, InvoiceId>;
+  addClient_Invoice!: Sequelize.HasManyAddAssociationMixin<Invoice, InvoiceId>;
+  addClient_Invoices!: Sequelize.HasManyAddAssociationsMixin<Invoice, InvoiceId>;
+  createClient_Invoice!: Sequelize.HasManyCreateAssociationMixin<Invoice>;
+  removeClient_Invoice!: Sequelize.HasManyRemoveAssociationMixin<Invoice, InvoiceId>;
+  removeClient_Invoices!: Sequelize.HasManyRemoveAssociationsMixin<Invoice, InvoiceId>;
+  hasClient_Invoice!: Sequelize.HasManyHasAssociationMixin<Invoice, InvoiceId>;
+  hasClient_Invoices!: Sequelize.HasManyHasAssociationsMixin<Invoice, InvoiceId>;
+  countClient_Invoices!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Partner {
     return Partner.init({

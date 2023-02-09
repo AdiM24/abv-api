@@ -15,9 +15,9 @@ export class ProductRoutes extends CommonRoutesConfig {
       .get(ProductController.getProducts)
       .put(ProductController.updateProduct);
 
-    this.app
-      .route("/products/autocomplete").get(ProductController.getAutocompleteOptions)
-    // this.app.route("/products/:id").get(ProductController.getProduct);
+
+    this.app.route("/products/:id")
+      .get(ProductController.getProduct);
 
     this.app
       .route("/products/quantity/reserve")
@@ -26,6 +26,10 @@ export class ProductRoutes extends CommonRoutesConfig {
     this.app
       .route("/products/quantity/check")
       .post(ProductController.checkProductQuantity)
+
+    this.app
+      .route("/products/quantity/add")
+      .post(ProductController.addProductQuantity)
 
     return this.app;
   }

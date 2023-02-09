@@ -172,7 +172,7 @@ class PartnerService {
         queryParams.unique_identification_number
       );
 
-    return await Partner.findAll({
+    return await models.Partner.findAll({
       where: {
         [Op.and]: {
           ...queryObject,

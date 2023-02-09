@@ -8,13 +8,16 @@ export interface ProductAttributes {
   quantity: number;
   purchase_price: number;
   vat: number;
-  created_at_utc: Date;
-  modified_at_utc?: Date;
+  created_at_utc: string;
+  modified_at_utc?: string;
+  unit_of_measure?: string;
+  material?: string;
+  type?: "service" | "goods";
 }
 
 export type ProductPk = "product_id";
 export type ProductId = Product[ProductPk];
-export type ProductOptionalAttributes = "product_id" | "quantity" | "purchase_price" | "vat" | "created_at_utc" | "modified_at_utc";
+export type ProductOptionalAttributes = "product_id" | "quantity" | "purchase_price" | "vat" | "created_at_utc" | "modified_at_utc" | "unit_of_measure" | "material" | "type";
 export type ProductCreationAttributes = Optional<ProductAttributes, ProductOptionalAttributes>;
 
 export class Product extends Model<ProductAttributes, ProductCreationAttributes> implements ProductAttributes {
@@ -23,10 +26,13 @@ export class Product extends Model<ProductAttributes, ProductCreationAttributes>
   quantity!: number;
   purchase_price!: number;
   vat!: number;
-  created_at_utc!: Date;
-  modified_at_utc?: Date;
+  created_at_utc!: string;
+  modified_at_utc?: string;
+  unit_of_measure?: string;
+  material?: string;
+  type?: "service" | "goods";
 
-  // Product hasMany InvoiceProducts via product_id
+  // Product hasMany InvoiceProduct via product_id
   InvoiceProducts!: InvoiceProduct[];
   getInvoiceProducts!: Sequelize.HasManyGetAssociationsMixin<InvoiceProduct>;
   setInvoiceProducts!: Sequelize.HasManySetAssociationsMixin<InvoiceProduct, InvoiceProductId>;
@@ -57,7 +63,7 @@ export class Product extends Model<ProductAttributes, ProductCreationAttributes>
       defaultValue: 0
     },
     purchase_price: {
-      type: DataTypes.DECIMAL(19,4),
+      type: DataTypes.DECIMAL,
       allowNull: false,
       defaultValue: 0
     },
@@ -75,6 +81,18 @@ export class Product extends Model<ProductAttributes, ProductCreationAttributes>
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+    },
+    unit_of_measure: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    material: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    type: {
+      type: DataTypes.ENUM("service","goods"),
+      allowNull: true
     }
   }, {
     sequelize,

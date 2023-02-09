@@ -4,9 +4,9 @@ import {ResponseError} from "../common/models/common.types";
 
 class ProductController {
   async addProduct(req: express.Request, res: express.Response) {
-    const addedProductId = await ProductService.addProduct(req.body);
+    const addedProduct = await ProductService.addProduct(req.body);
 
-    res.status(201).send({created: addedProductId, msg: "Product created"});
+    res.status(201).send(addedProduct);
   }
 
   async getAutocompleteOptions(req: express.Request, res: express.Response) {
@@ -36,6 +36,14 @@ class ProductController {
     return res.status(200).send(product);
   }
 
+  async getProductByName(req: express.Request, res: express.Response) {
+    const name = req.params.product_name;
+
+    const product = await ProductService.getProductByName(name);
+
+    return res.status(200).send(product);
+  }
+
   async updateProduct(req: express.Request, res: express.Response) {
     const result = await ProductService.updateProduct(req.body);
 
@@ -52,6 +60,12 @@ class ProductController {
 
   async checkProductQuantity(req: express.Request, res: express.Response) {
     const result = await ProductService.checkProductQuantity(req.body);
+
+    return result ? res.status(200).send(result) : res.status(400).send(result);
+  }
+
+  async addProductQuantity(req: express.Request, res: express.Response) {
+    const result = await ProductService.addProductQuantity(req.body);
 
     return result ? res.status(200).send(result) : res.status(400).send(result);
   }
