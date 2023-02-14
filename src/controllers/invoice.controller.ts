@@ -11,7 +11,6 @@ class InvoiceController {
   }
 
   async getInvoice(req: express.Request, res: express.Response) {
-    console.log(req.params);
     const invoice_id = req.params?.id;
 
     res.status(200).send(await InvoiceService.findInvoice({invoice_id: invoice_id}));
@@ -37,12 +36,22 @@ class InvoiceController {
     res.status(200).send({number: nextNumberForSeries});
   }
 
-  async getPdfInvoiceInformation(req: express.Request, res: express.Response) {
-    const invoiceId = Number(req.params?.id);
+  async updateInvoiceData(req: express.Request, res: express.Response) {
+    const result = await InvoiceService.updateInvoice(req.body);
 
-    const pdfInformation = await InvoiceService.getInvoiceWithDetails(invoiceId);
+    res.send(result).status(200);
+  }
 
-    res.status(200).send(pdfInformation);
+  async addInvoiceProduct(req: express.Request, res: express.Response) {
+    const result = await InvoiceService.addInvoiceProduct(req.body);
+
+    res.send(result).status(200);
+  }
+
+  async removeInvoiceProduct(req: express.Request, res: express.Response) {
+    const result = await InvoiceService.removeInvoiceProduct(req.body);
+
+    res.send(result).status(200);
   }
 }
 

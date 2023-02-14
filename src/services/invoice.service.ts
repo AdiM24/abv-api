@@ -10,7 +10,7 @@ import {
   ProductAttributes
 } from "../db/models/init-models";
 import {CreateInvoiceDto} from "../dtos/create.invoice.dto";
-import {CreateInvoiceProductDto} from "../dtos/create.invoice-product.dto";
+import {CreateInvoiceProductDto, InvoiceProductInformation} from "../dtos/create.invoice-product.dto";
 import {Op, WhereOptions} from "sequelize";
 import {getStrictQuery} from "../common/utils/query-utils.service";
 
@@ -18,7 +18,9 @@ class InvoiceService {
   async getInvoices() {
     const models = initModels(sequelize);
 
-    return await models.Invoice.findAll();
+    return await models.Invoice.findAll({
+      include: [{model: Partner, as: 'client'}]
+    });
   }
 
   async getFilteredInvoices(queryParams: any) {
@@ -36,6 +38,7 @@ class InvoiceService {
           ...queryObject,
         },
       },
+      include: [{model: Partner, as: 'client'}]
     });
   }
 
@@ -160,6 +163,169 @@ class InvoiceService {
     });
 
     return {invoice, productList};
+  }
+
+  async updateInvoice(invoiceUpdate: any) {
+    const models = initModels(sequelize);
+
+    const existingInvoice = await models.Invoice.findOne({
+      where: {
+        invoice_id: invoiceUpdate.invoice_id
+      }
+    });
+
+    existingInvoice.client_id = invoiceUpdate.client;
+    existingInvoice.created_at_utc = new Date(invoiceUpdate.created_at).toUTCString();
+    existingInvoice.deadline_at_utc = new Date(invoiceUpdate.deadline_at).toUTCString();
+    existingInvoice.series = invoiceUpdate.series;
+    existingInvoice.number = invoiceUpdate.number;
+    existingInvoice.status = invoiceUpdate.status;
+    existingInvoice.sent_status = invoiceUpdate.sent_status;
+
+    try {
+      await existingInvoice.save();
+    } catch (err) {
+      console.error(err);
+      return {errorCode: 400, message: err}
+    }
+
+    return {message: "Invoice update successful"}
+  }
+
+  async addInvoiceProduct(productData: InvoiceProductInformation) {
+    const models = initModels(sequelize);
+
+    const existingProduct: Product = await models.Product.findOne({
+      where: {
+        product_id: productData.product_id
+      }
+    });
+
+    const existingInvoice: Invoice = await models.Invoice.findOne({
+      where: {
+        invoice_id: productData.invoice_id
+      }
+    });
+
+    const existingInvoiceProduct: InvoiceProduct = await models.InvoiceProduct.findOne({
+      where: {
+        product_id: productData.product_id,
+        invoice_id: productData.invoice_id
+      }
+    });
+
+    let invoiceProduct = existingInvoiceProduct;
+
+    if (existingInvoiceProduct) {
+      invoiceProduct.quantity = Number(existingInvoiceProduct.quantity) + Number(productData.quantity);
+      switch (existingInvoice.type) {
+        case 'received': {
+          existingProduct.quantity = Number(existingProduct.quantity) + Number(productData.quantity);
+
+          break;
+        }
+
+        case 'issued': {
+          existingProduct.quantity = Number(existingProduct.quantity) - Number(productData.quantity);
+
+          break;
+        }
+
+        default: {
+          console.error(`Invalid invoice type, ${existingInvoice}`)
+          return {message: 'Invalid invoice type'}
+        }
+      }
+    } else {
+      invoiceProduct = await models.InvoiceProduct.create({
+        product_id: existingProduct.product_id,
+        invoice_id: existingInvoice.invoice_id,
+        quantity: productData.quantity,
+        selling_price: productData.purchase_price,
+        sold_at_utc: new Date().toUTCString()
+      })
+    }
+
+    const productVat = parseFloat((((invoiceProduct.selling_price * 19) / 100) * invoiceProduct.quantity).toFixed(2))
+    existingInvoice.total_vat = Number((Number(existingInvoice.total_vat) + productVat).toFixed(2));
+    existingInvoice.total_price = Number(Number(existingInvoice.total_price) + parseFloat((invoiceProduct.selling_price * invoiceProduct.quantity).toFixed(2)));
+    existingInvoice.total_price_incl_vat = Number((existingInvoice.total_vat + existingInvoice.total_price).toFixed(2));
+
+    try {
+      await existingInvoice.save();
+      await invoiceProduct.save();
+      await existingProduct.save();
+
+      return {message: "Invoice product successfully updated"};
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async removeInvoiceProduct(productData: InvoiceProductInformation) {
+    const models = initModels(sequelize);
+
+    const existingInvoiceProduct: InvoiceProduct = await models.InvoiceProduct.findOne({
+      where: {
+        product_id: productData.product_id,
+        invoice_id: productData.invoice_id
+      }
+    });
+
+    const existingInvoice: Invoice = await models.Invoice.findOne({
+      where: {
+        invoice_id: productData.invoice_id
+      }
+    });
+
+    const existingProduct: Product = await models.Product.findOne({
+      where: {
+        product_id: productData.product_id
+      }
+    })
+
+    try {
+      const productVat = parseFloat((((existingInvoiceProduct.selling_price * 19) / 100) * existingInvoiceProduct.quantity).toFixed(2))
+
+      existingInvoice.total_vat = Number((Number(existingInvoice.total_vat) - productVat).toFixed(2));
+      existingInvoice.total_price = Number(Number(existingInvoice.total_price) - parseFloat((existingInvoiceProduct.selling_price * existingInvoiceProduct.quantity).toFixed(2)));
+      existingInvoice.total_price_incl_vat = Number((existingInvoice.total_vat + existingInvoice.total_price).toFixed(2));
+
+      await existingInvoice.save();
+      await existingInvoiceProduct.destroy();
+    } catch (error) {
+      console.error(error);
+    }
+
+    if (existingProduct.type === 'service') {
+      return {message: "Invoice successfully updated"};
+    }
+
+    if (existingInvoice.type === 'issued') {
+      existingProduct.quantity = Number(existingProduct.quantity) + existingInvoiceProduct.quantity;
+    }
+
+    if (existingInvoice.type === 'received') {
+      existingProduct.quantity = Number(existingProduct.quantity) - existingInvoiceProduct.quantity;
+    }
+
+    try {
+      await existingProduct.save();
+      return {message: "Invoice and product successfully updated"}
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async checkInvoiceProductExists(invoiceId: number, productId: number) {
+    const models = initModels(sequelize);
+
+    return !!(await models.InvoiceProduct.findOne({
+      where: {
+        product_id: productId,
+        invoice_id: invoiceId
+      }
+    }))
   }
 }
 

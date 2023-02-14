@@ -7,7 +7,7 @@ export interface InvoiceAttributes {
   invoice_id: number;
   client_id: number;
   buyer_id: number;
-  deadline_at_utc: Date;
+  deadline_at_utc: string;
   created_at_utc?: string;
   status: "paid" | "overdue" | "incomplete payment" | "unpaid";
   type: "proforma" | "issued" | "received";
@@ -28,7 +28,7 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   invoice_id!: number;
   client_id!: number;
   buyer_id!: number;
-  deadline_at_utc!: Date;
+  deadline_at_utc!: string;
   created_at_utc?: string;
   status!: "paid" | "overdue" | "incomplete payment" | "unpaid";
   type!: "proforma" | "issued" | "received";

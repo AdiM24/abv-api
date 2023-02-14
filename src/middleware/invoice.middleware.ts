@@ -18,7 +18,7 @@ class InvoiceMiddleware {
       });
     }
 
-    if (new Date(req.body?.created_at_utc).getTime() < new Date().getTime() ) {
+    if (new Date(req.body?.created_at_utc).getTime() < new Date().getTime()) {
       return res.status(400).send({
         errorCode: 400,
         message: "Creation date cannot be in the past"
@@ -72,6 +72,36 @@ class InvoiceMiddleware {
 
     if (existingInvoice) {
       return res.status(400).send({error: 400, message: "Invoice already exists"})
+    }
+
+    next();
+  }
+
+  validateExistingInvoiceProduct = async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    const invoiceProductData = req.body;
+
+    const invoiceProductExists: boolean = await InvoiceService.checkInvoiceProductExists(invoiceProductData.invoice_id, invoiceProductData.product_id);
+
+    if (!invoiceProductExists) {
+      return res.status(404).send({error: 404, message: "Requested invoice product does not exist!"})
+    }
+
+    next();
+  }
+
+  validateExistingInvoice = async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    const invoiceExists = !!(await InvoiceService.findInvoice({invoice_id: req.body.invoice_id}))
+
+    if (!invoiceExists) {
+      return res.status(404).send({error: 404, message: "Invoice not found"})
     }
 
     next();

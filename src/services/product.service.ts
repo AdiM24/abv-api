@@ -8,6 +8,11 @@ import {UpdateProductDto} from "../dtos/update.product.dto";
 class ProductService {
   async addProduct(productToAdd: CreateProductDto) {
     const models = initModels(sequelize);
+
+    if (productToAdd.type === 'service') {
+      productToAdd.quantity = 1;
+    }
+
     try {
       const [product, created] = await models.Product.findOrCreate({
         where: {
@@ -15,6 +20,7 @@ class ProductService {
         },
         defaults: {...productToAdd, created_at_utc: new Date().toUTCString(), modified_at_utc: new Date().toUTCString()}
       });
+
 
       if (!created) {
         product.quantity += Number(productToAdd.quantity);
@@ -127,6 +133,10 @@ class ProductService {
   async updateProduct(product: UpdateProductDto) {
     const models = initModels(sequelize);
 
+    if (product.type === 'service') {
+      product.quantity = 1;
+    }
+
     product.modified_at_utc = new Date(product.modified_at_utc).toUTCString();
 
     try {
@@ -143,15 +153,17 @@ class ProductService {
   async checkProductQuantity(product: { product_name: string, quantity: number }) {
     const models = initModels(sequelize);
 
-    try {
-      return (await models.Product.findOne({
-        where: {
-          product_name: product.product_name
-        }
-      })).quantity >= product.quantity
-    } catch (err) {
-      console.error(err);
+    const existingProduct = await models.Product.findOne({
+      where: {
+        product_name: product.product_name
+      }
+    })
+
+    if (existingProduct?.type === 'service') {
+      return true;
     }
+
+    return existingProduct.quantity >= product.quantity;
   }
 
   async reserveProductQuantity(product: { product_name: string, quantity: number }) {
@@ -163,6 +175,10 @@ class ProductService {
           product_name: product.product_name
         }
       });
+
+      if (existingProduct.type === 'service') {
+        return true;
+      }
 
       if (existingProduct.quantity < product.quantity) {
         return false;
@@ -185,6 +201,10 @@ class ProductService {
           product_name: getLikeQuery(product.product_name)
         }
       });
+
+      if (existingProduct.type === 'service') {
+        return true;
+      }
 
       if (!existingProduct) {
         return false;
