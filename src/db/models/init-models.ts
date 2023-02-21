@@ -5,6 +5,8 @@ import { BankAccount as _BankAccount } from "./BankAccount";
 import type { BankAccountAttributes, BankAccountCreationAttributes } from "./BankAccount";
 import { Contact as _Contact } from "./Contact";
 import type { ContactAttributes, ContactCreationAttributes } from "./Contact";
+import { Employee as _Employee } from "./Employee";
+import type { EmployeeAttributes, EmployeeCreationAttributes } from "./Employee";
 import { Invoice as _Invoice } from "./Invoice";
 import type { InvoiceAttributes, InvoiceCreationAttributes } from "./Invoice";
 import { InvoiceProduct as _InvoiceProduct } from "./InvoiceProduct";
@@ -20,6 +22,7 @@ export {
   _Address as Address,
   _BankAccount as BankAccount,
   _Contact as Contact,
+  _Employee as Employee,
   _Invoice as Invoice,
   _InvoiceProduct as InvoiceProduct,
   _Partner as Partner,
@@ -34,6 +37,8 @@ export type {
   BankAccountCreationAttributes,
   ContactAttributes,
   ContactCreationAttributes,
+  EmployeeAttributes,
+  EmployeeCreationAttributes,
   InvoiceAttributes,
   InvoiceCreationAttributes,
   InvoiceProductAttributes,
@@ -50,6 +55,7 @@ export function initModels(sequelize: Sequelize) {
   const Address = _Address.initModel(sequelize);
   const BankAccount = _BankAccount.initModel(sequelize);
   const Contact = _Contact.initModel(sequelize);
+  const Employee = _Employee.initModel(sequelize);
   const Invoice = _Invoice.initModel(sequelize);
   const InvoiceProduct = _InvoiceProduct.initModel(sequelize);
   const Partner = _Partner.initModel(sequelize);
@@ -64,6 +70,8 @@ export function initModels(sequelize: Sequelize) {
   Partner.hasMany(BankAccount, { as: "BankAccounts", foreignKey: "partner_id"});
   Contact.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(Contact, { as: "Contacts", foreignKey: "partner_id"});
+  Employee.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
+  Partner.hasMany(Employee, { as: "Employees", foreignKey: "partner_id"});
   Invoice.belongsTo(Partner, { as: "buyer", foreignKey: "buyer_id"});
   Partner.hasMany(Invoice, { as: "Invoices", foreignKey: "buyer_id"});
   Invoice.belongsTo(Partner, { as: "client", foreignKey: "client_id"});
@@ -75,6 +83,7 @@ export function initModels(sequelize: Sequelize) {
     Address: Address,
     BankAccount: BankAccount,
     Contact: Contact,
+    Employee: Employee,
     Invoice: Invoice,
     InvoiceProduct: InvoiceProduct,
     Partner: Partner,
