@@ -8,7 +8,7 @@ class InvoiceMiddleware {
     next: express.NextFunction
   ) => {
     if (req.body?.type !== 'issued') {
-      next();
+      return next();
     }
 
     if (!req.body?.created_at_utc) {
@@ -18,7 +18,7 @@ class InvoiceMiddleware {
       });
     }
 
-    if (new Date(req.body?.created_at_utc).getTime() < new Date().getTime()) {
+    if (new Date(req.body?.created_at_utc).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
       return res.status(400).send({
         errorCode: 400,
         message: "Creation date cannot be in the past"
@@ -68,13 +68,17 @@ class InvoiceMiddleware {
       number: invoice.number
     }
 
-    const existingInvoice = await InvoiceService.findInvoice(condition);
+    try {
+      const existingInvoice = await InvoiceService.findInvoice(condition);
 
-    if (existingInvoice) {
-      return res.status(400).send({error: 400, message: "Invoice already exists"})
+      if (existingInvoice) {
+        return res.status(400).send({error: 400, message: "Invoice already exists"})
+      }
+
+      next();
+    } catch (err) {
+      return res.status(500).send({errorCode: 500, message: err})
     }
-
-    next();
   }
 
   validateExistingInvoiceProduct = async (
