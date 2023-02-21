@@ -170,6 +170,7 @@ class ProductService {
     const models = initModels(sequelize);
 
     try {
+
       const existingProduct: Product = await models.Product.findOne({
         where: {
           product_name: product.product_name

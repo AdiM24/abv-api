@@ -1,7 +1,7 @@
-import { CommonRoutesConfig } from "../common/common.routes.config";
+import {CommonRoutesConfig} from "../common/common.routes.config";
 import express from "express";
-import AuthMiddleware from "../middleware/auth.middleware";
 import ProductController from "../controllers/product.controller";
+import ProductMiddleware from "../middleware/product.middleware";
 
 export class ProductRoutes extends CommonRoutesConfig {
   constructor(app: express.Application) {
@@ -21,7 +21,10 @@ export class ProductRoutes extends CommonRoutesConfig {
 
     this.app
       .route("/products/quantity/reserve")
-      .post(ProductController.reserveProductQuantity)
+      .post(
+        ProductMiddleware.validateProductExistsByName,
+        ProductController.reserveProductQuantity
+      )
 
     this.app
       .route("/products/quantity/check")

@@ -45,6 +45,8 @@ class InvoiceService {
   async createInvoice(invoiceToAdd: CreateInvoiceDto, models: any) {
     let createdInvoice: Invoice;
 
+    invoiceToAdd.series = invoiceToAdd.series.toUpperCase();
+
     try {
       createdInvoice = await models.Invoice.create(invoiceToAdd);
     } catch (err) {
@@ -113,7 +115,7 @@ class InvoiceService {
 
     const latestInvoiceNumberForSeries = (await models.Invoice.findOne({
       where: {
-        series: series
+        series: series.toUpperCase()
       },
       order: [["number", "DESC"]]
     }))?.get('number');
