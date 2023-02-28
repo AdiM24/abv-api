@@ -289,6 +289,18 @@ class PartnerService {
       }
     }));
   }
+
+  async addPartnerAddress(addressToAdd: CreateAddressDto) {
+    const models = initModels(sequelize);
+
+    return await models.Address.create(addressToAdd);
+  }
+
+  async addPartnerBankAccount(bankAccount: CreateBankAccountDto) {
+    const models = initModels(sequelize);
+
+    return await models.BankAccount.create(bankAccount);
+  }
 }
 
 export default new PartnerService();

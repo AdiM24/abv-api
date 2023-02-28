@@ -23,13 +23,13 @@ export class PartnerRoutes extends CommonRoutesConfig {
 
     this.app
       .route("/partners/address")
+      .post(PartnerController.addPartnerAddress)
       .put(PartnerController.updatePartnerAddresses);
 
     this.app
       .route("/partners/bankaccounts")
-      .put(
-        PartnerController.updatePartnerBankAccounts
-      );
+      .post(PartnerController.addPartnerBankAccount)
+      .put(PartnerController.updatePartnerBankAccounts);
 
     this.app
       .route("/partners/contacts")

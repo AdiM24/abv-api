@@ -38,6 +38,18 @@ class PartnerController {
     return res.status(200).send(partner);
   }
 
+  async addPartnerBankAccount(req:express.Request, res: express.Response) {
+    const result = await PartnerService.addPartnerBankAccount(req.body);
+
+    return res.status(200).send(result);
+  }
+
+  async addPartnerAddress(req:express.Request, res: express.Response) {
+    const result = await PartnerService.addPartnerAddress(req.body);
+
+    return res.status(200).send(result);
+  }
+
   async updatePartnerAddresses(req: express.Request, res: express.Response) {
     const result = await PartnerService.updatePartnerAddresses(req.body)
 
