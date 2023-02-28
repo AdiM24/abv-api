@@ -93,7 +93,8 @@ class ProductService {
     const product = (
       await models.Product.findOne({
         where: {
-          product_name: name
+          product_name: name,
+          type: 'goods'
         }
       })
     )?.get();
@@ -109,6 +110,7 @@ class ProductService {
     const models = initModels(sequelize);
 
     const queryObject = {} as any;
+    queryObject.type = 'goods';
 
     if (queryParams.created_at_from || queryParams.created_at_to)
       queryObject.created_at_utc = getDateRangeQuery(
