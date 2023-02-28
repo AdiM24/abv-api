@@ -243,8 +243,8 @@ class InvoiceService {
       invoiceProduct = await models.InvoiceProduct.create({
         product_id: existingProduct.product_id,
         invoice_id: existingInvoice.invoice_id,
-        quantity: parseFloat(productData.quantity.toFixed(2)),
-        selling_price: parseFloat(productData.purchase_price.toFixed(2)),
+        quantity: parseFloat(Number(productData.quantity).toFixed(2)),
+        selling_price: parseFloat(Number(productData.purchase_price).toFixed(2)),
         sold_at_utc: new Date().toUTCString()
       })
     }
