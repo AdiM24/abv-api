@@ -70,8 +70,8 @@ class InvoiceService {
       return {
         invoice_id: createdInvoice.get().invoice_id,
         product_id: invoiceProduct.product_id,
-        quantity: parseFloat(invoiceProduct.quantity.toFixed(2)),
-        selling_price: parseFloat(invoiceProduct.selling_price.toFixed(2)),
+        quantity: parseFloat(Number(invoiceProduct.quantity).toFixed(2)),
+        selling_price: parseFloat(Number(invoiceProduct.selling_price).toFixed(2)),
         sold_at_utc: new Date().toUTCString()
       }
     });
@@ -159,8 +159,8 @@ class InvoiceService {
     invoiceProducts.forEach((invoiceProduct: InvoiceProduct) => {
       const product: ProductAttributes = invoiceProduct.product;
 
-      product.quantity = parseFloat(invoiceProduct.quantity.toFixed(2));
-      product.purchase_price = parseFloat(invoiceProduct.selling_price.toFixed(2));
+      product.quantity = parseFloat(Number(invoiceProduct.quantity).toFixed(2));
+      product.purchase_price = parseFloat(Number(invoiceProduct.selling_price).toFixed(2));
 
       productList.push(product)
     });

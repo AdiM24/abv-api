@@ -179,7 +179,7 @@ class ProductService {
         return false;
       }
 
-      existingProduct.quantity -= product.quantity;
+      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) - Number(product.quantity)).toFixed(2));
       await existingProduct.save();
       return {product_id: existingProduct.product_id};
     } catch (err) {
@@ -204,7 +204,7 @@ class ProductService {
       if (!existingProduct) {
         return false;
       }
-      existingProduct.quantity += product.quantity;
+      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) + Number(product.quantity)).toFixed(2));
       await existingProduct.save();
       return true;
     } catch (err) {
