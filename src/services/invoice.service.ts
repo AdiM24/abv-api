@@ -329,6 +329,61 @@ class InvoiceService {
       }
     }))
   }
+
+  async removeInvoice(invoiceId: number) {
+    const models = initModels(sequelize);
+
+    const existingInvoice = await models.Invoice.findOne({
+      where: {
+        invoice_id: invoiceId
+      },
+    });
+
+    const invoiceProducts = await models.InvoiceProduct.findAll({
+      where: {
+        invoice_id: invoiceId,
+      }
+    });
+
+    for await (const invoiceProduct of invoiceProducts) {
+      const product = await models.Product.findOne({
+        where: {
+          product_id: invoiceProduct.product_id,
+        }
+      });
+
+      if (product.type === 'goods') {
+
+        if (existingInvoice.type === 'received') {
+          product.quantity = Number(product.quantity) - Number(invoiceProduct.quantity);
+        }
+
+        if (existingInvoice.type === 'issued') {
+          product.quantity = Number(product.quantity) + Number(invoiceProduct.quantity);
+        }
+      }
+
+      try {
+        await product.save();
+        await models.InvoiceProduct.destroy({
+          where: {
+            invoice_id: invoiceProduct.invoice_id,
+            product_id: invoiceProduct.product_id
+          }
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    try {
+      await existingInvoice.destroy();
+      return {code: 200, message: `Invoice successfully deleted`}
+    } catch (err) {
+      console.error(err);
+    }
+
+  }
 }
 
 export default new InvoiceService();

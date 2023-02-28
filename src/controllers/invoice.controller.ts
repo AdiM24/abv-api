@@ -53,6 +53,12 @@ class InvoiceController {
 
     res.send(result).status(200);
   }
+
+  async removeInvoice(req: express.Request, res: express.Response) {
+    const result = await InvoiceService.removeInvoice(Number(req.params?.id));
+
+    res.send(result).status(202);
+  }
 }
 
 export default new InvoiceController();
