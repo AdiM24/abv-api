@@ -19,7 +19,7 @@ class InvoiceService {
     const models = initModels(sequelize);
 
     return await models.Invoice.findAll({
-      include: [{model: Partner, as: 'client'}]
+      include: [{model: Partner, as: 'buyer'}]
     });
   }
 
@@ -38,7 +38,7 @@ class InvoiceService {
           ...queryObject,
         },
       },
-      include: [{model: Partner, as: 'client'}]
+      include: [{model: Partner, as: 'buyer'}]
     });
   }
 
@@ -46,6 +46,7 @@ class InvoiceService {
     let createdInvoice: Invoice;
 
     invoiceToAdd.series = invoiceToAdd.series.toUpperCase();
+    invoiceToAdd.deadline_at_utc = invoiceToAdd.deadline_at_utc ? invoiceToAdd.deadline_at_utc : null;
 
     try {
       createdInvoice = await models.Invoice.create(invoiceToAdd);
@@ -69,8 +70,8 @@ class InvoiceService {
       return {
         invoice_id: createdInvoice.get().invoice_id,
         product_id: invoiceProduct.product_id,
-        quantity: invoiceProduct.quantity,
-        selling_price: invoiceProduct.selling_price,
+        quantity: parseFloat(invoiceProduct.quantity.toFixed(2)),
+        selling_price: parseFloat(invoiceProduct.selling_price.toFixed(2)),
         sold_at_utc: new Date().toUTCString()
       }
     });
@@ -92,7 +93,7 @@ class InvoiceService {
       createdInvoice.total_price += parseFloat((invoiceProduct.selling_price * invoiceProduct.quantity).toFixed(2));
     });
 
-    createdInvoice.total_price_incl_vat = createdInvoice.total_vat + createdInvoice.total_price;
+    createdInvoice.total_price_incl_vat = parseFloat((createdInvoice.total_vat + createdInvoice.total_price).toFixed(2));
 
     try {
       await createdInvoice.save();
@@ -158,8 +159,8 @@ class InvoiceService {
     invoiceProducts.forEach((invoiceProduct: InvoiceProduct) => {
       const product: ProductAttributes = invoiceProduct.product;
 
-      product.quantity = invoiceProduct.quantity;
-      product.purchase_price = invoiceProduct.selling_price;
+      product.quantity = parseFloat(invoiceProduct.quantity.toFixed(2));
+      product.purchase_price = parseFloat(invoiceProduct.selling_price.toFixed(2));
 
       productList.push(product)
     });
@@ -219,16 +220,16 @@ class InvoiceService {
     let invoiceProduct = existingInvoiceProduct;
 
     if (existingInvoiceProduct) {
-      invoiceProduct.quantity = Number(existingInvoiceProduct.quantity) + Number(productData.quantity);
+      invoiceProduct.quantity = parseFloat((Number(existingInvoiceProduct.quantity) + Number(productData.quantity)).toFixed(2));
       switch (existingInvoice.type) {
         case 'received': {
-          existingProduct.quantity = Number(existingProduct.quantity) + Number(productData.quantity);
+          existingProduct.quantity = parseFloat((Number(existingProduct.quantity) + Number(productData.quantity)).toFixed(2));
 
           break;
         }
 
         case 'issued': {
-          existingProduct.quantity = Number(existingProduct.quantity) - Number(productData.quantity);
+          existingProduct.quantity = parseFloat((Number(existingProduct.quantity) - Number(productData.quantity)).toFixed(2));
 
           break;
         }
@@ -242,8 +243,8 @@ class InvoiceService {
       invoiceProduct = await models.InvoiceProduct.create({
         product_id: existingProduct.product_id,
         invoice_id: existingInvoice.invoice_id,
-        quantity: productData.quantity,
-        selling_price: productData.purchase_price,
+        quantity: parseFloat(productData.quantity.toFixed(2)),
+        selling_price: parseFloat(productData.purchase_price.toFixed(2)),
         sold_at_utc: new Date().toUTCString()
       })
     }
@@ -304,11 +305,11 @@ class InvoiceService {
     }
 
     if (existingInvoice.type === 'issued') {
-      existingProduct.quantity = Number(existingProduct.quantity) + existingInvoiceProduct.quantity;
+      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) + existingInvoiceProduct.quantity).toFixed(2));
     }
 
     if (existingInvoice.type === 'received') {
-      existingProduct.quantity = Number(existingProduct.quantity) - existingInvoiceProduct.quantity;
+      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) - existingInvoiceProduct.quantity).toFixed(2));
     }
 
     try {
@@ -355,11 +356,11 @@ class InvoiceService {
       if (product.type === 'goods') {
 
         if (existingInvoice.type === 'received') {
-          product.quantity = Number(product.quantity) - Number(invoiceProduct.quantity);
+          product.quantity = parseFloat((Number(product.quantity) - Number(invoiceProduct.quantity)).toFixed(2));
         }
 
         if (existingInvoice.type === 'issued') {
-          product.quantity = Number(product.quantity) + Number(invoiceProduct.quantity);
+          product.quantity = parseFloat((Number(product.quantity) + Number(invoiceProduct.quantity)).toFixed(2));
         }
       }
 

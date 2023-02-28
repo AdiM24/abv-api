@@ -58,7 +58,7 @@ export class Product extends Model<ProductAttributes, ProductCreationAttributes>
       allowNull: false
     },
     quantity: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL,
       allowNull: false,
       defaultValue: 0
     },

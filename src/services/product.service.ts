@@ -9,9 +9,7 @@ class ProductService {
   async addProduct(productToAdd: CreateProductDto) {
     const models = initModels(sequelize);
 
-    if (productToAdd.type === 'service') {
-      productToAdd.quantity = 1;
-    }
+    productToAdd.quantity = parseFloat(Number(productToAdd.quantity).toFixed(2));
 
     try {
       const [product, created] = await models.Product.findOrCreate({
@@ -23,7 +21,7 @@ class ProductService {
 
 
       if (!created) {
-        product.quantity += Number(productToAdd.quantity);
+        product.quantity = parseFloat((Number(product.quantity) + Number(productToAdd.quantity)).toFixed(2));
 
         await product.save();
 
@@ -132,10 +130,6 @@ class ProductService {
 
   async updateProduct(product: UpdateProductDto) {
     const models = initModels(sequelize);
-
-    if (product.type === 'service') {
-      product.quantity = 1;
-    }
 
     product.modified_at_utc = new Date(product.modified_at_utc).toUTCString();
 

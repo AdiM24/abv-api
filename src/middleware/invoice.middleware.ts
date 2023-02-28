@@ -33,11 +33,9 @@ class InvoiceMiddleware {
     res: express.Response,
     next: express.NextFunction
   ) => {
-    if (!req.body?.created_at_utc || !req.body.deadline_at_utc) {
-      return res.status(400).send({
-        errorCode: 400,
-        message: "Creation date and deadline date are required!"
-      })
+
+    if (!req.body.deadline_at_utc) {
+      return next();
     }
 
     const createdAt = new Date(req.body.created_at_utc).getTime();
