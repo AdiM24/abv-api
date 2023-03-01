@@ -18,10 +18,18 @@ class InvoiceMiddleware {
       });
     }
 
-    if (new Date(req.body?.created_at_utc).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+    const invoiceSeries = req.body?.series;
+
+    const latestInvoice = await InvoiceService.getLatestInvoiceBySeries(invoiceSeries);
+
+    if (!latestInvoice) {
+      return next();
+    }
+
+    if (new Date(latestInvoice.created_at_utc).setHours(0, 0, 0, 0) > new Date(req.body.created_at_utc).setHours(0, 0, 0, 0)) {
       return res.status(400).send({
         errorCode: 400,
-        message: "Creation date cannot be in the past"
+        message: `There is already a newer invoice in the system. Please pick a later date than ${new Date(latestInvoice.created_at_utc).toUTCString()}`
       });
     }
 

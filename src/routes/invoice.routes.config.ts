@@ -17,8 +17,12 @@ export class InvoiceRoutes extends CommonRoutesConfig {
         InvoiceMiddleware.validateIssuedInvoiceCreationDate,
         InvoiceMiddleware.validateDeadlineLaterThanCreationDate,
         InvoiceMiddleware.validateInvoiceDoesNotExist,
-        InvoiceController.addInvoice)
-      .put(InvoiceController.updateInvoiceData)
+        InvoiceController.addInvoice
+      )
+      .put(
+        InvoiceMiddleware.validateIssuedInvoiceCreationDate,
+        InvoiceController.updateInvoiceData
+      )
 
     this.app
       .route("/invoices/:id")

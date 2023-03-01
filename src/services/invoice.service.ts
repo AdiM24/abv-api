@@ -19,7 +19,7 @@ class InvoiceService {
     const models = initModels(sequelize);
 
     return await models.Invoice.findAll({
-      include: [{model: Partner, as: 'buyer'}]
+      include: [{model: Partner, as: 'client'}]
     });
   }
 
@@ -38,7 +38,7 @@ class InvoiceService {
           ...queryObject,
         },
       },
-      include: [{model: Partner, as: 'buyer'}]
+      include: [{model: Partner, as: 'client'}]
     });
   }
 
@@ -179,7 +179,7 @@ class InvoiceService {
 
     existingInvoice.client_id = invoiceUpdate.client;
     existingInvoice.created_at_utc = new Date(invoiceUpdate.created_at).toUTCString();
-    existingInvoice.deadline_at_utc = new Date(invoiceUpdate.deadline_at).toUTCString();
+    existingInvoice.deadline_at_utc = invoiceUpdate.deadline_at ? new Date(invoiceUpdate.deadline_at).toUTCString() : null;
     existingInvoice.series = invoiceUpdate.series;
     existingInvoice.number = invoiceUpdate.number;
     existingInvoice.status = invoiceUpdate.status;
@@ -384,6 +384,25 @@ class InvoiceService {
       console.error(err);
     }
 
+  }
+
+  async getLatestInvoiceBySeries(invoiceSeries: string) {
+    const models = initModels(sequelize);
+
+    const latestInvoicesFromSeries = await models.Invoice.findAll({
+      where: {
+        series: invoiceSeries
+      },
+      order: [
+        ['created_at_utc', 'DESC']
+      ]
+    });
+
+    if (!latestInvoicesFromSeries?.length) {
+      return null
+    }
+
+    return latestInvoicesFromSeries[0];
   }
 }
 
