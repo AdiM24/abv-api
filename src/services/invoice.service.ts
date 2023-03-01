@@ -131,6 +131,7 @@ class InvoiceService {
   async getInvoiceWithDetails(invoiceId: number) {
     const models = initModels(sequelize);
 
+
     const invoice: Invoice = await models.Invoice.findOne(
       {
         where: {
@@ -177,7 +178,7 @@ class InvoiceService {
       }
     });
 
-    existingInvoice.client_id = invoiceUpdate.client;
+    existingInvoice.buyer_id = invoiceUpdate.buyer;
     existingInvoice.created_at_utc = new Date(invoiceUpdate.created_at).toUTCString();
     existingInvoice.deadline_at_utc = invoiceUpdate.deadline_at ? new Date(invoiceUpdate.deadline_at).toUTCString() : null;
     existingInvoice.series = invoiceUpdate.series;
