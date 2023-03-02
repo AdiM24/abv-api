@@ -19,7 +19,7 @@ class InvoiceService {
     const models = initModels(sequelize);
 
     return await models.Invoice.findAll({
-      include: [{model: Partner, as: 'client'}]
+      include: [{model: Partner, as: 'buyer'}]
     });
   }
 
@@ -38,7 +38,7 @@ class InvoiceService {
           ...queryObject,
         },
       },
-      include: [{model: Partner, as: 'client'}]
+      include: [{model: Partner, as: 'buyer'}]
     });
   }
 
