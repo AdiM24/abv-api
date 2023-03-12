@@ -11,7 +11,11 @@ class PartnerController {
   }
 
   async getAutocompleteOptions(req: express.Request, res: express.Response) {
-    res.status(200).send(await PartnerService.getPartnerAutocompleteOptions(req.query?.searchKey.toString()))
+    res.status(200).send(await PartnerService.getPartnerAutocompleteOptions(req.query?.searchKey.toString()));
+  }
+
+  async getAddressAutocompleteOptions(req: express.Request, res: express.Response) {
+    res.status(200).send(await PartnerService.getPartnerAddressOptions(req.query?.searchKey.toString()));
   }
 
   async getPartners(req: express.Request, res: express.Response) {

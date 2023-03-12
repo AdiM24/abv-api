@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { Address, AddressId } from './Address';
 import type { InvoiceProduct, InvoiceProductId } from './InvoiceProduct';
 import type { Partner, PartnerId } from './Partner';
 
@@ -10,18 +11,22 @@ export interface InvoiceAttributes {
   deadline_at_utc?: string;
   created_at_utc?: string;
   status: "paid" | "overdue" | "incomplete payment" | "unpaid";
-  type: "proforma" | "issued" | "received";
+  type: "proforma" | "issued" | "received" | "notice";
   number: number;
   series: string;
   sent_status?: "sent" | "not sent";
   total_price?: number;
   total_vat?: number;
   total_price_incl_vat?: number;
+  pickup_address_id?: number;
+  drop_off_address_id?: number;
+  driver_name?: string;
+  car_reg_number?: string;
 }
 
 export type InvoicePk = "invoice_id";
 export type InvoiceId = Invoice[InvoicePk];
-export type InvoiceOptionalAttributes = "invoice_id" | "deadline_at_utc" | "created_at_utc" | "sent_status" | "total_price" | "total_vat" | "total_price_incl_vat";
+export type InvoiceOptionalAttributes = "invoice_id" | "deadline_at_utc" | "created_at_utc" | "sent_status" | "total_price" | "total_vat" | "total_price_incl_vat" | "pickup_address_id" | "drop_off_address_id";
 export type InvoiceCreationAttributes = Optional<InvoiceAttributes, InvoiceOptionalAttributes>;
 
 export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes> implements InvoiceAttributes {
@@ -31,14 +36,28 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   deadline_at_utc?: string;
   created_at_utc?: string;
   status!: "paid" | "overdue" | "incomplete payment" | "unpaid";
-  type!: "proforma" | "issued" | "received";
+  type!: "proforma" | "issued" | "received" | "notice";
   number!: number;
   series!: string;
   sent_status?: "sent" | "not sent";
   total_price?: number;
   total_vat?: number;
   total_price_incl_vat?: number;
+  pickup_address_id?: number;
+  drop_off_address_id?: number;
+  driver_name?: string;
+  car_reg_number?: string;
 
+  // Invoice belongsTo Address via drop_off_address_id
+  drop_off_address!: Address;
+  getDrop_off_address!: Sequelize.BelongsToGetAssociationMixin<Address>;
+  setDrop_off_address!: Sequelize.BelongsToSetAssociationMixin<Address, AddressId>;
+  createDrop_off_address!: Sequelize.BelongsToCreateAssociationMixin<Address>;
+  // Invoice belongsTo Address via pickup_address_id
+  pickup_address!: Address;
+  getPickup_address!: Sequelize.BelongsToGetAssociationMixin<Address>;
+  setPickup_address!: Sequelize.BelongsToSetAssociationMixin<Address, AddressId>;
+  createPickup_address!: Sequelize.BelongsToCreateAssociationMixin<Address>;
   // Invoice hasMany InvoiceProduct via invoice_id
   InvoiceProducts!: InvoiceProduct[];
   getInvoiceProducts!: Sequelize.HasManyGetAssociationsMixin<InvoiceProduct>;
@@ -89,19 +108,19 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
     deadline_at_utc: {
       type: DataTypes.DATE,
       allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
     },
     created_at_utc: {
       type: DataTypes.DATEONLY,
       allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
     },
     status: {
       type: DataTypes.ENUM("paid","overdue","incomplete payment","unpaid"),
       allowNull: false
     },
     type: {
-      type: DataTypes.ENUM("proforma","issued","received"),
+      type: DataTypes.ENUM("proforma","issued","received","notice"),
       allowNull: false
     },
     number: {
@@ -130,7 +149,31 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
       type: DataTypes.DECIMAL,
       allowNull: true,
       defaultValue: 0
-    }
+    },
+    pickup_address_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Address',
+        key: 'address_id'
+      }
+    },
+    drop_off_address_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Address',
+        key: 'address_id'
+      }
+    },
+      driver_name: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      car_reg_number: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
   }, {
     sequelize,
     tableName: 'Invoice',

@@ -1,5 +1,5 @@
 import {sequelize} from "../db/sequelize";
-import {Address, BankAccount, Contact, initModels, Partner,} from "../db/models/init-models";
+import {Address, AddressAttributes, BankAccount, Contact, initModels, Partner,} from "../db/models/init-models";
 import {CreateAddressDto, CreateBankAccountDto, CreateContactDto, CreatePartnerDto,} from "../dtos/create.partner.dto";
 import {addOrUpdate} from "./utils.service";
 import {Op} from "sequelize";
@@ -152,6 +152,29 @@ class PartnerService {
     }
 
     return partner;
+  }
+
+  async getPartnerAddressOptions(searchKey: string) {
+    const models = initModels(sequelize);
+
+    let partnerAddresses: Address[];
+
+    try {
+      partnerAddresses = await models.Address.findAll({
+        where: {
+          nickname: getLikeQuery(searchKey)
+        }
+      })
+    } catch (err) {
+      console.error(err);
+    }
+
+    return partnerAddresses.map((partnerAddress: AddressAttributes) => ({
+      nickname: partnerAddress.nickname,
+      address: partnerAddress.address,
+      address_id: partnerAddress.address_id,
+      partner_id: partnerAddress.partner_id
+    }))
   }
 
   async getFilteredPartners(queryParams: any) {

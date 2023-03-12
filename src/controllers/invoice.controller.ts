@@ -1,5 +1,6 @@
 import express from "express";
 import InvoiceService from "../services/invoice.service";
+import {CustomRequest} from "../middleware/auth.middleware";
 
 class InvoiceController {
   async getInvoices(req: express.Request, res: express.Response) {
@@ -24,14 +25,14 @@ class InvoiceController {
     res.status(200).send(pdfInformation);
   }
 
-  async addInvoice(req: express.Request, res: express.Response) {
-    const addedInvoice = await InvoiceService.addInvoice(req.body);
+  async addInvoice(req: CustomRequest, res: express.Response) {
+    const addedInvoice = await InvoiceService.addInvoice(req.body, req.token);
 
     res.status(201).send({created: addedInvoice, msg: "Invoice created"});
   }
 
   async findNextNumberForSeries(req: express.Request, res: express.Response) {
-    const nextNumberForSeries = await InvoiceService.findIssuedInvoiceNextSeriesNumber(req.body?.series);
+    const nextNumberForSeries = await InvoiceService.findNextSeriesNumber(req.body?.series, 'issued');
 
     res.status(200).send({number: nextNumberForSeries});
   }

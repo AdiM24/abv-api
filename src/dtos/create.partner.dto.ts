@@ -35,6 +35,7 @@ export interface CreateAddressDto {
   address: string;
   modified_at_utc: Date;
   partner_id?: number;
+  nickname?: string;
 }
 
 export interface CreateBankAccountDto {

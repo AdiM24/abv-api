@@ -2,7 +2,7 @@ import express from "express";
 import { JwtPayload } from "jsonwebtoken";
 import * as jwt from "jsonwebtoken";
 
-interface CustomRequest extends express.Request {
+export interface CustomRequest extends express.Request {
   token: string | JwtPayload;
 }
 

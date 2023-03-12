@@ -23,7 +23,7 @@ export class InvoiceProduct extends Model<InvoiceProductAttributes, InvoiceProdu
   product_id!: number;
   quantity!: number;
   selling_price!: number;
-  sold_at_utc?: string;
+  sold_at_utc!: string;
 
   // InvoiceProduct belongsTo Invoice via invoice_id
   invoice!: Invoice;
@@ -71,8 +71,8 @@ export class InvoiceProduct extends Model<InvoiceProductAttributes, InvoiceProdu
     },
     sold_at_utc: {
       type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     }
   }, {
     sequelize,

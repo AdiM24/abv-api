@@ -64,6 +64,10 @@ class InvoiceMiddleware {
     res: express.Response,
     next: express.NextFunction
   ) => {
+    if (req.body?.type === 'notice') {
+      return next();
+    }
+
     const invoice = req.body;
 
     const invoiceDate = new Date(invoice.created_at_utc).setHours(0, 0, 0, 0)

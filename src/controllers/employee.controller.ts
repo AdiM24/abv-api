@@ -22,6 +22,10 @@ class EmployeeController {
 
     res.send(employee).status(200);
   }
+
+  async getEmployeeAutocompleteOptions(req: express.Request, res: express.Response) {
+    res.status(200).send(await EmployeeService.getEmployeeAutocompleteOptions(req.query?.searchKey.toString()))
+  }
 }
 
 export default new EmployeeController();

@@ -15,6 +15,10 @@ export class PartnerRoutes extends CommonRoutesConfig {
       .get(PartnerController.getPartners);
 
     this.app
+      .route("/partners/address/autocomplete")
+      .get(PartnerController.getAddressAutocompleteOptions)
+
+    this.app
       .route("/partners/autocomplete")
       .get(PartnerController.getAutocompleteOptions)
 

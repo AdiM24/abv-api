@@ -1,6 +1,7 @@
-import {EmployeeAttributes, initModels, Partner} from "../db/models/init-models";
+import {Employee, EmployeeAttributes, initModels, Partner} from "../db/models/init-models";
 import {sequelize} from "../db/sequelize";
-import {WhereOptions} from "sequelize";
+import {Op, WhereOptions} from "sequelize";
+import {getLikeQuery} from "../common/utils/query-utils.service";
 
 class EmployeeService {
   async addEmployee(employeeToAdd: EmployeeAddDto) {
@@ -13,6 +14,33 @@ class EmployeeService {
     const models = initModels(sequelize);
 
     return await models.Employee.findAll();
+  }
+
+  async getEmployeeAutocompleteOptions(searchKey: string) {
+    const models = initModels(sequelize);
+
+    let employees: Employee[];
+
+    try {
+      employees = await models.Employee.findAll({
+        where: {
+          [Op.or]: {
+            first_name: getLikeQuery(searchKey),
+            last_name: getLikeQuery(searchKey)
+          }
+        }
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
+    return employees.map((employee: Employee) => (
+      {
+        employee_id: employee.employee_id,
+        first_name: employee.first_name,
+        last_name: employee.last_name,
+      }
+    ))
   }
 
   async getEmployee(employeeId: number) {

@@ -3,6 +3,7 @@ import express from "express";
 import InvoiceController from "../controllers/invoice.controller";
 import InvoiceMiddleware from "../middleware/invoice.middleware";
 import ProductMiddleware from "../middleware/product.middleware";
+import AuthMiddleware from "../middleware/auth.middleware";
 
 export class InvoiceRoutes extends CommonRoutesConfig {
   constructor(app: express.Application) {
@@ -14,6 +15,7 @@ export class InvoiceRoutes extends CommonRoutesConfig {
       .route("/invoices")
       .get(InvoiceController.getInvoices)
       .post(
+        AuthMiddleware.auth,
         InvoiceMiddleware.validateIssuedInvoiceCreationDate,
         InvoiceMiddleware.validateDeadlineLaterThanCreationDate,
         InvoiceMiddleware.validateInvoiceDoesNotExist,

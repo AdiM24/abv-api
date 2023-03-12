@@ -57,11 +57,25 @@ class InvoiceService {
     return createdInvoice
   }
 
-  async addInvoice(invoiceToAdd: CreateInvoiceDto) {
+  async addInvoice(invoiceToAdd: CreateInvoiceDto, decodedJwt: any = undefined) {
     const models = initModels(sequelize);
 
+    console.log(decodedJwt);
+
     if (invoiceToAdd.type === 'issued') {
-      invoiceToAdd.number = await this.findIssuedInvoiceNextSeriesNumber(invoiceToAdd.series);
+      invoiceToAdd.number = await this.findNextSeriesNumber(invoiceToAdd.series, invoiceToAdd.type);
+    }
+
+    if (invoiceToAdd.type === 'notice') {
+      invoiceToAdd.series = 'XM';
+      invoiceToAdd.number = await this.findNextSeriesNumber(invoiceToAdd.series, invoiceToAdd.type);
+      invoiceToAdd.client_id = invoiceToAdd.pickup_address.partner_id;
+      invoiceToAdd.buyer_id = invoiceToAdd.drop_off_address.partner_id;
+      invoiceToAdd.pickup_address_id = invoiceToAdd.pickup_address.address_id;
+      invoiceToAdd.drop_off_address_id = invoiceToAdd.drop_off_address.address_id;
+      invoiceToAdd.car_reg_number = invoiceToAdd.car_reg_number.replace(/ /g,'').toUpperCase();
+      invoiceToAdd.driver_name = decodedJwt.name;
+      invoiceToAdd.created_at_utc = new Date().toUTCString();
     }
 
     const createdInvoice = await this.createInvoice(invoiceToAdd, models);
@@ -111,12 +125,13 @@ class InvoiceService {
     });
   }
 
-  async findIssuedInvoiceNextSeriesNumber(series: string) {
+  async findNextSeriesNumber(series: string, type: string) {
     const models = initModels(sequelize);
 
     const latestInvoiceNumberForSeries = (await models.Invoice.findOne({
       where: {
-        series: series.toUpperCase()
+        series: series.toUpperCase(),
+        type: type
       },
       order: [["number", "DESC"]]
     }))?.get('number');

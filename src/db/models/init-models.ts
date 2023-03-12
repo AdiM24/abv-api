@@ -62,6 +62,10 @@ export function initModels(sequelize: Sequelize) {
   const Product = _Product.initModel(sequelize);
   const User = _User.initModel(sequelize);
 
+  Invoice.belongsTo(Address, { as: "drop_off_address", foreignKey: "drop_off_address_id"});
+  Address.hasMany(Invoice, { as: "Invoices", foreignKey: "drop_off_address_id"});
+  Invoice.belongsTo(Address, { as: "pickup_address", foreignKey: "pickup_address_id"});
+  Address.hasMany(Invoice, { as: "pickup_address_Invoices", foreignKey: "pickup_address_id"});
   InvoiceProduct.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
   Invoice.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "invoice_id"});
   Address.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});

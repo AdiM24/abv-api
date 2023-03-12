@@ -26,9 +26,14 @@ export class EmployeeRoutes extends CommonRoutesConfig {
         EmployeeController.updateEmployee
       )
 
+    this.app.route('/employees/autocomplete')
+      .get(EmployeeController.getEmployeeAutocompleteOptions)
+
     this.app
       .route('/employees/:id')
-      .get(EmployeeController.getEmployee)
+      .get(EmployeeController.getEmployee);
+
+
 
     return this.app;
   }

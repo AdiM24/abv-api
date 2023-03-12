@@ -3,6 +3,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import type { Address, AddressId } from './Address';
 import type { BankAccount, BankAccountId } from './BankAccount';
 import type { Contact, ContactId } from './Contact';
+import type { Employee, EmployeeId } from './Employee';
 import type { Invoice, InvoiceId } from './Invoice';
 
 export interface PartnerAttributes {
@@ -79,6 +80,18 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   hasContact!: Sequelize.HasManyHasAssociationMixin<Contact, ContactId>;
   hasContacts!: Sequelize.HasManyHasAssociationsMixin<Contact, ContactId>;
   countContacts!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany Employee via partner_id
+  Employees!: Employee[];
+  getEmployees!: Sequelize.HasManyGetAssociationsMixin<Employee>;
+  setEmployees!: Sequelize.HasManySetAssociationsMixin<Employee, EmployeeId>;
+  addEmployee!: Sequelize.HasManyAddAssociationMixin<Employee, EmployeeId>;
+  addEmployees!: Sequelize.HasManyAddAssociationsMixin<Employee, EmployeeId>;
+  createEmployee!: Sequelize.HasManyCreateAssociationMixin<Employee>;
+  removeEmployee!: Sequelize.HasManyRemoveAssociationMixin<Employee, EmployeeId>;
+  removeEmployees!: Sequelize.HasManyRemoveAssociationsMixin<Employee, EmployeeId>;
+  hasEmployee!: Sequelize.HasManyHasAssociationMixin<Employee, EmployeeId>;
+  hasEmployees!: Sequelize.HasManyHasAssociationsMixin<Employee, EmployeeId>;
+  countEmployees!: Sequelize.HasManyCountAssociationsMixin;
   // Partner hasMany Invoice via buyer_id
   Invoices!: Invoice[];
   getInvoices!: Sequelize.HasManyGetAssociationsMixin<Invoice>;
