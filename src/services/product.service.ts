@@ -159,7 +159,7 @@ class ProductService {
       return true;
     }
 
-    return existingProduct.quantity >= product.quantity;
+    return Number(existingProduct.quantity) >= Number(product.quantity);
   }
 
   async reserveProductQuantity(product: { product_name: string, quantity: number }) {
@@ -177,7 +177,7 @@ class ProductService {
         return true;
       }
 
-      if (existingProduct.quantity < product.quantity) {
+      if (Number(existingProduct.quantity) <= Number(product.quantity)) {
         return false;
       }
 

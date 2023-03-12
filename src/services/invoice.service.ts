@@ -320,12 +320,12 @@ class InvoiceService {
       return {message: "Invoice successfully updated"};
     }
 
-    if (existingInvoice.type === 'issued') {
-      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) + existingInvoiceProduct.quantity).toFixed(2));
+    if (existingInvoice.type === 'issued' || existingInvoice.type === 'notice') {
+      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) + Number(existingInvoiceProduct.quantity)).toFixed(2));
     }
 
     if (existingInvoice.type === 'received') {
-      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) - existingInvoiceProduct.quantity).toFixed(2));
+      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) - Number(existingInvoiceProduct.quantity)).toFixed(2));
     }
 
     try {
@@ -375,7 +375,7 @@ class InvoiceService {
           product.quantity = parseFloat((Number(product.quantity) - Number(invoiceProduct.quantity)).toFixed(2));
         }
 
-        if (existingInvoice.type === 'issued') {
+        if (existingInvoice.type === 'issued' || existingInvoice.type === 'notice') {
           product.quantity = parseFloat((Number(product.quantity) + Number(invoiceProduct.quantity)).toFixed(2));
         }
       }
