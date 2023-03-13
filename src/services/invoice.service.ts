@@ -7,12 +7,13 @@ import {
   InvoiceProduct,
   Partner,
   Product,
-  ProductAttributes
+  ProductAttributes, UserInvoiceSeries
 } from "../db/models/init-models";
 import {CreateInvoiceDto} from "../dtos/create.invoice.dto";
 import {CreateInvoiceProductDto, InvoiceProductInformation} from "../dtos/create.invoice-product.dto";
 import {Op, WhereOptions} from "sequelize";
 import {getStrictQuery} from "../common/utils/query-utils.service";
+import UserService from "./user.service";
 
 class InvoiceService {
   async getInvoices() {
@@ -67,7 +68,7 @@ class InvoiceService {
     }
 
     if (invoiceToAdd.type === 'notice') {
-      invoiceToAdd.series = 'XM';
+      invoiceToAdd.series = (await UserService.getUserSeries(decodedJwt._id, 'notice', true) as UserInvoiceSeries).series;
       invoiceToAdd.number = await this.findNextSeriesNumber(invoiceToAdd.series, invoiceToAdd.type);
       invoiceToAdd.client_id = invoiceToAdd.pickup_address.partner_id;
       invoiceToAdd.buyer_id = invoiceToAdd.drop_off_address.partner_id;

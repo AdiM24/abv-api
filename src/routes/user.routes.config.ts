@@ -21,6 +21,15 @@ export class UserRoutes extends CommonRoutesConfig {
 
     this.app.route("/users/bulk").post(UsersController.createUsers);
 
+    this.app
+      .route("/users/series")
+      .get(AuthMiddleware.auth, UsersController.getUserSeries)
+      .post(AuthMiddleware.auth, UsersController.createUserSeries)
+
+    this.app
+      .route("/users/series/change")
+      .post(AuthMiddleware.auth, UsersController.changeDefaultSeries)
+
     return this.app;
   }
 }
