@@ -32,6 +32,10 @@ export class InvoiceRoutes extends CommonRoutesConfig {
       .delete(InvoiceController.removeInvoice)
 
     this.app
+      .route("/invoices/:id/product/update")
+      .post(InvoiceMiddleware.validateExistingInvoiceProduct, InvoiceController.updateInvoiceProduct)
+
+    this.app
       .route("/invoices/:id/product/remove")
       .post(InvoiceMiddleware.validateExistingInvoiceProduct, InvoiceController.removeInvoiceProduct)
 

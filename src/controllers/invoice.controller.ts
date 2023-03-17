@@ -49,6 +49,12 @@ class InvoiceController {
     res.send(result).status(200);
   }
 
+  async updateInvoiceProduct(req: express.Request, res: express.Response) {
+    const result = await InvoiceService.updateInvoiceProduct(req.body);
+
+    res.send(result).status(200);
+  }
+
   async removeInvoiceProduct(req: express.Request, res: express.Response) {
     const result = await InvoiceService.removeInvoiceProduct(req.body);
 

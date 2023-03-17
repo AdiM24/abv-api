@@ -159,6 +159,10 @@ class ProductService {
       return true;
     }
 
+    if (!existingProduct) {
+      return false;
+    }
+
     return Number(existingProduct.quantity) >= Number(product.quantity);
   }
 

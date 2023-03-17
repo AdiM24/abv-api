@@ -18,11 +18,14 @@ export interface EmployeeAttributes {
   ssn_provider: string;
   ssn_start_date: string;
   ssn_end_date: string;
+  employment_type?: "full time" | "part time";
+  working_hours?: number;
+  profession?: string;
 }
 
 export type EmployeePk = "employee_id";
 export type EmployeeId = Employee[EmployeePk];
-export type EmployeeOptionalAttributes = "employee_id" | "partner_id" | "last_name" | "nationality" | "phone" | "email";
+export type EmployeeOptionalAttributes = "employee_id" | "partner_id" | "last_name" | "nationality" | "phone" | "email" | "employment_type" | "working_hours" | "profession";
 export type EmployeeCreationAttributes = Optional<EmployeeAttributes, EmployeeOptionalAttributes>;
 
 export class Employee extends Model<EmployeeAttributes, EmployeeCreationAttributes> implements EmployeeAttributes {
@@ -41,6 +44,9 @@ export class Employee extends Model<EmployeeAttributes, EmployeeCreationAttribut
   ssn_provider!: string;
   ssn_start_date!: string;
   ssn_end_date!: string;
+  employment_type?: "full time" | "part time";
+  working_hours?: number;
+  profession?: string;
 
   // Employee belongsTo Partner via partner_id
   partner!: Partner;
@@ -115,6 +121,18 @@ export class Employee extends Model<EmployeeAttributes, EmployeeCreationAttribut
     ssn_end_date: {
       type: DataTypes.DATEONLY,
       allowNull: false
+    },
+    employment_type: {
+      type: DataTypes.ENUM("full time","part time"),
+      allowNull: true
+    },
+    working_hours: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    profession: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     sequelize,

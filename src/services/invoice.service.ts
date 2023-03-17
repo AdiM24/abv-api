@@ -7,10 +7,14 @@ import {
   InvoiceProduct,
   Partner,
   Product,
-  ProductAttributes, UserInvoiceSeries
+  UserInvoiceSeries
 } from "../db/models/init-models";
 import {CreateInvoiceDto} from "../dtos/create.invoice.dto";
-import {CreateInvoiceProductDto, InvoiceProductInformation} from "../dtos/create.invoice-product.dto";
+import {
+  CreateInvoiceProductDto,
+  InvoiceProductInformation,
+  UpdateInvoiceProduct
+} from "../dtos/create.invoice-product.dto";
 import {Op, WhereOptions} from "sequelize";
 import {getStrictQuery} from "../common/utils/query-utils.service";
 import UserService from "./user.service";
@@ -74,7 +78,7 @@ class InvoiceService {
       invoiceToAdd.buyer_id = invoiceToAdd.drop_off_address.partner_id;
       invoiceToAdd.pickup_address_id = invoiceToAdd.pickup_address.address_id;
       invoiceToAdd.drop_off_address_id = invoiceToAdd.drop_off_address.address_id;
-      invoiceToAdd.car_reg_number = invoiceToAdd.car_reg_number.replace(/ /g,'').toUpperCase();
+      invoiceToAdd.car_reg_number = invoiceToAdd.car_reg_number.replace(/ /g, '').toUpperCase();
       invoiceToAdd.driver_name = decodedJwt.name;
       invoiceToAdd.created_at_utc = new Date().toUTCString();
     }
@@ -171,14 +175,16 @@ class InvoiceService {
       }
     );
 
-    const productList: ProductAttributes[] = [];
+    const productList: any[] = [];
 
     invoiceProducts.forEach((invoiceProduct: InvoiceProduct) => {
-      const product: ProductAttributes = invoiceProduct.product;
+      const product: any = invoiceProduct.product;
 
-      product.quantity = parseFloat(Number(invoiceProduct.quantity).toFixed(2));
-      product.purchase_price = parseFloat(Number(invoiceProduct.selling_price).toFixed(2));
+      product.dataValues.invoice_product_id = invoiceProduct.invoice_product_id;
+      product.dataValues.quantity = parseFloat(Number(invoiceProduct.quantity).toFixed(2));
+      product.dataValues.purchase_price = parseFloat(Number(invoiceProduct.selling_price).toFixed(2));
 
+      console.log(product);
       productList.push(product)
     });
 
@@ -334,6 +340,59 @@ class InvoiceService {
       return {message: "Invoice and product successfully updated"}
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  async updateInvoiceProduct(invoiceProduct: UpdateInvoiceProduct) {
+    const models = initModels(sequelize);
+
+    const existingInvoice = await models.Invoice.findOne({
+      where: {
+        invoice_id: invoiceProduct.invoice_id
+      }
+    });
+
+    const existingInvoiceProduct = await models.InvoiceProduct.findOne({
+      where: {
+        invoice_product_id: invoiceProduct.invoice_product_id
+      }
+    });
+
+    const existingProduct = await models.Product.findOne({
+      where: {
+        product_id: invoiceProduct.product_id
+      }
+    })
+
+    const oldVat = parseFloat(((Number(existingInvoiceProduct.selling_price) * 19 / 100) * Number(existingInvoiceProduct.quantity)).toFixed(2));
+    const oldPrice = parseFloat((Number(existingInvoiceProduct.selling_price) * Number(existingInvoiceProduct.quantity)).toFixed(2));
+
+    const newVat = parseFloat(((Number(invoiceProduct.purchase_price) * 19 / 100) * Number(invoiceProduct.quantity)).toFixed(2));
+    const newPrice = parseFloat((Number(invoiceProduct.purchase_price) * Number(invoiceProduct.quantity)).toFixed(2));
+
+    if (existingInvoice.type === 'received') {
+      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) - Number(existingInvoiceProduct.quantity)).toFixed(2));
+      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) + Number(invoiceProduct.quantity)).toFixed(2));
+    } else {
+      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) + Number(existingInvoiceProduct.quantity)).toFixed(2));
+      existingProduct.quantity = parseFloat((Number(existingProduct.quantity) - Number(invoiceProduct.quantity)).toFixed(2));
+    }
+
+    existingInvoice.total_vat = Number(existingInvoice.total_vat) - oldVat + newVat;
+    existingInvoice.total_price = Number(existingInvoice.total_price) - oldPrice + newPrice;
+    existingInvoice.total_price_incl_vat = existingInvoice.total_price + existingInvoice.total_vat
+
+    existingInvoiceProduct.quantity = parseFloat(Number(invoiceProduct.quantity).toFixed(2));
+    existingInvoiceProduct.selling_price = parseFloat(Number(invoiceProduct.purchase_price).toFixed(2));
+
+    try {
+      await existingProduct.save();
+      await existingInvoiceProduct.save();
+      await existingInvoice.save();
+
+      return {code: 200, message: 'Update was successful'};
+    } catch (err) {
+      console.error(err);
     }
   }
 
