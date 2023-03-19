@@ -7,7 +7,7 @@ class AuthController {
     const token = await AuthService.login(req.body);
 
     if (typeof token === "string") {
-      res.status(400).send({ errorCode: 400, message: token } as ResponseError);
+      return res.status(400).send({ errorCode: 400, message: token } as ResponseError);
     }
 
     res.status(200).send(token);
