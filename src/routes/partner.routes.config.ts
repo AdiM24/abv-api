@@ -2,6 +2,7 @@ import {CommonRoutesConfig} from "../common/common.routes.config";
 import express from "express";
 import PartnerController from "../controllers/partner.controller";
 import PartnerMiddleware from "../middleware/partner.middleware";
+import AuthMiddleware from "../middleware/auth.middleware";
 
 export class PartnerRoutes extends CommonRoutesConfig {
   constructor(app: express.Application) {
@@ -11,12 +12,12 @@ export class PartnerRoutes extends CommonRoutesConfig {
   configureRoutes(): express.Application {
     this.app
       .route("/partners")
-      .post(PartnerMiddleware.validatePartnerAlreadyExists, PartnerController.addPartner)
+      .post(AuthMiddleware.auth, PartnerMiddleware.validatePartnerAlreadyExists, PartnerController.addPartner)
       .get(PartnerController.getPartners);
 
     this.app
       .route("/partners/address/autocomplete")
-      .get(PartnerController.getAddressAutocompleteOptions)
+      .get(AuthMiddleware.auth, PartnerController.getAddressAutocompleteOptions)
 
     this.app
       .route("/partners/autocomplete")

@@ -378,9 +378,9 @@ class InvoiceService {
       existingProduct.quantity = parseFloat((Number(existingProduct.quantity) - Number(invoiceProduct.quantity)).toFixed(2));
     }
 
-    existingInvoice.total_vat = Number(existingInvoice.total_vat) - oldVat + newVat;
-    existingInvoice.total_price = Number(existingInvoice.total_price) - oldPrice + newPrice;
-    existingInvoice.total_price_incl_vat = existingInvoice.total_price + existingInvoice.total_vat
+    existingInvoice.total_vat = parseFloat((Number(existingInvoice.total_vat) - oldVat + newVat).toFixed(2));
+    existingInvoice.total_price = parseFloat((Number(existingInvoice.total_price) - oldPrice + newPrice).toFixed(2));
+    existingInvoice.total_price_incl_vat = parseFloat((existingInvoice.total_price + existingInvoice.total_vat).toFixed(2));
 
     existingInvoiceProduct.quantity = parseFloat(Number(invoiceProduct.quantity).toFixed(2));
     existingInvoiceProduct.selling_price = parseFloat(Number(invoiceProduct.purchase_price).toFixed(2));

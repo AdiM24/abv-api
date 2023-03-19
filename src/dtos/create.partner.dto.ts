@@ -14,6 +14,8 @@ export interface CreatePartnerDto {
   credit_exceedance_percentage: number;
   modified_at_utc?: Date;
   address_point: CreateAddressDto;
+  is_user_partner: boolean;
+  user_id: number;
 }
 
 export interface CreateContactDto {

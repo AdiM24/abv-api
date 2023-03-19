@@ -2,10 +2,11 @@ import express from "express";
 import {ResponseError} from "../common/models/common.types";
 import partnerService from "../services/partner.service";
 import PartnerService from "../services/partner.service";
+import {CustomRequest} from "../middleware/auth.middleware";
 
 class PartnerController {
-  async addPartner(req: express.Request, res: express.Response) {
-    const addedPartnerId = await PartnerService.addPartner(req.body);
+  async addPartner(req: CustomRequest, res: express.Response) {
+    const addedPartnerId = await PartnerService.addPartner(req.body, req.token);
 
     res.status(201).send({created: addedPartnerId, msg: "Partner created"});
   }
@@ -14,8 +15,8 @@ class PartnerController {
     res.status(200).send(await PartnerService.getPartnerAutocompleteOptions(req.query?.searchKey.toString()));
   }
 
-  async getAddressAutocompleteOptions(req: express.Request, res: express.Response) {
-    res.status(200).send(await PartnerService.getPartnerAddressOptions(req.query?.searchKey.toString()));
+  async getAddressAutocompleteOptions(req: CustomRequest, res: express.Response) {
+    res.status(200).send(await PartnerService.getPartnerAddressOptions(req.query?.searchKey.toString(), req.token));
   }
 
   async getPartners(req: express.Request, res: express.Response) {

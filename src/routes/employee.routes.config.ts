@@ -5,7 +5,7 @@ import EmployeeController from "../controllers/employee.controller";
 
 export class EmployeeRoutes extends CommonRoutesConfig {
   constructor(app: express.Application) {
-    super(app, "InvoiceRoutes");
+    super(app, "EmployeeRoutes");
   }
 
   configureRoutes(): express.Application {

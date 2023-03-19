@@ -16,6 +16,7 @@ export class InvoiceRoutes extends CommonRoutesConfig {
       .get(InvoiceController.getInvoices)
       .post(
         AuthMiddleware.auth,
+        InvoiceMiddleware.validateUserPartner,
         InvoiceMiddleware.validateIssuedInvoiceCreationDate,
         InvoiceMiddleware.validateDeadlineLaterThanCreationDate,
         InvoiceMiddleware.validateInvoiceDoesNotExist,
