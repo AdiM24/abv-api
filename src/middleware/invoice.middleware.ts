@@ -1,5 +1,8 @@
 import express from "express";
 import InvoiceService from "../services/invoice.service";
+import {CustomRequest} from "./auth.middleware";
+import PartnerService from "../services/partner.service";
+import {Partner} from "../db/models/Partner";
 
 class InvoiceMiddleware {
   validateIssuedInvoiceCreationDate = async (
@@ -116,6 +119,39 @@ class InvoiceMiddleware {
 
     if (!invoiceExists) {
       return res.status(404).send({error: 404, message: "Invoice not found"})
+    }
+
+    next();
+  }
+
+  validateUserPartner = async (
+    req: CustomRequest,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+
+    if (req.body.type === 'notice') {
+      return next();
+    }
+
+    const userId = (req.token as any)?._id;
+    const userPartners = await PartnerService.getUserPartners(Number(userId));
+
+    if (req.body.type === 'issued') {
+
+      const existingUserPartner = userPartners.find((userPartner: Partner) => userPartner.partner_id === req.body.client_id);
+
+      if (!existingUserPartner) {
+        return res.status(404).send({code: 404, message: 'Partner is not associated to this user.'});
+      }
+    }
+
+    if (req.body.type === 'received') {
+      const existingUserPartner = userPartners.find((userPartner: Partner) => userPartner.partner_id === req.body.buyer_id);
+
+      if (!existingUserPartner) {
+        return res.status(404).send({code: 404, message: 'Partner is not associated to this user.'});
+      }
     }
 
     next();

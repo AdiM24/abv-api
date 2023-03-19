@@ -7,7 +7,7 @@ import {getDateRangeQuery, getLikeQuery,} from "../common/utils/query-utils.serv
 import {UpdateAddressDto, UpdateBankAccountDto, UpdateContactDto,} from "../dtos/update.partner.dto";
 
 class PartnerService {
-  async addPartner(partnerToAdd: CreatePartnerDto) {
+  async addPartner(partnerToAdd: CreatePartnerDto, decodedToken: any) {
     const models = initModels(sequelize);
     const partner = models.Partner;
     const contactEntity = models.Contact;
@@ -15,19 +15,16 @@ class PartnerService {
     const bankAccountEntity = models.BankAccount;
 
     try {
-      const createdPartnerId = (
-        await addOrUpdate<CreatePartnerDto, Partner>(
-          partnerToAdd,
-          {
-            unique_identification_number:
-            partnerToAdd.unique_identification_number,
-          },
-          partner,
-          () => {
-            partnerToAdd.modified_at_utc = new Date(new Date().toUTCString());
-          }
-        )
-      )?.get().partner_id;
+      if (partnerToAdd.vat_payer) {
+        partnerToAdd.trade_register_registration_number = 'RO' + partnerToAdd.trade_register_registration_number;
+      }
+
+      if (partnerToAdd.is_user_partner) {
+        partnerToAdd.user_id = decodedToken._id;
+        delete partnerToAdd.is_user_partner;
+      }
+
+      const createdPartnerId = (await models.Partner.create(partnerToAdd)).get().partner_id;
 
       if (Object.keys(partnerToAdd.contact).length > 0) {
         const contact = partnerToAdd.contact;
@@ -154,14 +151,21 @@ class PartnerService {
     return partner;
   }
 
-  async getPartnerAddressOptions(searchKey: string) {
+  async getPartnerAddressOptions(searchKey: string, decodedJwt: any) {
     const models = initModels(sequelize);
 
     let partnerAddresses: Address[];
 
+    const userPartners = await models.Partner.findAll({
+      where: {
+        user_id: decodedJwt._id
+      }
+    });
+
     try {
       partnerAddresses = await models.Address.findAll({
         where: {
+          partner_id: userPartners.map((userPartner: Partner) => userPartner.partner_id),
           nickname: getLikeQuery(searchKey)
         }
       })
@@ -323,6 +327,16 @@ class PartnerService {
     const models = initModels(sequelize);
 
     return await models.BankAccount.create(bankAccount);
+  }
+
+  async getUserPartners(userId: number) {
+    const models = initModels(sequelize);
+
+    return await models.Partner.findAll({
+      where: {
+        user_id: userId
+      }
+    })
   }
 }
 

@@ -88,6 +88,8 @@ export function initModels(sequelize: Sequelize) {
   Partner.hasMany(Invoice, { as: "client_Invoices", foreignKey: "client_id"});
   InvoiceProduct.belongsTo(Product, { as: "product", foreignKey: "product_id"});
   Product.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "product_id"});
+  Partner.belongsTo(User, { as: "user", foreignKey: "user_id"});
+  User.hasMany(Partner, { as: "Partners", foreignKey: "user_id"});
   UserInvoiceSeries.belongsTo(User, { as: "user", foreignKey: "user_id"});
   User.hasMany(UserInvoiceSeries, { as: "UserInvoiceSeries", foreignKey: "user_id"});
 

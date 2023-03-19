@@ -5,6 +5,7 @@ import type { BankAccount, BankAccountId } from './BankAccount';
 import type { Contact, ContactId } from './Contact';
 import type { Employee, EmployeeId } from './Employee';
 import type { Invoice, InvoiceId } from './Invoice';
+import type { User, UserId } from './User';
 
 export interface PartnerAttributes {
   partner_id: number;
@@ -21,11 +22,12 @@ export interface PartnerAttributes {
   created_at_utc: Date;
   modified_at_utc: Date;
   address?: string;
+  user_id?: number;
 }
 
 export type PartnerPk = "partner_id";
 export type PartnerId = Partner[PartnerPk];
-export type PartnerOptionalAttributes = "partner_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc" | "address";
+export type PartnerOptionalAttributes = "partner_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc" | "address" | "user_id";
 export type PartnerCreationAttributes = Optional<PartnerAttributes, PartnerOptionalAttributes>;
 
 export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes> implements PartnerAttributes {
@@ -43,6 +45,7 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   created_at_utc!: Date;
   modified_at_utc!: Date;
   address?: string;
+  user_id?: number;
 
   // Partner hasMany Address via partner_id
   Addresses!: Address[];
@@ -116,6 +119,11 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   hasClient_Invoice!: Sequelize.HasManyHasAssociationMixin<Invoice, InvoiceId>;
   hasClient_Invoices!: Sequelize.HasManyHasAssociationsMixin<Invoice, InvoiceId>;
   countClient_Invoices!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner belongsTo User via user_id
+  user!: User;
+  getUser!: Sequelize.BelongsToGetAssociationMixin<User>;
+  setUser!: Sequelize.BelongsToSetAssociationMixin<User, UserId>;
+  createUser!: Sequelize.BelongsToCreateAssociationMixin<User>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Partner {
     return Partner.init({
@@ -180,6 +188,14 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
     address: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    user_id: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      references: {
+        model: 'User',
+        key: 'user_id'
+      }
     }
   }, {
     sequelize,
