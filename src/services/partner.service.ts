@@ -105,18 +105,27 @@ class PartnerService {
     return partners;
   }
 
-  async getPartnerAutocompleteOptions(searchKey: string) {
+  async getPartnerAutocompleteOptions(searchKey: string, decodedToken: any = undefined) {
     const models = initModels(sequelize);
 
     let partners: Partner[] = [];
 
     try {
-      partners = await models.Partner.findAll({
+      if (decodedToken) {
+        partners = await models.Partner.findAll({
           where: {
-            name: getLikeQuery(searchKey)
-          },
-        }
-      )
+            name: getLikeQuery(searchKey),
+            user_id: decodedToken._id
+          }
+        })
+      } else {
+        partners = await models.Partner.findAll({
+            where: {
+              name: getLikeQuery(searchKey)
+            },
+          }
+        )
+      }
     } catch (err) {
       console.error(err);
     }

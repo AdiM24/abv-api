@@ -15,6 +15,10 @@ class PartnerController {
     res.status(200).send(await PartnerService.getPartnerAutocompleteOptions(req.query?.searchKey.toString()));
   }
 
+  async getUserAutocompleteOptions(req: CustomRequest, res: express.Response) {
+    res.status(200).send(await PartnerService.getPartnerAutocompleteOptions(req.query?.searchKey.toString(), req.token))
+  }
+
   async getAddressAutocompleteOptions(req: CustomRequest, res: express.Response) {
     res.status(200).send(await PartnerService.getPartnerAddressOptions(req.query?.searchKey.toString(), req.token));
   }

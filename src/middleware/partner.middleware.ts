@@ -1,5 +1,7 @@
 import express from "express";
 import PartnerService from "../services/partner.service";
+import {CustomRequest} from "./auth.middleware";
+import {Partner} from "../db/models/Partner";
 
 class PartnerMiddleware {
   validatePartnerAlreadyExists = async (
@@ -20,6 +22,22 @@ class PartnerMiddleware {
 
     next();
   };
+
+  validateUserPartner = async (
+    req: CustomRequest,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    const userId = (req.token as any)?._id;
+    const userPartners = await PartnerService.getUserPartners(Number(userId));
+    const existingUserPartner = userPartners.find((userPartner: Partner) => userPartner.partner_id === req.body.partner_id);
+
+    if (!existingUserPartner) {
+      return res.status(400).send({code: 400, message: 'Partner is not associated to this user.'})
+    }
+
+    next();
+  }
 }
 
 export default new PartnerMiddleware();

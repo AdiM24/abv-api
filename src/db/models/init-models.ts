@@ -1,6 +1,8 @@
 import type { Sequelize } from "sequelize";
 import { Address as _Address } from "./Address";
 import type { AddressAttributes, AddressCreationAttributes } from "./Address";
+import { AutoFleet as _AutoFleet } from "./AutoFleet";
+import type { AutoFleetAttributes, AutoFleetCreationAttributes } from "./AutoFleet";
 import { BankAccount as _BankAccount } from "./BankAccount";
 import type { BankAccountAttributes, BankAccountCreationAttributes } from "./BankAccount";
 import { Contact as _Contact } from "./Contact";
@@ -24,6 +26,7 @@ import type { UserInvoiceSeriesAttributes, UserInvoiceSeriesCreationAttributes }
 
 export {
   _Address as Address,
+  _AutoFleet as AutoFleet,
   _BankAccount as BankAccount,
   _Contact as Contact,
   _Employee as Employee,
@@ -39,6 +42,8 @@ export {
 export type {
   AddressAttributes,
   AddressCreationAttributes,
+  AutoFleetAttributes,
+  AutoFleetCreationAttributes,
   BankAccountAttributes,
   BankAccountCreationAttributes,
   ContactAttributes,
@@ -63,6 +68,7 @@ export type {
 
 export function initModels(sequelize: Sequelize) {
   const Address = _Address.initModel(sequelize);
+  const AutoFleet = _AutoFleet.initModel(sequelize);
   const BankAccount = _BankAccount.initModel(sequelize);
   const Contact = _Contact.initModel(sequelize);
   const Employee = _Employee.initModel(sequelize);
@@ -84,6 +90,8 @@ export function initModels(sequelize: Sequelize) {
   Invoice.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "invoice_id"});
   Address.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(Address, { as: "Addresses", foreignKey: "partner_id"});
+  AutoFleet.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
+  Partner.hasMany(AutoFleet, { as: "AutoFleets", foreignKey: "partner_id"});
   BankAccount.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(BankAccount, { as: "BankAccounts", foreignKey: "partner_id"});
   Contact.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
@@ -103,6 +111,7 @@ export function initModels(sequelize: Sequelize) {
 
   return {
     Address: Address,
+    AutoFleet: AutoFleet,
     BankAccount: BankAccount,
     Contact: Contact,
     Employee: Employee,
