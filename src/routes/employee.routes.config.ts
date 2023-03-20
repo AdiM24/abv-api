@@ -13,7 +13,11 @@ export class EmployeeRoutes extends CommonRoutesConfig {
   configureRoutes(): express.Application {
     this.app
       .route("/employees")
-      .get(AuthMiddleware.auth, PartnerMiddleware.validateUserPartner, EmployeeController.getEmployees)
+      .get(
+        AuthMiddleware.auth,
+        PartnerMiddleware.validateUserPartner,
+        EmployeeController.getEmployees
+      )
       .post(
         EmployeeMiddleware.validateEmployeeDoesNotExist,
         EmployeeMiddleware.validateDeadlineLaterThanCreationDate,

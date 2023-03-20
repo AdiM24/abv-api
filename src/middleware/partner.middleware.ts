@@ -24,7 +24,9 @@ class PartnerMiddleware {
     const userPartners = await PartnerService.getUserPartners(Number(userId));
     let existingUserPartner: Partner;
 
-    console.log(req.query);
+    if(!req.body?.partner_id || !req.query?.partner_id) {
+      return next();
+    }
 
     if (req.body?.partner_id) {
       existingUserPartner = userPartners.find((userPartner: Partner) => userPartner.partner_id === req.body.partner_id);

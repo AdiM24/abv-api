@@ -2,7 +2,6 @@ import { Employee, EmployeeAttributes, initModels, Partner } from "../db/models/
 import { sequelize } from "../db/sequelize";
 import { Op, WhereOptions } from "sequelize";
 import { getLikeQuery, getStrictQuery } from "../common/utils/query-utils.service";
-import { query } from "express";
 
 class EmployeeService {
   async addEmployee(employeeToAdd: EmployeeAddDto) {
