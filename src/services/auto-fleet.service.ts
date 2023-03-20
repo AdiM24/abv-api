@@ -102,6 +102,15 @@ class AutoFleetService {
     }
   }
 
+  async getFilteredAutoFleet(filter: any) {
+    const models = initModels(sequelize);
+
+    const existingVehicle = await models.AutoFleet.findOne({
+      where: filter
+    });
+
+    return existingVehicle;
+  }
 }
 
 export default new AutoFleetService();

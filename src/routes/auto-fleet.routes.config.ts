@@ -15,8 +15,17 @@ export class AutoFleetRoutes extends CommonRoutesConfig {
     this.app
       .route('/autofleet')
       .get(AuthMiddleware.auth, AutoFleetController.getAutoFleets)
-      .post(AuthMiddleware.auth, PartnerMiddleware.validateUserPartner, AutoFleetController.createAutoFleet)
-      .put(AuthMiddleware.auth, AutoFleetMiddleware.validatePartnerAutoFleet, AutoFleetController.updateAutoFleet)
+      .post(
+        AuthMiddleware.auth,
+        AutoFleetMiddleware.validateExistingRegNo,
+        AutoFleetMiddleware.validateExistingVin,
+        PartnerMiddleware.validateUserPartner,
+        AutoFleetController.createAutoFleet)
+      .put(
+        AuthMiddleware.auth,
+        AutoFleetMiddleware.validateUniqueFields,
+        AutoFleetMiddleware.validatePartnerAutoFleet,
+        AutoFleetController.updateAutoFleet)
 
     this.app
       .route('/autofleet/:id')
