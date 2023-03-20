@@ -1,5 +1,6 @@
 interface TimesheetEntryAddDto {
+  timesheet_entry_id?: number;
   employee_id: number;
-  hours_worked: number;
-  date: Date;
+  hours_worked: string;
+  date: string;
 }

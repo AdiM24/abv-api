@@ -9,7 +9,7 @@ class TimesheetMiddleware {
     }
 
     const existingEmployee = await EmployeeService.findEmployee({
-      employee_id: (req.body as TimesheetEntryAttributes).employee_id
+      employee_id: (req.body as TimesheetEntryAttributes[]).map((timesheetEntry) => timesheetEntry.employee_id)
     });
 
     if (!existingEmployee) {

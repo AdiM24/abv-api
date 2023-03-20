@@ -1,5 +1,6 @@
 import express from "express";
 
+import AuthMiddleware from "../middleware/auth.middleware";
 import TimesheetMiddleware from "../middleware/timesheet.middleware";
 import TimesheetController from "../controllers/timesheet.controller";
 
@@ -18,14 +19,18 @@ export class TimesheetRoutes extends CommonRoutesConfig {
         TimesheetController.getTimesheetEntries
       )
       .post(
-        TimesheetMiddleware.validateExistingEmployee,
         TimesheetController.addTimesheetEntries
       );
 
     this.app
       .route('/timesheet/employee')
       .get(
+        AuthMiddleware.auth,
         TimesheetController.getEmployeesTimesheet
+      )
+      .post(
+        AuthMiddleware.auth,
+        TimesheetController.updateTimesheetEntries
       );
 
     return this.app;

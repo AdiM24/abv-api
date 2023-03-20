@@ -8,13 +8,13 @@ export async function addOrUpdate<
   value: T,
   condition: {},
   entity: ModelStatic<E>,
-  updateCallback: Function = () => {}
+  updateCallback?: () => void
 ) {
   try {
     const existingEntity = await entity.findOne({ where: condition });
 
     if (existingEntity) {
-      updateCallback();
+      if(updateCallback) updateCallback();
       await existingEntity.update(value);
       return existingEntity;
     } else {

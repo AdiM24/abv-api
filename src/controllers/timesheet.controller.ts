@@ -1,4 +1,6 @@
 import express from "express";
+import { decode } from "jsonwebtoken";
+import { CustomRequest } from "../middleware/auth.middleware";
 import TimesheetService from "../services/timesheet.service";
 
 class TimesheetController {
@@ -12,10 +14,16 @@ class TimesheetController {
     res.send(timesheetEntry).status(201);
   }
 
-  async getEmployeesTimesheet(req: express.Request, res: express.Response) {
-    const employees = await TimesheetService.getEmployeesTimesheet();
+  async getEmployeesTimesheet(req: CustomRequest, res: express.Response) {
+    const employees = await TimesheetService.getEmployeesTimesheet(req.token);
 
     res.send(employees).status(201);
+  }
+
+  async updateTimesheetEntries(req: express.Request, res: express.Response) {
+    const response = await TimesheetService.updateTimesheetEntries(req.body);
+
+    res.send(response).status(201);
   }
 }
 
