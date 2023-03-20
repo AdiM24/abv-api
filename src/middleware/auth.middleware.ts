@@ -24,7 +24,7 @@ class AuthMiddleware {
 
       next();
     } catch (err) {
-      res.status(401).send({ errorCode: 401, msg: "Please authenticate" });
+      return res.status(401).send({ errorCode: 401, msg: "Please authenticate" });
     }
   };
 }

@@ -1,6 +1,7 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { Partner, PartnerId } from './Partner';
+import type { TimesheetEntry, TimesheetEntryId } from './TimesheetEntry';
 
 export interface EmployeeAttributes {
   employee_id: number;
@@ -48,6 +49,18 @@ export class Employee extends Model<EmployeeAttributes, EmployeeCreationAttribut
   working_hours?: number;
   profession?: string;
 
+  // Employee hasMany TimesheetEntry via employee_id
+  TimesheetEntries!: TimesheetEntry[];
+  getTimesheetEntries!: Sequelize.HasManyGetAssociationsMixin<TimesheetEntry>;
+  setTimesheetEntries!: Sequelize.HasManySetAssociationsMixin<TimesheetEntry, TimesheetEntryId>;
+  addTimesheetEntry!: Sequelize.HasManyAddAssociationMixin<TimesheetEntry, TimesheetEntryId>;
+  addTimesheetEntries!: Sequelize.HasManyAddAssociationsMixin<TimesheetEntry, TimesheetEntryId>;
+  createTimesheetEntry!: Sequelize.HasManyCreateAssociationMixin<TimesheetEntry>;
+  removeTimesheetEntry!: Sequelize.HasManyRemoveAssociationMixin<TimesheetEntry, TimesheetEntryId>;
+  removeTimesheetEntries!: Sequelize.HasManyRemoveAssociationsMixin<TimesheetEntry, TimesheetEntryId>;
+  hasTimesheetEntry!: Sequelize.HasManyHasAssociationMixin<TimesheetEntry, TimesheetEntryId>;
+  hasTimesheetEntries!: Sequelize.HasManyHasAssociationsMixin<TimesheetEntry, TimesheetEntryId>;
+  countTimesheetEntries!: Sequelize.HasManyCountAssociationsMixin;
   // Employee belongsTo Partner via partner_id
   partner!: Partner;
   getPartner!: Sequelize.BelongsToGetAssociationMixin<Partner>;
