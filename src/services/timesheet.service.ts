@@ -11,9 +11,23 @@ class TimesheetService {
   }
   
   async addTimesheetEntries(timesheetEntriesToAdd: TimesheetEntryAddDto[]) {
-      const models = initModels(sequelize);
+    const models = initModels(sequelize);
 
-      return await models.TimesheetEntry.bulkCreate(timesheetEntriesToAdd);
+    await Promise.all(timesheetEntriesToAdd.map(async (timesheetEntry) => {
+      return await addOrUpdate<TimesheetEntryAddDto, TimesheetEntry>(
+        timesheetEntry,
+        {
+          employee_id: timesheetEntry.employee_id,
+          date: timesheetEntry.date
+        },
+        models.TimesheetEntry
+      )
+    }));
+
+    return {
+      code: 201,
+      message: "Pontajul a fost actualizat"
+    }
   }
 
   async getEmployeesTimesheet(decodedJwt: any) {
