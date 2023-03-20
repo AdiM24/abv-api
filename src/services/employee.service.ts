@@ -1,7 +1,8 @@
-import {Employee, EmployeeAttributes, initModels, Partner} from "../db/models/init-models";
-import {sequelize} from "../db/sequelize";
-import {Op, WhereOptions} from "sequelize";
-import {getLikeQuery} from "../common/utils/query-utils.service";
+import { Employee, EmployeeAttributes, initModels, Partner } from "../db/models/init-models";
+import { sequelize } from "../db/sequelize";
+import { Op, WhereOptions } from "sequelize";
+import { getLikeQuery, getStrictQuery } from "../common/utils/query-utils.service";
+import { query } from "express";
 
 class EmployeeService {
   async addEmployee(employeeToAdd: EmployeeAddDto) {
@@ -26,21 +27,19 @@ class EmployeeService {
         where: {
           [Op.or]: {
             first_name: getLikeQuery(searchKey),
-            last_name: getLikeQuery(searchKey)
-          }
-        }
+            last_name: getLikeQuery(searchKey),
+          },
+        },
       });
     } catch (err) {
       console.error(err);
     }
 
-    return employees.map((employee: Employee) => (
-      {
-        employee_id: employee.employee_id,
-        first_name: employee.first_name,
-        last_name: employee.last_name,
-      }
-    ))
+    return employees.map((employee: Employee) => ({
+      employee_id: employee.employee_id,
+      first_name: employee.first_name,
+      last_name: employee.last_name,
+    }));
   }
 
   async getEmployee(employeeId: number) {
@@ -48,9 +47,9 @@ class EmployeeService {
 
     return await models.Employee.findOne({
       where: {
-        employee_id: employeeId
+        employee_id: employeeId,
       },
-      include: [{model: Partner, as: "partner"}]
+      include: [{ model: Partner, as: "partner" }],
     });
   }
 
@@ -59,8 +58,8 @@ class EmployeeService {
 
     const existingEmployee = await models.Employee.findOne({
       where: {
-        employee_id: employee.employee_id
-      }
+        employee_id: employee.employee_id,
+      },
     });
 
     existingEmployee.first_name = employee.first_name;
@@ -89,8 +88,24 @@ class EmployeeService {
     const models = initModels(sequelize);
 
     return await models.Employee.findOne({
-      where: condition
-    })
+      where: condition,
+    });
+  }
+
+  async getFilteredEmployees(queryParams: any) {
+    const models = initModels(sequelize);
+
+    const queryObject = {} as any;
+
+    if (queryParams.partner_id) {
+      queryObject.partner_id = getStrictQuery(queryParams.partner_id);
+    }
+
+    return await models.Employee.findAll({
+      where: {
+        [Op.and]: { ...queryObject },
+      },
+    });
   }
 }
 

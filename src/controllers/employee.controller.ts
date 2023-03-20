@@ -1,10 +1,14 @@
 import express from "express";
 import EmployeeService from "../services/employee.service";
-import {EmployeeAttributes} from "../db/models/Employee";
+import { EmployeeAttributes } from "../db/models/Employee";
 
 class EmployeeController {
   async getEmployees(req: express.Request, res: express.Response) {
-    res.send(await EmployeeService.getEmployees()).status(200);
+    const employees = Object.keys(req.query).length
+      ? await EmployeeService.getFilteredEmployees(req.query)
+      : await EmployeeService.getEmployees();
+
+    res.send(employees).status(200);
   }
 
   async getEmployee(req: express.Request, res: express.Response) {
@@ -24,7 +28,11 @@ class EmployeeController {
   }
 
   async getEmployeeAutocompleteOptions(req: express.Request, res: express.Response) {
-    res.status(200).send(await EmployeeService.getEmployeeAutocompleteOptions(req.query?.searchKey.toString()))
+    res.status(200).send(await EmployeeService.getEmployeeAutocompleteOptions(req.query?.searchKey.toString()));
+  }
+
+  async getFilteredEmployees(req: express.Request, res: express.Response) {
+    res.status(200).send(await EmployeeService.findEmployee({ partner_id: req.body?.partner_id }));
   }
 }
 
