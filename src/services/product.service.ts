@@ -181,7 +181,7 @@ class ProductService {
         return true;
       }
 
-      if (Number(existingProduct.quantity) <= Number(product.quantity)) {
+      if (Number(existingProduct.quantity) < Number(product.quantity)) {
         return false;
       }
 
