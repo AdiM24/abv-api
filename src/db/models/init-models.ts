@@ -5,6 +5,10 @@ import { AutoFleet as _AutoFleet } from "./AutoFleet";
 import type { AutoFleetAttributes, AutoFleetCreationAttributes } from "./AutoFleet";
 import { BankAccount as _BankAccount } from "./BankAccount";
 import type { BankAccountAttributes, BankAccountCreationAttributes } from "./BankAccount";
+import { BankRegister as _BankRegister } from "./BankRegister";
+import type { BankRegisterAttributes, BankRegisterCreationAttributes } from "./BankRegister";
+import { CashRegister as _CashRegister } from "./CashRegister";
+import type { CashRegisterAttributes, CashRegisterCreationAttributes } from "./CashRegister";
 import { Contact as _Contact } from "./Contact";
 import type { ContactAttributes, ContactCreationAttributes } from "./Contact";
 import { Employee as _Employee } from "./Employee";
@@ -28,6 +32,8 @@ export {
   _Address as Address,
   _AutoFleet as AutoFleet,
   _BankAccount as BankAccount,
+  _BankRegister as BankRegister,
+  _CashRegister as CashRegister,
   _Contact as Contact,
   _Employee as Employee,
   _Invoice as Invoice,
@@ -46,6 +52,10 @@ export type {
   AutoFleetCreationAttributes,
   BankAccountAttributes,
   BankAccountCreationAttributes,
+  BankRegisterAttributes,
+  BankRegisterCreationAttributes,
+  CashRegisterAttributes,
+  CashRegisterCreationAttributes,
   ContactAttributes,
   ContactCreationAttributes,
   EmployeeAttributes,
@@ -70,6 +80,8 @@ export function initModels(sequelize: Sequelize) {
   const Address = _Address.initModel(sequelize);
   const AutoFleet = _AutoFleet.initModel(sequelize);
   const BankAccount = _BankAccount.initModel(sequelize);
+  const BankRegister = _BankRegister.initModel(sequelize);
+  const CashRegister = _CashRegister.initModel(sequelize);
   const Contact = _Contact.initModel(sequelize);
   const Employee = _Employee.initModel(sequelize);
   const Invoice = _Invoice.initModel(sequelize);
@@ -94,6 +106,10 @@ export function initModels(sequelize: Sequelize) {
   Partner.hasMany(AutoFleet, { as: "AutoFleets", foreignKey: "partner_id"});
   BankAccount.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(BankAccount, { as: "BankAccounts", foreignKey: "partner_id"});
+  BankRegister.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
+  Partner.hasMany(BankRegister, { as: "BankRegisters", foreignKey: "partner_id"});
+  CashRegister.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
+  Partner.hasMany(CashRegister, { as: "CashRegisters", foreignKey: "partner_id"});
   Contact.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(Contact, { as: "Contacts", foreignKey: "partner_id"});
   Employee.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
@@ -113,6 +129,8 @@ export function initModels(sequelize: Sequelize) {
     Address: Address,
     AutoFleet: AutoFleet,
     BankAccount: BankAccount,
+    BankRegister: BankRegister,
+    CashRegister: CashRegister,
     Contact: Contact,
     Employee: Employee,
     Invoice: Invoice,

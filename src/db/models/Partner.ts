@@ -1,7 +1,10 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { Address, AddressId } from './Address';
+import type { AutoFleet, AutoFleetId } from './AutoFleet';
 import type { BankAccount, BankAccountId } from './BankAccount';
+import type { BankRegister, BankRegisterId } from './BankRegister';
+import type { CashRegister, CashRegisterId } from './CashRegister';
 import type { Contact, ContactId } from './Contact';
 import type { Employee, EmployeeId } from './Employee';
 import type { Invoice, InvoiceId } from './Invoice';
@@ -59,6 +62,18 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   hasAddress!: Sequelize.HasManyHasAssociationMixin<Address, AddressId>;
   hasAddresses!: Sequelize.HasManyHasAssociationsMixin<Address, AddressId>;
   countAddresses!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany AutoFleet via partner_id
+  AutoFleets!: AutoFleet[];
+  getAutoFleets!: Sequelize.HasManyGetAssociationsMixin<AutoFleet>;
+  setAutoFleets!: Sequelize.HasManySetAssociationsMixin<AutoFleet, AutoFleetId>;
+  addAutoFleet!: Sequelize.HasManyAddAssociationMixin<AutoFleet, AutoFleetId>;
+  addAutoFleets!: Sequelize.HasManyAddAssociationsMixin<AutoFleet, AutoFleetId>;
+  createAutoFleet!: Sequelize.HasManyCreateAssociationMixin<AutoFleet>;
+  removeAutoFleet!: Sequelize.HasManyRemoveAssociationMixin<AutoFleet, AutoFleetId>;
+  removeAutoFleets!: Sequelize.HasManyRemoveAssociationsMixin<AutoFleet, AutoFleetId>;
+  hasAutoFleet!: Sequelize.HasManyHasAssociationMixin<AutoFleet, AutoFleetId>;
+  hasAutoFleets!: Sequelize.HasManyHasAssociationsMixin<AutoFleet, AutoFleetId>;
+  countAutoFleets!: Sequelize.HasManyCountAssociationsMixin;
   // Partner hasMany BankAccount via partner_id
   BankAccounts!: BankAccount[];
   getBankAccounts!: Sequelize.HasManyGetAssociationsMixin<BankAccount>;
@@ -71,6 +86,30 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   hasBankAccount!: Sequelize.HasManyHasAssociationMixin<BankAccount, BankAccountId>;
   hasBankAccounts!: Sequelize.HasManyHasAssociationsMixin<BankAccount, BankAccountId>;
   countBankAccounts!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany BankRegister via partner_id
+  BankRegisters!: BankRegister[];
+  getBankRegisters!: Sequelize.HasManyGetAssociationsMixin<BankRegister>;
+  setBankRegisters!: Sequelize.HasManySetAssociationsMixin<BankRegister, BankRegisterId>;
+  addBankRegister!: Sequelize.HasManyAddAssociationMixin<BankRegister, BankRegisterId>;
+  addBankRegisters!: Sequelize.HasManyAddAssociationsMixin<BankRegister, BankRegisterId>;
+  createBankRegister!: Sequelize.HasManyCreateAssociationMixin<BankRegister>;
+  removeBankRegister!: Sequelize.HasManyRemoveAssociationMixin<BankRegister, BankRegisterId>;
+  removeBankRegisters!: Sequelize.HasManyRemoveAssociationsMixin<BankRegister, BankRegisterId>;
+  hasBankRegister!: Sequelize.HasManyHasAssociationMixin<BankRegister, BankRegisterId>;
+  hasBankRegisters!: Sequelize.HasManyHasAssociationsMixin<BankRegister, BankRegisterId>;
+  countBankRegisters!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany CashRegister via partner_id
+  CashRegisters!: CashRegister[];
+  getCashRegisters!: Sequelize.HasManyGetAssociationsMixin<CashRegister>;
+  setCashRegisters!: Sequelize.HasManySetAssociationsMixin<CashRegister, CashRegisterId>;
+  addCashRegister!: Sequelize.HasManyAddAssociationMixin<CashRegister, CashRegisterId>;
+  addCashRegisters!: Sequelize.HasManyAddAssociationsMixin<CashRegister, CashRegisterId>;
+  createCashRegister!: Sequelize.HasManyCreateAssociationMixin<CashRegister>;
+  removeCashRegister!: Sequelize.HasManyRemoveAssociationMixin<CashRegister, CashRegisterId>;
+  removeCashRegisters!: Sequelize.HasManyRemoveAssociationsMixin<CashRegister, CashRegisterId>;
+  hasCashRegister!: Sequelize.HasManyHasAssociationMixin<CashRegister, CashRegisterId>;
+  hasCashRegisters!: Sequelize.HasManyHasAssociationsMixin<CashRegister, CashRegisterId>;
+  countCashRegisters!: Sequelize.HasManyCountAssociationsMixin;
   // Partner hasMany Contact via partner_id
   Contacts!: Contact[];
   getContacts!: Sequelize.HasManyGetAssociationsMixin<Contact>;
@@ -178,12 +217,12 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
     created_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
     },
     modified_at_utc: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
     },
     address: {
       type: DataTypes.STRING,
