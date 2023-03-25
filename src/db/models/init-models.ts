@@ -13,6 +13,10 @@ import { Invoice as _Invoice } from "./Invoice";
 import type { InvoiceAttributes, InvoiceCreationAttributes } from "./Invoice";
 import { InvoiceProduct as _InvoiceProduct } from "./InvoiceProduct";
 import type { InvoiceProductAttributes, InvoiceProductCreationAttributes } from "./InvoiceProduct";
+import { OrderDetails as _OrderDetails } from "./OrderDetails";
+import type { OrderDetailsAttributes, OrderDetailsCreationAttributes } from "./OrderDetails";
+import { OrderGoods as _OrderGoods } from "./OrderGoods";
+import type { OrderGoodsAttributes, OrderGoodsCreationAttributes } from "./OrderGoods";
 import { Partner as _Partner } from "./Partner";
 import type { PartnerAttributes, PartnerCreationAttributes } from "./Partner";
 import { Product as _Product } from "./Product";
@@ -32,6 +36,8 @@ export {
   _Employee as Employee,
   _Invoice as Invoice,
   _InvoiceProduct as InvoiceProduct,
+  _OrderDetails as OrderDetails,
+  _OrderGoods as OrderGoods,
   _Partner as Partner,
   _Product as Product,
   _TimesheetEntry as TimesheetEntry,
@@ -54,6 +60,10 @@ export type {
   InvoiceCreationAttributes,
   InvoiceProductAttributes,
   InvoiceProductCreationAttributes,
+  OrderDetailsAttributes,
+  OrderDetailsCreationAttributes,
+  OrderGoodsAttributes,
+  OrderGoodsCreationAttributes,
   PartnerAttributes,
   PartnerCreationAttributes,
   ProductAttributes,
@@ -74,6 +84,8 @@ export function initModels(sequelize: Sequelize) {
   const Employee = _Employee.initModel(sequelize);
   const Invoice = _Invoice.initModel(sequelize);
   const InvoiceProduct = _InvoiceProduct.initModel(sequelize);
+  const OrderDetails = _OrderDetails.initModel(sequelize);
+  const OrderGoods = _OrderGoods.initModel(sequelize);
   const Partner = _Partner.initModel(sequelize);
   const Product = _Product.initModel(sequelize);
   const TimesheetEntry = _TimesheetEntry.initModel(sequelize);
@@ -85,9 +97,13 @@ export function initModels(sequelize: Sequelize) {
   Invoice.belongsTo(Address, { as: "pickup_address", foreignKey: "pickup_address_id"});
   Address.hasMany(Invoice, { as: "pickup_address_Invoices", foreignKey: "pickup_address_id"});
   TimesheetEntry.belongsTo(Employee, { as: "employee", foreignKey: "employee_id"});
-  Employee.hasMany(TimesheetEntry, { as: "timesheetEntries", foreignKey: "employee_id"});
+  Employee.hasMany(TimesheetEntry, { as: "TimesheetEntries", foreignKey: "employee_id"});
   InvoiceProduct.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
   Invoice.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "invoice_id"});
+  OrderDetails.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
+  Invoice.hasMany(OrderDetails, { as: "OrderDetails", foreignKey: "invoice_id"});
+  OrderGoods.belongsTo(OrderDetails, { as: "order_detail", foreignKey: "order_details_id"});
+  OrderDetails.hasMany(OrderGoods, { as: "OrderGoods", foreignKey: "order_details_id"});
   Address.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(Address, { as: "Addresses", foreignKey: "partner_id"});
   AutoFleet.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
@@ -117,6 +133,8 @@ export function initModels(sequelize: Sequelize) {
     Employee: Employee,
     Invoice: Invoice,
     InvoiceProduct: InvoiceProduct,
+    OrderDetails: OrderDetails,
+    OrderGoods: OrderGoods,
     Partner: Partner,
     Product: Product,
     TimesheetEntry: TimesheetEntry,

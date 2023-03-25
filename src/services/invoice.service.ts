@@ -5,6 +5,8 @@ import {
   Invoice,
   InvoiceAttributes,
   InvoiceProduct,
+  OrderDetails,
+  OrderGoods,
   Partner,
   Product,
   UserInvoiceSeries
@@ -18,6 +20,7 @@ import {
 import {Op, WhereOptions} from "sequelize";
 import {getStrictQuery} from "../common/utils/query-utils.service";
 import UserService from "./user.service";
+import {addOrUpdate} from "./utils.service";
 
 class InvoiceService {
   async getInvoices() {
@@ -59,7 +62,7 @@ class InvoiceService {
       console.error(err);
     }
 
-    return createdInvoice
+    return createdInvoice;
   }
 
   async addInvoice(invoiceToAdd: CreateInvoiceDto, decodedJwt: any = undefined) {
@@ -120,6 +123,173 @@ class InvoiceService {
       console.error(err);
     }
 
+  }
+
+  async updateOrderDetails(orderData: any) {
+    const models = initModels(sequelize);
+
+    const existingOrderDetails = await models.OrderDetails.findOne({
+      where: {
+        order_details_id: orderData.order_details_id
+      }
+    });
+
+    existingOrderDetails.pick_up_address = orderData.pick_up_address;
+    existingOrderDetails.drop_off_address = orderData.drop_off_address;
+    existingOrderDetails.pick_up_date = orderData.pick_up_date;
+    existingOrderDetails.drop_off_date = orderData.drop_off_date;
+    existingOrderDetails.remarks = orderData.remarks;
+
+    await existingOrderDetails.save();
+
+    if (orderData.products && orderData.products.length > 0) {
+      await Promise.all(orderData.products.map(async (product: any) => {
+        if (product.order_goods_id) {
+          const existingOrderGoods = await models.OrderGoods.findOne({
+            where: {
+              order_goods_id: product.order_goods_id
+            }
+          });
+
+          await existingOrderGoods.update(product);
+        } else {
+          await models.OrderGoods.create({
+            order_details_id: existingOrderDetails.order_details_id,
+            quantity: product.product_quantity,
+            name: product.product_name,
+            weight: product.product_weight,
+            unit_of_measure: product.unit_of_measure
+          })
+        }
+      }))
+    }
+
+    return {code: 200, message: 'Detaliile comenzii au fost actualizate'}
+  }
+
+  async removeOrderDetails(orderDetailsId: number) {
+    const models = initModels(sequelize);
+
+    const existingOrderDetails = await models.OrderDetails.findOne({
+      where: {
+        order_details_id: orderDetailsId
+      }
+    });
+
+    await models.OrderGoods.destroy({
+      where: {
+        order_details_id: orderDetailsId
+      }
+    })
+
+    await existingOrderDetails.destroy();
+
+    return {code: 200, message: 'Detaliile comenzii au fost sterse'}
+  }
+
+  async removeOrderGoods(orderGoodsId: any) {
+    const models = initModels(sequelize);
+
+    await models.OrderGoods.destroy({
+      where: {
+        order_goods_id: orderGoodsId
+      }
+    });
+
+    return {code: 200, message: 'Produsul a fost sters'}
+  }
+
+  async addOrder(orderToAdd: any, decodedJwt: any = undefined) {
+    const models = initModels(sequelize);
+
+    const invoiceData: CreateInvoiceDto = {
+      buyer_id: orderToAdd.buyer_id,
+      client_id: orderToAdd.client_id,
+      created_at_utc: orderToAdd.created_at,
+      currency: orderToAdd.currency,
+      number: orderToAdd.invoice_number,
+      series: orderToAdd.invoice_series,
+      total_price: parseFloat(Number(orderToAdd.price).toFixed(2)),
+      total_price_incl_vat: 0,
+      status: 'unpaid',
+      sent_status: 'not sent',
+      type: 'order',
+    }
+
+    if (orderToAdd.currency === 'RON') {
+      invoiceData.total_price_incl_vat = parseFloat((Number(invoiceData.total_price) + (Number(invoiceData.total_price) * 19.0 / 100.0)).toFixed(2))
+    }
+
+    if (orderToAdd.currency === 'EUR') {
+      invoiceData.total_price_incl_vat = invoiceData.total_price
+    }
+
+    let createdInvoice: Invoice;
+
+    try {
+      createdInvoice = await this.createInvoice(invoiceData, models);
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+
+    const orders = orderToAdd.orderDetails?.map((orderDetailsItem: any) => {
+      return {
+        invoice_id: createdInvoice.invoice_id,
+        drop_off_address: orderDetailsItem.drop_off_address,
+        drop_off_date: orderDetailsItem.drop_off_date,
+        pick_up_date: orderDetailsItem.pick_up_date,
+        pick_up_address: orderDetailsItem.pick_up_address,
+        products: orderDetailsItem.products,
+        remarks: orderDetailsItem.remarks
+      }
+    });
+
+    try {
+      await Promise.all(orders.map(async (order: any) => {
+        const createdOrder = await models.OrderDetails.create(order);
+
+        const products = order.products.map((orderProduct: any) => {
+
+          orderProduct.order_details_id = createdOrder.order_details_id;
+          orderProduct.name = orderProduct.product_name;
+          orderProduct.quantity = parseFloat(Number(orderProduct.product_quantity).toFixed(2));
+          orderProduct.weight = parseFloat(Number(orderProduct.product_weight).toFixed(2));
+
+          return orderProduct
+        });
+
+        await models.OrderGoods.bulkCreate(products);
+      }));
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+
+    return {code: 201, message: 'Comanda a fost creata cu succes.'};
+  }
+
+  async getOrder(orderId: number) {
+    const models = initModels(sequelize);
+
+    return await models.Invoice.findOne({
+      where: {
+        invoice_id: orderId,
+        type: 'order'
+      },
+      include: [
+        {
+          model: Partner, as: 'buyer'
+        },
+        {
+          model: Partner, as: 'client'
+        },
+        {
+          model: OrderDetails, as: 'OrderDetails',
+          include: [{model: OrderGoods, as: 'OrderGoods'}]
+        },
+      ]
+    })
   }
 
   async findInvoice(condition: WhereOptions<InvoiceAttributes>) {
