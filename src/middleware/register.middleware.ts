@@ -39,7 +39,9 @@ class RegisterMiddleware {
   async validateUserRegister(req: CustomRequest, res: express.Response, next: NextFunction) {
     const userPartners = await PartnerService.getUserPartners((req.token as any)._id);
 
-    if(!userPartners.some(userPartner => userPartner.partner_id === req.body?.buyer_partner_id)) {
+    const partner_id = req.body?.payment_type === "PLATA" ? req.body?.seller_partner_id : req.body?.buyer_partner_id;
+
+    if(!userPartners.some(userPartner => userPartner.partner_id === partner_id)) {
       return res.status(400).send({
         code: 400,
         message: "Firma de care apartine casa/contul nu este asociata acestui utilizator"
