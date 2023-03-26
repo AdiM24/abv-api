@@ -6,12 +6,17 @@ export async function addOrUpdate<
   E extends Model
 >(
   value: T,
-  condition: {},
+  condition: any,
   entity: ModelStatic<E>,
   updateCallback?: () => void
 ) {
   try {
-    const existingEntity = await entity.findOne({ where: condition });
+    let existingEntity: E;
+    if (Object.values(condition).some((val) => val === undefined)) {
+      existingEntity = undefined
+    } else {
+      existingEntity = await entity.findOne({ where: condition });
+    }
 
     if (existingEntity) {
       if(updateCallback) updateCallback();

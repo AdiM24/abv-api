@@ -1,9 +1,10 @@
-import * as Sequelize from 'sequelize';
-import { DataTypes, Model, Optional } from 'sequelize';
-import type { Address, AddressId } from './Address';
-import type { InvoiceProduct, InvoiceProductId } from './InvoiceProduct';
-import type { Partner, PartnerId } from './Partner';
-import type { Receipt, ReceiptId } from './Receipt';
+import * as Sequelize from "sequelize";
+import { DataTypes, Model, Optional } from "sequelize";
+import type { Address, AddressId } from "./Address";
+import type { InvoiceProduct, InvoiceProductId } from "./InvoiceProduct";
+import type { OrderDetails, OrderDetailsId } from "./OrderDetails";
+import type { Partner, PartnerId } from "./Partner";
+import type { Receipt, ReceiptId } from "./Receipt";
 
 export interface InvoiceAttributes {
   invoice_id: number;
@@ -23,12 +24,26 @@ export interface InvoiceAttributes {
   drop_off_address_id?: number;
   driver_name?: string;
   car_reg_number?: string;
+  currency?: "RON" | "EUR";
   total_paid_price: number;
 }
 
 export type InvoicePk = "invoice_id";
 export type InvoiceId = Invoice[InvoicePk];
-export type InvoiceOptionalAttributes = "invoice_id" | "deadline_at_utc" | "created_at_utc" | "sent_status" | "total_price" | "total_vat" | "total_price_incl_vat" | "pickup_address_id" | "drop_off_address_id" | "driver_name" | "car_reg_number" | "total_paid_price";
+export type InvoiceOptionalAttributes =
+  "invoice_id"
+  | "deadline_at_utc"
+  | "created_at_utc"
+  | "sent_status"
+  | "total_price"
+  | "total_vat"
+  | "total_price_incl_vat"
+  | "pickup_address_id"
+  | "drop_off_address_id"
+  | "driver_name"
+  | "car_reg_number"
+  | "total_paid_price"
+  | "currency";
 export type InvoiceCreationAttributes = Optional<InvoiceAttributes, InvoiceOptionalAttributes>;
 
 export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes> implements InvoiceAttributes {
@@ -50,6 +65,7 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   driver_name?: string;
   car_reg_number?: string;
   total_paid_price!: number;
+  currency?: "RON" | "EUR";
 
   // Invoice belongsTo Address via drop_off_address_id
   drop_off_address!: Address;
@@ -85,6 +101,18 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   hasReceipt!: Sequelize.HasManyHasAssociationMixin<Receipt, ReceiptId>;
   hasReceipts!: Sequelize.HasManyHasAssociationsMixin<Receipt, ReceiptId>;
   countReceipts!: Sequelize.HasManyCountAssociationsMixin;
+  // Invoice hasMany OrderDetails via invoice_id
+  OrderDetails!: OrderDetails[];
+  getOrderDetails!: Sequelize.HasManyGetAssociationsMixin<OrderDetails>;
+  setOrderDetails!: Sequelize.HasManySetAssociationsMixin<OrderDetails, OrderDetailsId>;
+  addOrderDetail!: Sequelize.HasManyAddAssociationMixin<OrderDetails, OrderDetailsId>;
+  addOrderDetails!: Sequelize.HasManyAddAssociationsMixin<OrderDetails, OrderDetailsId>;
+  createOrderDetail!: Sequelize.HasManyCreateAssociationMixin<OrderDetails>;
+  removeOrderDetail!: Sequelize.HasManyRemoveAssociationMixin<OrderDetails, OrderDetailsId>;
+  removeOrderDetails!: Sequelize.HasManyRemoveAssociationsMixin<OrderDetails, OrderDetailsId>;
+  hasOrderDetail!: Sequelize.HasManyHasAssociationMixin<OrderDetails, OrderDetailsId>;
+  hasOrderDetails!: Sequelize.HasManyHasAssociationsMixin<OrderDetails, OrderDetailsId>;
+  countOrderDetails!: Sequelize.HasManyCountAssociationsMixin;
   // Invoice belongsTo Partner via buyer_id
   buyer!: Partner;
   getBuyer!: Sequelize.BelongsToGetAssociationMixin<Partner>;
@@ -98,116 +126,120 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Invoice {
     return Invoice.init({
-    invoice_id: {
-      autoIncrement: true,
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      primaryKey: true
-    },
-    client_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'Partner',
-        key: 'partner_id'
-      }
-    },
-    buyer_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'Partner',
-        key: 'partner_id'
-      }
-    },
-    deadline_at_utc: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
-    },
-    created_at_utc: {
-      type: DataTypes.DATEONLY,
-      allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
-    },
-    status: {
-      type: DataTypes.ENUM("paid","overdue","incomplete payment","unpaid"),
-      allowNull: false
-    },
-    type: {
-      type: DataTypes.ENUM("proforma","received","issued","notice","order","receipt"),
-      allowNull: false
-    },
-    number: {
-      type: DataTypes.BIGINT,
-      allowNull: false
-    },
-    series: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    sent_status: {
-      type: DataTypes.ENUM("sent","not sent"),
-      allowNull: true
-    },
-    total_price: {
-      type: DataTypes.DECIMAL,
-      allowNull: true,
-      defaultValue: 0
-    },
-    total_vat: {
-      type: DataTypes.DECIMAL,
-      allowNull: true,
-      defaultValue: 0
-    },
-    total_price_incl_vat: {
-      type: DataTypes.DECIMAL,
-      allowNull: true,
-      defaultValue: 0
-    },
-    pickup_address_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'Address',
-        key: 'address_id'
-      }
-    },
-    drop_off_address_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'Address',
-        key: 'address_id'
-      }
-    },
-    driver_name: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    car_reg_number: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    total_paid_price: {
-      type: DataTypes.DECIMAL,
-      allowNull: false,
-      defaultValue: 0
-    }
-  }, {
-    sequelize,
-    tableName: 'Invoice',
-    schema: 'public',
-    timestamps: false,
-    indexes: [
-      {
-        name: "Invoice_pk",
-        unique: true,
-        fields: [
-          { name: "invoice_id" },
-        ]
+      invoice_id: {
+        autoIncrement: true,
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        primaryKey: true
       },
-    ]
-  });
+      client_id: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        references: {
+          model: "Partner",
+          key: "partner_id"
+        }
+      },
+      buyer_id: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        references: {
+          model: "Partner",
+          key: "partner_id"
+        }
+      },
+      deadline_at_utc: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE utc")
+      },
+      created_at_utc: {
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+        defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE utc")
+      },
+      status: {
+        type: DataTypes.ENUM("paid", "overdue", "incomplete payment", "unpaid"),
+        allowNull: false
+      },
+      type: {
+        type: DataTypes.ENUM("proforma", "received", "issued", "notice", "order", "receipt"),
+        allowNull: false
+      },
+      number: {
+        type: DataTypes.BIGINT,
+        allowNull: false
+      },
+      series: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      sent_status: {
+        type: DataTypes.ENUM("sent", "not sent"),
+        allowNull: true
+      },
+      total_price: {
+        type: DataTypes.DECIMAL,
+        allowNull: true,
+        defaultValue: 0
+      },
+      total_vat: {
+        type: DataTypes.DECIMAL,
+        allowNull: true,
+        defaultValue: 0
+      },
+      total_price_incl_vat: {
+        type: DataTypes.DECIMAL,
+        allowNull: true,
+        defaultValue: 0
+      },
+      pickup_address_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: "Address",
+          key: "address_id"
+        }
+      },
+      drop_off_address_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: "Address",
+          key: "address_id"
+        }
+      },
+      driver_name: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      car_reg_number: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      total_paid_price: {
+        type: DataTypes.DECIMAL,
+        allowNull: false,
+        defaultValue: 0
+      },
+      currency: {
+        type: DataTypes.ENUM("RON", "EUR"),
+        allowNull: true
+      }
+    }, {
+      sequelize,
+      tableName: "Invoice",
+      schema: "public",
+      timestamps: false,
+      indexes: [
+        {
+          name: "Invoice_pk",
+          unique: true,
+          fields: [
+            { name: "invoice_id" }
+          ]
+        }
+      ]
+    });
   }
 }

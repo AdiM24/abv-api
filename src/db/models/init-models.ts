@@ -117,15 +117,15 @@ export function initModels(sequelize: Sequelize) {
   Receipt.belongsTo(CashRegister, { as: "cash_register", foreignKey: "cash_register_id"});
   CashRegister.hasMany(Receipt, { as: "Receipts", foreignKey: "cash_register_id"});
   TimesheetEntry.belongsTo(Employee, { as: "employee", foreignKey: "employee_id"});
-  Employee.hasMany(TimesheetEntry, { as: "TimesheetEntries", foreignKey: "employee_id"});
+  Employee.hasMany(TimesheetEntry, { as: "timesheetEntries", foreignKey: "employee_id"});
   InvoiceProduct.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
   Invoice.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "invoice_id"});
   OrderDetails.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
   Invoice.hasMany(OrderDetails, { as: "OrderDetails", foreignKey: "invoice_id"});
-  Receipt.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
-  Invoice.hasMany(Receipt, { as: "Receipts", foreignKey: "invoice_id"});
   OrderGoods.belongsTo(OrderDetails, { as: "order_detail", foreignKey: "order_details_id"});
   OrderDetails.hasMany(OrderGoods, { as: "OrderGoods", foreignKey: "order_details_id"});
+  Receipt.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
+  Invoice.hasMany(Receipt, { as: "Receipts", foreignKey: "invoice_id"});
   Address.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(Address, { as: "Addresses", foreignKey: "partner_id"});
   AutoFleet.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});

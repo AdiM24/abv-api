@@ -78,14 +78,15 @@ class InvoiceMiddleware {
     const condition = {
       created_at_utc: invoiceDate,
       series: invoice.series,
-      number: invoice.number
+      number: invoice.number,
+      type: invoice.type
     }
 
     try {
       const existingInvoice = await InvoiceService.findInvoice(condition);
 
       if (existingInvoice) {
-        return res.status(400).send({error: 400, message: "Invoice already exists"})
+        return res.status(400).send({error: 400, message: "Factura exista in sistem."})
       }
 
       next();
@@ -142,7 +143,7 @@ class InvoiceMiddleware {
       const existingUserPartner = userPartners.find((userPartner: Partner) => userPartner.partner_id === req.body.client_id);
 
       if (!existingUserPartner) {
-        return res.status(404).send({code: 404, message: 'Partner is not associated to this user.'});
+        return res.status(404).send({code: 404, message: 'Firma nu este asociata acestui utilizator.'});
       }
     }
 
@@ -150,7 +151,7 @@ class InvoiceMiddleware {
       const existingUserPartner = userPartners.find((userPartner: Partner) => userPartner.partner_id === req.body.buyer_id);
 
       if (!existingUserPartner) {
-        return res.status(404).send({code: 404, message: 'Partner is not associated to this user.'});
+        return res.status(404).send({code: 404, message: 'Firma nu este asociata acestui utilizator.'});
       }
     }
 
