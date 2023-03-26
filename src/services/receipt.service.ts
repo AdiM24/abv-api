@@ -124,6 +124,8 @@ class ReceiptService {
     await invoiceToUpdate.save();
     await registerToUpdate.save();
 
+    operationToAdd.document_number = operationToAdd.document_number || null;
+
     return await models.Receipt.create(operationToAdd);
   }
 
