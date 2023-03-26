@@ -8,6 +8,7 @@ import type { CashRegister, CashRegisterId } from './CashRegister';
 import type { Contact, ContactId } from './Contact';
 import type { Employee, EmployeeId } from './Employee';
 import type { Invoice, InvoiceId } from './Invoice';
+import type { Receipt, ReceiptId } from './Receipt';
 import type { User, UserId } from './User';
 
 export interface PartnerAttributes {
@@ -158,6 +159,30 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   hasClient_Invoice!: Sequelize.HasManyHasAssociationMixin<Invoice, InvoiceId>;
   hasClient_Invoices!: Sequelize.HasManyHasAssociationsMixin<Invoice, InvoiceId>;
   countClient_Invoices!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany Receipt via buyer_partner_id
+  Receipts!: Receipt[];
+  getReceipts!: Sequelize.HasManyGetAssociationsMixin<Receipt>;
+  setReceipts!: Sequelize.HasManySetAssociationsMixin<Receipt, ReceiptId>;
+  addReceipt!: Sequelize.HasManyAddAssociationMixin<Receipt, ReceiptId>;
+  addReceipts!: Sequelize.HasManyAddAssociationsMixin<Receipt, ReceiptId>;
+  createReceipt!: Sequelize.HasManyCreateAssociationMixin<Receipt>;
+  removeReceipt!: Sequelize.HasManyRemoveAssociationMixin<Receipt, ReceiptId>;
+  removeReceipts!: Sequelize.HasManyRemoveAssociationsMixin<Receipt, ReceiptId>;
+  hasReceipt!: Sequelize.HasManyHasAssociationMixin<Receipt, ReceiptId>;
+  hasReceipts!: Sequelize.HasManyHasAssociationsMixin<Receipt, ReceiptId>;
+  countReceipts!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany Receipt via seller_partner_id
+  seller_partner_Receipts!: Receipt[];
+  getSeller_partner_Receipts!: Sequelize.HasManyGetAssociationsMixin<Receipt>;
+  setSeller_partner_Receipts!: Sequelize.HasManySetAssociationsMixin<Receipt, ReceiptId>;
+  addSeller_partner_Receipt!: Sequelize.HasManyAddAssociationMixin<Receipt, ReceiptId>;
+  addSeller_partner_Receipts!: Sequelize.HasManyAddAssociationsMixin<Receipt, ReceiptId>;
+  createSeller_partner_Receipt!: Sequelize.HasManyCreateAssociationMixin<Receipt>;
+  removeSeller_partner_Receipt!: Sequelize.HasManyRemoveAssociationMixin<Receipt, ReceiptId>;
+  removeSeller_partner_Receipts!: Sequelize.HasManyRemoveAssociationsMixin<Receipt, ReceiptId>;
+  hasSeller_partner_Receipt!: Sequelize.HasManyHasAssociationMixin<Receipt, ReceiptId>;
+  hasSeller_partner_Receipts!: Sequelize.HasManyHasAssociationsMixin<Receipt, ReceiptId>;
+  countSeller_partner_Receipts!: Sequelize.HasManyCountAssociationsMixin;
   // Partner belongsTo User via user_id
   user!: User;
   getUser!: Sequelize.BelongsToGetAssociationMixin<User>;

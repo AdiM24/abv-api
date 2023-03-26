@@ -18,9 +18,9 @@ import {
   UpdateInvoiceProduct
 } from "../dtos/create.invoice-product.dto";
 import {Op, WhereOptions} from "sequelize";
-import {getStrictQuery} from "../common/utils/query-utils.service";
+import { getInQuery, getStrictQuery } from "../common/utils/query-utils.service";
 import UserService from "./user.service";
-import {addOrUpdate} from "./utils.service";
+import PartnerService from "./partner.service";
 
 class InvoiceService {
   async getInvoices() {
@@ -31,13 +31,21 @@ class InvoiceService {
     });
   }
 
-  async getFilteredInvoices(queryParams: any) {
+  async getFilteredInvoices(queryParams: any, decodedJwt: any) {
     const models = initModels(sequelize);
 
     const queryObject = {} as any;
 
+    const userPartners = (await PartnerService.getUserPartners(decodedJwt._id))
+      ?.map((userPartner: Partner) => userPartner.partner_id);
+
     if (queryParams.type) {
       queryObject.type = getStrictQuery(queryParams.type);
+      if(queryParams.type === 'issued') {
+        queryObject.client_id = getInQuery(userPartners);
+      } else if(queryParams.type === 'received') {
+        queryObject.buyer_id = getInQuery(userPartners);
+      }
     }
 
     return await models.Invoice.findAll({
@@ -67,8 +75,6 @@ class InvoiceService {
 
   async addInvoice(invoiceToAdd: CreateInvoiceDto, decodedJwt: any = undefined) {
     const models = initModels(sequelize);
-
-    console.log(decodedJwt);
 
     if (invoiceToAdd.type === 'issued') {
       invoiceToAdd.number = await this.findNextSeriesNumber(invoiceToAdd.series, invoiceToAdd.type);
@@ -202,10 +208,10 @@ class InvoiceService {
     const invoiceData: CreateInvoiceDto = {
       buyer_id: orderToAdd.buyer_id,
       client_id: orderToAdd.client_id,
-      created_at_utc: orderToAdd.created_at,
+      created_at_utc: orderToAdd.created_at_utc,
       currency: orderToAdd.currency,
-      number: orderToAdd.invoice_number,
-      series: orderToAdd.invoice_series,
+      number: orderToAdd.number,
+      series: orderToAdd.series,
       total_price: parseFloat(Number(orderToAdd.price).toFixed(2)),
       total_price_incl_vat: 0,
       status: 'unpaid',

@@ -3,6 +3,8 @@ import { initModels, Partner, TimesheetEntry } from "../db/models/init-models";
 import PartnerService from "./partner.service";
 import { BankRegisterAddDto } from "../dtos/bank-register.dto";
 import { CashRegisterAddDto } from "../dtos/cash-register.dto";
+import { getStrictQuery } from "../common/utils/query-utils.service";
+import { Op } from "sequelize";
 
 class RegisterService {
   async getBankRegisters(decodedJwt: any) {
@@ -18,6 +20,54 @@ class RegisterService {
     });
   }
 
+  async getBankRegisterById(bankRegisterId: number) {
+    const models = initModels(sequelize);
+
+    return await models.BankRegister.findOne({
+      where: {
+        bank_register_id: bankRegisterId
+      },
+      include: [{model: Partner, as: "partner"}]
+    })
+  }
+
+  async getFilteredBankRegisters(queryParams: any) {
+    const models = initModels(sequelize);
+
+    const queryObject = {} as any;
+
+    if(queryParams.partner_id) {
+      queryObject.partner_id = getStrictQuery(queryParams.partner_id);
+    }
+
+    return await models.BankRegister.findAll({
+      where: {
+        [Op.and]: {
+          ...queryObject,
+        }
+      }
+    })
+  }
+
+
+  async getFilteredCashRegisters(queryParams: any) {
+    const models = initModels(sequelize);
+
+    const queryObject = {} as any;
+
+    if(queryParams.partner_id) {
+      queryObject.partner_id = getStrictQuery(queryParams.partner_id);
+    }
+
+    return await models.CashRegister.findAll({
+      where: {
+        [Op.and]: {
+          ...queryObject,
+        }
+      }
+    })
+  }
+
   async getCashRegisters(decodedJwt: any) {
     const models = initModels(sequelize);
 
@@ -29,6 +79,17 @@ class RegisterService {
       },
       include: [{model: Partner, as: "partner"}]
     });
+  }
+
+  async getCashRegisterById(cashRegisterId: number) {
+    const models = initModels(sequelize);
+
+    return await models.CashRegister.findOne({
+      where: {
+        cash_register_id: cashRegisterId
+      },
+      include: [{model: Partner, as: "partner"}]
+    })
   }
 
   async addBankRegister(bankRegisterToAdd: BankRegisterAddDto) {

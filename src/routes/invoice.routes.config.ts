@@ -13,7 +13,10 @@ export class InvoiceRoutes extends CommonRoutesConfig {
   configureRoutes(): express.Application {
     this.app
       .route("/invoices")
-      .get(InvoiceController.getInvoices)
+      .get(
+        AuthMiddleware.auth,
+        InvoiceController.getInvoices
+      )
       .post(
         AuthMiddleware.auth,
         InvoiceMiddleware.validateUserPartner,

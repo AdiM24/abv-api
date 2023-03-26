@@ -5,13 +5,33 @@ import AutoFleetService from "../services/auto-fleet.service";
 
 class RegisterController {
   async getBankRegisters(req: CustomRequest, res: express.Response) {
-    const bankRegisters = await RegisterService.getBankRegisters(req.token);
+    const bankRegisters = Object.keys(req.query).length
+      ? await RegisterService.getFilteredBankRegisters(req.query)
+      : await RegisterService.getBankRegisters(req.token);
 
     res.status(200).send(bankRegisters);
   }
 
+  async getBankRegisterById(req: express.Request, res: express.Response) {
+    const bankRegisterId = Number(req.params?.id);
+
+    const bankRegister = await RegisterService.getBankRegisterById(bankRegisterId);
+
+    res.status(200).send(bankRegister);
+  }
+
+  async getCashRegisterById(req: express.Request, res: express.Response) {
+    const cashRegisterId = Number(req.params?.id);
+
+    const cashRegister = await RegisterService.getCashRegisterById(cashRegisterId);
+
+    res.status(200).send(cashRegister)
+  }
+
   async getCashRegisters(req: CustomRequest, res: express.Response) {
-    const cashRegisters = await RegisterService.getCashRegisters(req.token);
+    const cashRegisters = Object.keys(req.query).length
+      ? await RegisterService.getFilteredCashRegisters(req.query)
+      : await RegisterService.getCashRegisters(req.token);
 
     res.status(200).send(cashRegisters);
   }

@@ -6,7 +6,7 @@ export async function addOrUpdate<
   E extends Model
 >(
   value: T,
-  condition: {},
+  condition: any,
   entity: ModelStatic<E>,
   updateCallback?: () => void
 ) {

@@ -3,9 +3,9 @@ import InvoiceService from "../services/invoice.service";
 import {CustomRequest} from "../middleware/auth.middleware";
 
 class InvoiceController {
-  async getInvoices(req: express.Request, res: express.Response) {
+  async getInvoices(req: CustomRequest, res: express.Response) {
     const invoices = Object.keys(req.query).length
-      ? await InvoiceService.getFilteredInvoices(req.query)
+      ? await InvoiceService.getFilteredInvoices(req.query, req.token)
       : await InvoiceService.getInvoices();
 
     res.status(200).send(invoices);
@@ -62,7 +62,7 @@ class InvoiceController {
   }
 
   async findNextNumberForSeries(req: express.Request, res: express.Response) {
-    const nextNumberForSeries = await InvoiceService.findNextSeriesNumber(req.body?.series, req.body.type);
+    const nextNumberForSeries = await InvoiceService.findNextSeriesNumber(req.body?.series, req.body?.type);
 
     res.status(200).send({number: nextNumberForSeries});
   }
