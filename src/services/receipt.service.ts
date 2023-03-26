@@ -1,6 +1,6 @@
 import { CreateReceiptDto, RemoveReceiptDto } from "../dtos/receipt.dto";
 import { sequelize } from "../db/sequelize";
-import { CashRegister, initModels, InvoiceAttributes, Partner } from "../db/models/init-models";
+import { BankRegister, CashRegister, initModels, InvoiceAttributes, Partner } from "../db/models/init-models";
 import PartnerService from "./partner.service";
 import { WhereOptions } from "sequelize";
 
@@ -12,7 +12,8 @@ class ReceiptService {
 
     return await models.Receipt.findAll({
       where: {
-        seller_partner_id: userPartners.map((userPartner: Partner) => userPartner.partner_id)
+        seller_partner_id: userPartners.map((userPartner: Partner) => userPartner.partner_id),
+        document_type: "Chitanta"
       },
       include: [
         { model: Partner, as: "seller_partner" },
@@ -32,12 +33,13 @@ class ReceiptService {
       include: [
         { model: Partner, as: "seller_partner" },
         { model: Partner, as: "buyer_partner" },
-        { model: CashRegister, as: "cash_register" }
+        { model: CashRegister, as: "cash_register" },
+        { model: BankRegister, as: "bank_register" }
       ]
     })
   }
 
-  async addReceipt(receiptToAdd: CreateReceiptDto) {
+  async addReceipt(receiptToAdd: any) {
     const models = initModels(sequelize);
 
     const invoiceToUpdate = await models.Invoice.findOne({
@@ -67,10 +69,62 @@ class ReceiptService {
       invoiceToUpdate.status = "incomplete payment"
     }
 
+    receiptToAdd.document_type = 'Chitanta';
+
     await invoiceToUpdate.save();
     await cashRegisterToUpdate.save();
 
     return await models.Receipt.create(receiptToAdd);
+  }
+
+  async addOperation(operationToAdd: any) {
+    const models = initModels(sequelize);
+
+    const invoiceToUpdate = await models.Invoice.findOne({
+      where: {
+        invoice_id: operationToAdd.invoice_id
+      }
+    })
+
+    let registerToUpdate;
+    if(operationToAdd.cash_register_id) {
+      registerToUpdate = await models.CashRegister.findOne({
+        where: {
+          cash_register_id: operationToAdd.cash_register_id
+        }
+      });
+    } else {
+      registerToUpdate = await models.BankRegister.findOne({
+        where: {
+          bank_register_id: operationToAdd.bank_register_id
+        }
+      });
+    }
+
+    invoiceToUpdate.total_paid_price = parseFloat(
+      (Number(invoiceToUpdate.total_paid_price) +
+        Number(operationToAdd.total_price)).toFixed(2));
+
+    if(operationToAdd.payment_type === 'INCASARE') {
+      registerToUpdate.balance = parseFloat((Number(registerToUpdate.balance) +
+        Number(operationToAdd.total_price)).toFixed(2));
+    } else {
+      registerToUpdate.balance = parseFloat((Number(registerToUpdate.balance) -
+        Number(operationToAdd.total_price)).toFixed(2));
+    }
+
+    if(Math.abs(invoiceToUpdate.total_price_incl_vat - invoiceToUpdate.total_paid_price) < 0.001) {
+      invoiceToUpdate.status = "paid"
+    } else if(invoiceToUpdate.total_paid_price < 0.001) {
+      invoiceToUpdate.status = "unpaid"
+    } else {
+      invoiceToUpdate.status = "incomplete payment"
+    }
+
+    await invoiceToUpdate.save();
+    await registerToUpdate.save();
+
+    return await models.Receipt.create(operationToAdd);
   }
 
   async findNextSeriesNumber(series: string) {

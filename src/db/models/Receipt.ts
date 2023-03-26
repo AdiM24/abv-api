@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { BankRegister, BankRegisterId } from './BankRegister';
 import type { CashRegister, CashRegisterId } from './CashRegister';
 import type { Invoice, InvoiceId } from './Invoice';
 import type { Partner, PartnerId } from './Partner';
@@ -9,19 +10,23 @@ export interface ReceiptAttributes {
   invoice_id: number;
   buyer_partner_id: number;
   seller_partner_id: number;
-  currency: "EUR" | "RON";
+  currency: "RON" | "EUR";
   total_price: number;
   description: string;
-  series_number: number;
-  series: string;
+  series_number?: number;
+  series?: string;
   issued_date: string;
-  cash_register_id: number;
+  cash_register_id?: number;
   vat_price: number;
+  document_type: "Bon fiscal" | "Chitanta" | "OP" | "Bilet la ordin" | "CEC" | "PV" | "Diurna" | "Bilet de transport" | "Dispozitie de plata" | "Recuperari" | "Dobanda" | "Altele";
+  bank_register_id?: number;
+  document_number?: number;
+  payment_type: "INCASARE" | "PLATA";
 }
 
 export type ReceiptPk = "receipt_id";
 export type ReceiptId = Receipt[ReceiptPk];
-export type ReceiptOptionalAttributes = "receipt_id";
+export type ReceiptOptionalAttributes = "receipt_id" | "series_number" | "series" | "cash_register_id" | "bank_register_id" | "document_number";
 export type ReceiptCreationAttributes = Optional<ReceiptAttributes, ReceiptOptionalAttributes>;
 
 export class Receipt extends Model<ReceiptAttributes, ReceiptCreationAttributes> implements ReceiptAttributes {
@@ -29,15 +34,24 @@ export class Receipt extends Model<ReceiptAttributes, ReceiptCreationAttributes>
   invoice_id!: number;
   buyer_partner_id!: number;
   seller_partner_id!: number;
-  currency!: "EUR" | "RON";
+  currency!: "RON" | "EUR";
   total_price!: number;
   description!: string;
-  series_number!: number;
-  series!: string;
+  series_number?: number;
+  series?: string;
   issued_date!: string;
-  cash_register_id!: number;
+  cash_register_id?: number;
   vat_price!: number;
+  document_type!: "Bon fiscal" | "Chitanta" | "OP" | "Bilet la ordin" | "CEC" | "PV" | "Diurna" | "Bilet de transport" | "Dispozitie de plata" | "Recuperari" | "Dobanda" | "Altele";
+  bank_register_id?: number;
+  document_number?: number;
+  payment_type!: "INCASARE" | "PLATA";
 
+  // Receipt belongsTo BankRegister via bank_register_id
+  bank_register!: BankRegister;
+  getBank_register!: Sequelize.BelongsToGetAssociationMixin<BankRegister>;
+  setBank_register!: Sequelize.BelongsToSetAssociationMixin<BankRegister, BankRegisterId>;
+  createBank_register!: Sequelize.BelongsToCreateAssociationMixin<BankRegister>;
   // Receipt belongsTo CashRegister via cash_register_id
   cash_register!: CashRegister;
   getCash_register!: Sequelize.BelongsToGetAssociationMixin<CashRegister>;
@@ -92,7 +106,7 @@ export class Receipt extends Model<ReceiptAttributes, ReceiptCreationAttributes>
       }
     },
     currency: {
-      type: DataTypes.ENUM("EUR","RON"),
+      type: DataTypes.ENUM("RON","EUR"),
       allowNull: false
     },
     total_price: {
@@ -105,11 +119,11 @@ export class Receipt extends Model<ReceiptAttributes, ReceiptCreationAttributes>
     },
     series_number: {
       type: DataTypes.BIGINT,
-      allowNull: false
+      allowNull: true
     },
     series: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     issued_date: {
       type: DataTypes.DATEONLY,
@@ -117,7 +131,7 @@ export class Receipt extends Model<ReceiptAttributes, ReceiptCreationAttributes>
     },
     cash_register_id: {
       type: DataTypes.BIGINT,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'CashRegister',
         key: 'cash_register_id'
@@ -126,6 +140,26 @@ export class Receipt extends Model<ReceiptAttributes, ReceiptCreationAttributes>
     vat_price: {
       type: DataTypes.DECIMAL,
       allowNull: false
+    },
+    document_type: {
+      type: DataTypes.ENUM("Bon fiscal","Chitanta","OP","Bilet la ordin","CEC","PV","Diurna","Bilet de transport","Dispozitie de plata","Recuperari","Dobanda","Altele"),
+      allowNull: false
+    },
+    bank_register_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'BankRegister',
+        key: 'bank_register_id'
+      }
+    },
+    document_number: {
+      type: DataTypes.BIGINT,
+      allowNull: true
+    },
+    payment_type: {
+      type: DataTypes.ENUM("INCASARE", "PLATA"),
+        allowNull: false
     }
   }, {
     sequelize,

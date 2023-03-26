@@ -54,7 +54,10 @@ class InvoiceService {
           ...queryObject,
         },
       },
-      include: [{model: Partner, as: 'buyer'}]
+      include: [
+        {model: Partner, as: 'buyer'},
+        {model: Partner, as: 'client'}
+      ],
     });
   }
 

@@ -59,6 +59,22 @@ class RegisterController {
 
     return res.status(200).send(result);
   }
+
+  async getCashRegisterOperations(req: express.Request, res: express.Response) {
+    const id = Number(req.params?.id);
+
+    const operations = await RegisterService.getCashOperations(id);
+
+    res.status(200).send(operations);
+  }
+
+  async getBankRegisterOperations(req: express.Request, res: express.Response) {
+    const id = Number(req.params?.id);
+
+    const operations = await RegisterService.getBankOperations(id);
+
+    res.status(200).send(operations);
+  }
 }
 
 export default new RegisterController();

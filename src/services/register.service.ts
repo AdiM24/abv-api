@@ -135,6 +135,34 @@ class RegisterService {
       console.error(err);
     }
   }
+
+  async getCashOperations(cash_register_id: number) {
+    const models = initModels(sequelize);
+
+    return await models.Receipt.findAll({
+      where: {
+        cash_register_id: cash_register_id
+      },
+      include: [
+        {model: Partner, as: "seller_partner"},
+        {model: Partner, as: "buyer_partner"},
+      ]
+    });
+  }
+
+  async getBankOperations(bank_register_id: number) {
+    const models = initModels(sequelize);
+
+    return await models.Receipt.findAll({
+      where: {
+        bank_register_id: bank_register_id
+      },
+      include: [
+        {model: Partner, as: "seller_partner"},
+        {model: Partner, as: "buyer_partner"},
+      ]
+    });
+  }
 }
 
 export default new RegisterService();

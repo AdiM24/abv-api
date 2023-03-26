@@ -4,6 +4,7 @@ import RegisterService from "../services/register.service";
 import RegisterController from "../controllers/register.controller";
 import AuthMiddleware from "../middleware/auth.middleware";
 import ReceiptController from "../controllers/receipt.controller";
+import RegisterMiddleware from "../middleware/register.middleware";
 
 export class ReceiptRoutes extends CommonRoutesConfig {
   constructor(app: express.Application) {
@@ -37,6 +38,14 @@ export class ReceiptRoutes extends CommonRoutesConfig {
         AuthMiddleware.auth,
         ReceiptController.findNextSeriesNumber);
 
+    this.app
+      .route("/operation")
+      .post(
+        AuthMiddleware.auth,
+        RegisterMiddleware.validateUserRegister,
+        RegisterMiddleware.validateSufficientFunds,
+        ReceiptController.addOperation
+      );
 
     return this.app;
   }

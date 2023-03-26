@@ -24,6 +24,12 @@ class ReceiptController {
     res.status(200).send(createdReceipt);
   }
 
+  async addOperation(req: express.Request, res: express.Response) {
+    const createdOperation = await ReceiptService.addOperation(req.body);
+
+    res.status(200).send(createdOperation);
+  }
+
   async findNextSeriesNumber(req: express.Request, res: express.Response) {
     const nextNumberForSeries = await  ReceiptService.findNextSeriesNumber(req.body?.series);
 
