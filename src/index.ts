@@ -13,6 +13,7 @@ import {EmployeeRoutes} from "./routes/employee.routes.config";
 import { TimesheetRoutes } from "./routes/timesheet.routes.config";
 import {AutoFleetRoutes} from "./routes/auto-fleet.routes.config";
 import { RegisterRoutes } from "./routes/register.routes.config";
+import { ReceiptRoutes } from "./routes/receipt.routes.config";
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ routes.push(new EmployeeRoutes(app));
 routes.push(new TimesheetRoutes(app));
 routes.push(new AutoFleetRoutes(app));
 routes.push(new RegisterRoutes(app));
+routes.push(new ReceiptRoutes(app))
 
 const runningMessage = `Server running at http://localhost:${port}`;
 app.get("/", (req: express.Request, res: express.Response) => {

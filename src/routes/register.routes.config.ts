@@ -21,6 +21,10 @@ export class RegisterRoutes extends CommonRoutesConfig {
 
     this.app
       .route("/bankregister/:id")
+      .get(
+        AuthMiddleware.auth,
+        RegisterController.getBankRegisterById
+      )
       .delete(
         AuthMiddleware.auth,
         RegisterController.removeBankRegister);
@@ -36,6 +40,10 @@ export class RegisterRoutes extends CommonRoutesConfig {
 
     this.app
       .route("/cashregister/:id")
+      .get(
+        AuthMiddleware.auth,
+        RegisterController.getCashRegisterById
+      )
       .delete(
         AuthMiddleware.auth,
         RegisterController.removeCashRegister);

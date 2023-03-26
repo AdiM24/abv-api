@@ -30,3 +30,13 @@ export const getStrictQuery = (searchString: string) => {
 
   return strictQuery;
 }
+
+export const getInQuery = (searchArray: any[]) => {
+  if(!searchArray?.length) return;
+
+  const inQuery = {} as any;
+
+  inQuery[Op.in] = searchArray;
+
+  return inQuery;
+}

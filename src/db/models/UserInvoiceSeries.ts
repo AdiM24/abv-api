@@ -5,7 +5,7 @@ import type { User, UserId } from './User';
 export interface UserInvoiceSeriesAttributes {
   user_invoice_series_id: number;
   user_id?: number;
-  invoice_type?: "proforma" | "issued" | "received" | "notice";
+  invoice_type?: "proforma" | "received" | "issued" | "notice" | "order" | "receipt";
   series?: string;
   default?: boolean;
 }
@@ -18,7 +18,7 @@ export type UserInvoiceSeriesCreationAttributes = Optional<UserInvoiceSeriesAttr
 export class UserInvoiceSeries extends Model<UserInvoiceSeriesAttributes, UserInvoiceSeriesCreationAttributes> implements UserInvoiceSeriesAttributes {
   user_invoice_series_id!: number;
   user_id?: number;
-  invoice_type?: "proforma" | "issued" | "received" | "notice";
+  invoice_type?: "proforma" | "received" | "issued" | "notice" | "order" | "receipt";
   series?: string;
   default?: boolean;
 
@@ -45,7 +45,7 @@ export class UserInvoiceSeries extends Model<UserInvoiceSeriesAttributes, UserIn
       }
     },
     invoice_type: {
-      type: DataTypes.ENUM("proforma","issued","received","notice"),
+      type: DataTypes.ENUM("proforma","received","issued","notice","order","receipt"),
       allowNull: true
     },
     series: {

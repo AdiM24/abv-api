@@ -16,8 +16,9 @@ import {
   UpdateInvoiceProduct
 } from "../dtos/create.invoice-product.dto";
 import {Op, WhereOptions} from "sequelize";
-import {getStrictQuery} from "../common/utils/query-utils.service";
+import { getInQuery, getStrictQuery } from "../common/utils/query-utils.service";
 import UserService from "./user.service";
+import PartnerService from "./partner.service";
 
 class InvoiceService {
   async getInvoices() {
@@ -28,13 +29,21 @@ class InvoiceService {
     });
   }
 
-  async getFilteredInvoices(queryParams: any) {
+  async getFilteredInvoices(queryParams: any, decodedJwt: any) {
     const models = initModels(sequelize);
 
     const queryObject = {} as any;
 
+    const userPartners = (await PartnerService.getUserPartners(decodedJwt._id))
+      ?.map((userPartner: Partner) => userPartner.partner_id);
+
     if (queryParams.type) {
       queryObject.type = getStrictQuery(queryParams.type);
+      if(queryParams.type === 'issued') {
+        queryObject.client_id = getInQuery(userPartners);
+      } else if(queryParams.type === 'received') {
+        queryObject.buyer_id = getInQuery(userPartners);
+      }
     }
 
     return await models.Invoice.findAll({

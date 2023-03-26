@@ -13,7 +13,10 @@ export class InvoiceRoutes extends CommonRoutesConfig {
   configureRoutes(): express.Application {
     this.app
       .route("/invoices")
-      .get(InvoiceController.getInvoices)
+      .get(
+        AuthMiddleware.auth,
+        InvoiceController.getInvoices
+      )
       .post(
         AuthMiddleware.auth,
         InvoiceMiddleware.validateUserPartner,
@@ -48,7 +51,7 @@ export class InvoiceRoutes extends CommonRoutesConfig {
         InvoiceController.addInvoiceProduct)
 
     this.app
-      .route("/invoices/issued/number")
+      .route("/invoices/series")
       .post(InvoiceController.findNextNumberForSeries)
 
     return this.app;

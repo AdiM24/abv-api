@@ -3,6 +3,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import type { Address, AddressId } from './Address';
 import type { InvoiceProduct, InvoiceProductId } from './InvoiceProduct';
 import type { Partner, PartnerId } from './Partner';
+import type { Receipt, ReceiptId } from './Receipt';
 
 export interface InvoiceAttributes {
   invoice_id: number;
@@ -11,7 +12,7 @@ export interface InvoiceAttributes {
   deadline_at_utc?: string;
   created_at_utc?: string;
   status: "paid" | "overdue" | "incomplete payment" | "unpaid";
-  type: "proforma" | "issued" | "received" | "notice";
+  type: "proforma" | "received" | "issued" | "notice" | "order" | "receipt";
   number: number;
   series: string;
   sent_status?: "sent" | "not sent";
@@ -22,11 +23,12 @@ export interface InvoiceAttributes {
   drop_off_address_id?: number;
   driver_name?: string;
   car_reg_number?: string;
+  total_paid_price: number;
 }
 
 export type InvoicePk = "invoice_id";
 export type InvoiceId = Invoice[InvoicePk];
-export type InvoiceOptionalAttributes = "invoice_id" | "deadline_at_utc" | "created_at_utc" | "sent_status" | "total_price" | "total_vat" | "total_price_incl_vat" | "pickup_address_id" | "drop_off_address_id";
+export type InvoiceOptionalAttributes = "invoice_id" | "deadline_at_utc" | "created_at_utc" | "sent_status" | "total_price" | "total_vat" | "total_price_incl_vat" | "pickup_address_id" | "drop_off_address_id" | "driver_name" | "car_reg_number" | "total_paid_price";
 export type InvoiceCreationAttributes = Optional<InvoiceAttributes, InvoiceOptionalAttributes>;
 
 export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes> implements InvoiceAttributes {
@@ -36,7 +38,7 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   deadline_at_utc?: string;
   created_at_utc?: string;
   status!: "paid" | "overdue" | "incomplete payment" | "unpaid";
-  type!: "proforma" | "issued" | "received" | "notice";
+  type!: "proforma" | "received" | "issued" | "notice" | "order" | "receipt";
   number!: number;
   series!: string;
   sent_status?: "sent" | "not sent";
@@ -47,6 +49,7 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   drop_off_address_id?: number;
   driver_name?: string;
   car_reg_number?: string;
+  total_paid_price!: number;
 
   // Invoice belongsTo Address via drop_off_address_id
   drop_off_address!: Address;
@@ -70,6 +73,18 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   hasInvoiceProduct!: Sequelize.HasManyHasAssociationMixin<InvoiceProduct, InvoiceProductId>;
   hasInvoiceProducts!: Sequelize.HasManyHasAssociationsMixin<InvoiceProduct, InvoiceProductId>;
   countInvoiceProducts!: Sequelize.HasManyCountAssociationsMixin;
+  // Invoice hasMany Receipt via invoice_id
+  Receipts!: Receipt[];
+  getReceipts!: Sequelize.HasManyGetAssociationsMixin<Receipt>;
+  setReceipts!: Sequelize.HasManySetAssociationsMixin<Receipt, ReceiptId>;
+  addReceipt!: Sequelize.HasManyAddAssociationMixin<Receipt, ReceiptId>;
+  addReceipts!: Sequelize.HasManyAddAssociationsMixin<Receipt, ReceiptId>;
+  createReceipt!: Sequelize.HasManyCreateAssociationMixin<Receipt>;
+  removeReceipt!: Sequelize.HasManyRemoveAssociationMixin<Receipt, ReceiptId>;
+  removeReceipts!: Sequelize.HasManyRemoveAssociationsMixin<Receipt, ReceiptId>;
+  hasReceipt!: Sequelize.HasManyHasAssociationMixin<Receipt, ReceiptId>;
+  hasReceipts!: Sequelize.HasManyHasAssociationsMixin<Receipt, ReceiptId>;
+  countReceipts!: Sequelize.HasManyCountAssociationsMixin;
   // Invoice belongsTo Partner via buyer_id
   buyer!: Partner;
   getBuyer!: Sequelize.BelongsToGetAssociationMixin<Partner>;
@@ -120,7 +135,7 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
       allowNull: false
     },
     type: {
-      type: DataTypes.ENUM("proforma","issued","received","notice"),
+      type: DataTypes.ENUM("proforma","received","issued","notice","order","receipt"),
       allowNull: false
     },
     number: {
@@ -166,14 +181,19 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
         key: 'address_id'
       }
     },
-      driver_name: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
-      car_reg_number: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
+    driver_name: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    car_reg_number: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    total_paid_price: {
+      type: DataTypes.DECIMAL,
+      allowNull: false,
+      defaultValue: 0
+    }
   }, {
     sequelize,
     tableName: 'Invoice',
