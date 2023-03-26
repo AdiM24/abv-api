@@ -211,10 +211,10 @@ class InvoiceService {
     const invoiceData: CreateInvoiceDto = {
       buyer_id: orderToAdd.buyer_id,
       client_id: orderToAdd.client_id,
-      created_at_utc: orderToAdd.created_at,
+      created_at_utc: orderToAdd.created_at_utc,
       currency: orderToAdd.currency,
-      number: orderToAdd.invoice_number,
-      series: orderToAdd.invoice_series,
+      number: orderToAdd.number,
+      series: orderToAdd.series,
       total_price: parseFloat(Number(orderToAdd.price).toFixed(2)),
       total_price_incl_vat: 0,
       status: 'unpaid',
