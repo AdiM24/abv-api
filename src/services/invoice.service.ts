@@ -155,10 +155,7 @@ class InvoiceService {
         } else {
           await models.OrderGoods.create({
             order_details_id: existingOrderDetails.order_details_id,
-            quantity: product.product_quantity,
-            name: product.product_name,
-            weight: product.product_weight,
-            unit_of_measure: product.unit_of_measure
+            ...product
           })
         }
       }))
