@@ -48,6 +48,19 @@ export class RegisterRoutes extends CommonRoutesConfig {
         AuthMiddleware.auth,
         RegisterController.removeCashRegister);
 
+    this.app
+      .route("/cashregister/op/:id")
+      .get(
+        AuthMiddleware.auth,
+        RegisterController.getCashRegisterOperations);
+
+    this.app
+      .route("/bankregister/op/:id")
+      .get(
+        AuthMiddleware.auth,
+        RegisterController.getBankRegisterOperations);
+
+
     return this.app;
   }
 }

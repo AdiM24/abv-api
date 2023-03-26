@@ -1,13 +1,14 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { Partner, PartnerId } from './Partner';
+import type { Receipt, ReceiptId } from './Receipt';
 
 export interface BankRegisterAttributes {
   bank_register_id: number;
   iban: string;
   balance: number;
   partner_id: number;
-  currency: "EUR" | "RON";
+  currency: "RON" | "EUR";
 }
 
 export type BankRegisterPk = "bank_register_id";
@@ -20,8 +21,20 @@ export class BankRegister extends Model<BankRegisterAttributes, BankRegisterCrea
   iban!: string;
   balance!: number;
   partner_id!: number;
-  currency!: "EUR" | "RON";
+  currency!: "RON" | "EUR";
 
+  // BankRegister hasMany Receipt via bank_register_id
+  Receipts!: Receipt[];
+  getReceipts!: Sequelize.HasManyGetAssociationsMixin<Receipt>;
+  setReceipts!: Sequelize.HasManySetAssociationsMixin<Receipt, ReceiptId>;
+  addReceipt!: Sequelize.HasManyAddAssociationMixin<Receipt, ReceiptId>;
+  addReceipts!: Sequelize.HasManyAddAssociationsMixin<Receipt, ReceiptId>;
+  createReceipt!: Sequelize.HasManyCreateAssociationMixin<Receipt>;
+  removeReceipt!: Sequelize.HasManyRemoveAssociationMixin<Receipt, ReceiptId>;
+  removeReceipts!: Sequelize.HasManyRemoveAssociationsMixin<Receipt, ReceiptId>;
+  hasReceipt!: Sequelize.HasManyHasAssociationMixin<Receipt, ReceiptId>;
+  hasReceipts!: Sequelize.HasManyHasAssociationsMixin<Receipt, ReceiptId>;
+  countReceipts!: Sequelize.HasManyCountAssociationsMixin;
   // BankRegister belongsTo Partner via partner_id
   partner!: Partner;
   getPartner!: Sequelize.BelongsToGetAssociationMixin<Partner>;
@@ -53,7 +66,7 @@ export class BankRegister extends Model<BankRegisterAttributes, BankRegisterCrea
       }
     },
     currency: {
-      type: DataTypes.ENUM("EUR","RON"),
+      type: DataTypes.ENUM("RON","EUR"),
       allowNull: false
     }
   }, {
