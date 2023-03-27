@@ -20,7 +20,7 @@ export interface ReceiptAttributes {
   vat_price: number;
   document_type: "Bon fiscal" | "Chitanta" | "OP" | "Bilet la ordin" | "CEC" | "PV" | "Diurna" | "Bilet de transport" | "Dispozitie de plata" | "Recuperari" | "Dobanda" | "Altele";
   bank_register_id?: number;
-  document_number?: number;
+  document_number?: string;
   payment_type: "INCASARE" | "PLATA";
 }
 
@@ -44,7 +44,7 @@ export class Receipt extends Model<ReceiptAttributes, ReceiptCreationAttributes>
   vat_price!: number;
   document_type!: "Bon fiscal" | "Chitanta" | "OP" | "Bilet la ordin" | "CEC" | "PV" | "Diurna" | "Bilet de transport" | "Dispozitie de plata" | "Recuperari" | "Dobanda" | "Altele";
   bank_register_id?: number;
-  document_number?: number;
+  document_number?: string;
   payment_type!: "INCASARE" | "PLATA";
 
   // Receipt belongsTo BankRegister via bank_register_id
@@ -154,7 +154,7 @@ export class Receipt extends Model<ReceiptAttributes, ReceiptCreationAttributes>
       }
     },
     document_number: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.STRING,
       allowNull: true
     },
     payment_type: {
