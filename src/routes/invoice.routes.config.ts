@@ -76,6 +76,7 @@ export class InvoiceRoutes extends CommonRoutesConfig {
 
     this.app
       .route("/invoices/orders/details/:id")
+      .post(AuthMiddleware.auth, InvoiceController.addOrderDetails)
       .put(AuthMiddleware.auth, InvoiceController.updateOrderDetails)
       .delete(AuthMiddleware.auth, InvoiceController.removeOrderDetails)
 

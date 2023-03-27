@@ -16,7 +16,7 @@ class PartnerService {
 
     try {
       if (partnerToAdd.vat_payer) {
-        partnerToAdd.trade_register_registration_number = 'RO' + partnerToAdd.trade_register_registration_number;
+        partnerToAdd.trade_register_registration_number = 'RO' + partnerToAdd.unique_identification_number;
       }
 
       if (partnerToAdd.is_user_partner) {

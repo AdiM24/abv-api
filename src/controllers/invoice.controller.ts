@@ -61,6 +61,12 @@ class InvoiceController {
     res.status(200).send(result);
   }
 
+  async addOrderDetails(req: CustomRequest, res: express.Response) {
+    const result = await InvoiceService.addOrderDetails(req.body);
+
+    res.status(200).send(result);
+  }
+
   async findNextNumberForSeries(req: express.Request, res: express.Response) {
     const nextNumberForSeries = await InvoiceService.findNextSeriesNumber(req.body?.series, req.body?.type);
 

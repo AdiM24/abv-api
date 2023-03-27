@@ -18,7 +18,7 @@ import {
   UpdateInvoiceProduct
 } from "../dtos/create.invoice-product.dto";
 import {Op, WhereOptions} from "sequelize";
-import { getInQuery, getStrictQuery } from "../common/utils/query-utils.service";
+import {getInQuery, getStrictQuery} from "../common/utils/query-utils.service";
 import UserService from "./user.service";
 import PartnerService from "./partner.service";
 
@@ -41,9 +41,9 @@ class InvoiceService {
 
     if (queryParams.type) {
       queryObject.type = getStrictQuery(queryParams.type);
-      if(queryParams.type === 'issued') {
+      if (queryParams.type === 'issued') {
         queryObject.client_id = getInQuery(userPartners);
-      } else if(queryParams.type === 'received') {
+      } else if (queryParams.type === 'received') {
         queryObject.buyer_id = getInQuery(userPartners);
       }
     }
@@ -58,6 +58,7 @@ class InvoiceService {
         {model: Partner, as: 'buyer'},
         {model: Partner, as: 'client'}
       ],
+      order: [["created_at_utc", "DESC"]]
     });
   }
 
@@ -258,9 +259,8 @@ class InvoiceService {
         const products = order.products.map((orderProduct: any) => {
 
           orderProduct.order_details_id = createdOrder.order_details_id;
-          orderProduct.name = orderProduct.product_name;
-          orderProduct.quantity = parseFloat(Number(orderProduct.product_quantity).toFixed(2));
-          orderProduct.weight = parseFloat(Number(orderProduct.product_weight).toFixed(2));
+          orderProduct.quantity = parseFloat(Number(orderProduct.quantity).toFixed(2));
+          orderProduct.weight = parseFloat(Number(orderProduct.weight).toFixed(2));
 
           return orderProduct
         });
@@ -273,6 +273,28 @@ class InvoiceService {
     }
 
     return {code: 201, message: 'Comanda a fost creata cu succes.'};
+  }
+
+  async addOrderDetails(orderDetails: any) {
+    const models = initModels(sequelize);
+
+    try {
+      const createdOrder = await models.OrderDetails.create(orderDetails);
+
+      const products = orderDetails.products.map((orderProduct: any) => {
+
+        orderProduct.order_details_id = createdOrder.order_details_id;
+        orderProduct.quantity = parseFloat(Number(orderProduct.quantity).toFixed(2));
+        orderProduct.weight = parseFloat(Number(orderProduct.weight).toFixed(2));
+
+        return orderProduct
+      });
+
+      await models.OrderGoods.bulkCreate(products);
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   }
 
   async getOrder(orderId: number) {
@@ -336,7 +358,8 @@ class InvoiceService {
         include: [
           {model: Partner, as: "buyer", include: [{model: BankAccount, as: 'BankAccounts'}]},
           {model: Partner, as: "client"}
-        ]
+        ],
+        order: [["created_at_utc", "DESC"]]
       }
     );
 
