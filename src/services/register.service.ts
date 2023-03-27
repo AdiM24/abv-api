@@ -40,6 +40,10 @@ class RegisterService {
       queryObject.partner_id = getStrictQuery(queryParams.partner_id);
     }
 
+    if(queryParams.currency) {
+      queryObject.currency = getStrictQuery(queryParams.currency)
+    }
+
     return await models.BankRegister.findAll({
       where: {
         [Op.and]: {
@@ -57,6 +61,10 @@ class RegisterService {
 
     if(queryParams.partner_id) {
       queryObject.partner_id = getStrictQuery(queryParams.partner_id);
+    }
+
+    if(queryParams.currency) {
+      queryObject.currency = getStrictQuery(queryParams.currency)
     }
 
     return await models.CashRegister.findAll({
