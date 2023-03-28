@@ -383,7 +383,6 @@ class InvoiceService {
       product.dataValues.quantity = parseFloat(Number(invoiceProduct.quantity).toFixed(2));
       product.dataValues.purchase_price = parseFloat(Number(invoiceProduct.selling_price).toFixed(2));
 
-      console.log(product);
       productList.push(product)
     });
 

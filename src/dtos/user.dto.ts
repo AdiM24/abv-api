@@ -5,3 +5,11 @@ export interface UserDto {
     phone: string;
     created_at_utc: Date;
 }
+
+export interface CreateUserPartnerEmail {
+    user_id: number;
+    partner_id: number;
+    partner_email: string;
+    password: string;
+    smtp: string;
+}

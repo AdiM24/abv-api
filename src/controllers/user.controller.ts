@@ -2,6 +2,7 @@ import express from "express";
 import debug from "debug";
 import UserService from "../services/user.service";
 import {CustomRequest} from "../middleware/auth.middleware";
+import EmailService from "../services/email.service";
 
 const log: debug.IDebugger = debug("app:users-controller");
 
@@ -41,6 +42,30 @@ class UsersController {
     const newDefault = await UserService.changeDefaultSeries(req.body);
 
     res.status(200).send(newDefault);
+  }
+
+  async createUserPartnerEmail(req: CustomRequest, res: express.Response) {
+    const result = await UserService.createUserPartnerEmail(req.body);
+
+    res.status(200).send(result);
+  }
+
+  async getUserPartnerEmails(req: CustomRequest, res: express.Response) {
+    const userEmails = await UserService.getUserPartnerEmails(req.token);
+
+    res.status(200).send(userEmails);
+  }
+
+  async updateUserPartnerEmail(req: CustomRequest, res: express.Response) {
+    const result = await UserService.updateUserPartnerEmail(req.body);
+
+    res.status(200).send(result)
+  }
+
+  async removeUserPartnerEmail(req: CustomRequest, res: express.Response) {
+    const result = await UserService.removeUserPartnerEmail(Number(req.query?.user_partner_email));
+
+    res.status(200).send(result);
   }
 }
 

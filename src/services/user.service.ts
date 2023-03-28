@@ -1,9 +1,9 @@
 import {sequelize} from "../db/sequelize";
-import {initModels, UserInvoiceSeries, UserInvoiceSeriesAttributes} from "../db/models/init-models";
+import {initModels, Partner, UserInvoiceSeries, UserInvoiceSeriesAttributes} from "../db/models/init-models";
 import {CreateUserDto} from "../dtos/create.user.dto";
-import {cryptPassword} from "../common/encryption";
+import {cryptPassword, encryptPassword} from "../common/encryption";
 import debug from "debug";
-import {UserDto} from "../dtos/user.dto";
+import {CreateUserPartnerEmail, UserDto} from "../dtos/user.dto";
 import {CreateUserInvoiceSeriesDto} from "../dtos/create.user-invoice-series.dto";
 
 const log: debug.IDebugger = debug("app:users-controller");
@@ -85,7 +85,7 @@ class UserService {
     try {
       await existingDefault.save();
       return;
-    } catch(err) {
+    } catch (err) {
       console.error(err);
     }
   }
@@ -108,7 +108,7 @@ class UserService {
     try {
       await newDefault.save();
       return newDefault;
-    } catch(err) {
+    } catch (err) {
       console.error(err);
     }
   }
@@ -154,6 +154,99 @@ class UserService {
     });
 
     return userSeries;
+  }
+
+  async createUserPartnerEmail(userPartnerEmail: CreateUserPartnerEmail) {
+    const models = initModels(sequelize);
+
+    userPartnerEmail.password = await encryptPassword(userPartnerEmail.password);
+
+    try {
+      await models.UserPartnerEmail.create(userPartnerEmail);
+
+      return {code: 201, message: 'Adresa de email a fost creata.'};
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async getUserPartnerEmails(decodedToken: any) {
+    const models = initModels(sequelize);
+
+    const userPartnerEmails = await models.UserPartnerEmail.findAll({
+      where: {
+        user_id: decodedToken._id
+      },
+      include: [
+        {model: Partner, as: 'partner'}
+      ]
+    });
+
+    return userPartnerEmails.map((userPartnerEmail) => ({
+      user_id: userPartnerEmail.user_id,
+      partner_id: userPartnerEmail.partner_id,
+      smtp: userPartnerEmail.smtp,
+      partner_email: userPartnerEmail.partner_email,
+      partner_name: userPartnerEmail.partner.name
+    }));
+  }
+
+  async getUserPartnerEmail(userPartnerEmailId: number) {
+    const models = initModels(sequelize);
+
+    const userPartnerEmail = await models.UserPartnerEmail.findOne({
+      where: {
+        user_partner_email_id: userPartnerEmailId
+      },
+      include: []
+    });
+
+    return {
+      user_partner_email_id: userPartnerEmail.user_partner_email_id,
+      partner_id: userPartnerEmail.partner_id,
+      user_id: userPartnerEmail.user_id,
+      partner_email: userPartnerEmail.partner_email
+    };
+  }
+
+  async updateUserPartnerEmail(userPartnerToUpdate: any) {
+    const models = initModels(sequelize);
+
+    const existingUserPartner = await models.UserPartnerEmail.findOne({
+      where: {
+        user_partner_email_id: userPartnerToUpdate.user_partner_email_id
+      }
+    });
+
+    existingUserPartner.partner_email = userPartnerToUpdate.partner_email;
+    existingUserPartner.smtp = userPartnerToUpdate.smtp;
+
+    try {
+      await existingUserPartner.save();
+
+      return {code: 200, message: 'Datele utilizatorului au fost actualizate'}
+    }
+    catch (error) {
+      console.error(error);
+    }
+  }
+
+  async removeUserPartnerEmail(userPartnerEmailId: number) {
+    const models = initModels(sequelize);
+
+    const existingUserPartner = await models.UserPartnerEmail.findOne(({
+      where: {
+        user_partner_email_id: userPartnerEmailId
+      }
+    }));
+
+    try {
+      await existingUserPartner.destroy();
+
+      return {code: 200, message: 'Datele utilizatorului au fost sterse'}
+    } catch(err) {
+      console.error(err);
+    }
   }
 }
 

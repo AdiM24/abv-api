@@ -3,7 +3,7 @@ import {Address, AddressAttributes, BankAccount, Contact, initModels, Partner,} 
 import {CreateAddressDto, CreateBankAccountDto, CreateContactDto, CreatePartnerDto,} from "../dtos/create.partner.dto";
 import {addOrUpdate} from "./utils.service";
 import {Op} from "sequelize";
-import {getDateRangeQuery, getLikeQuery,} from "../common/utils/query-utils.service";
+import {getDateRangeQuery, getLikeQuery, getStrictQuery,} from "../common/utils/query-utils.service";
 import {UpdateAddressDto, UpdateBankAccountDto, UpdateContactDto,} from "../dtos/update.partner.dto";
 
 class PartnerService {
@@ -194,6 +194,10 @@ class PartnerService {
     const models = initModels(sequelize);
 
     const queryObject = {} as any;
+
+    if (queryParams.user_id) {
+      queryObject.user_id = getStrictQuery(queryParams.user_id);
+    }
 
     if (queryParams.created_at_from || queryParams.created_at_to)
       queryObject.created_at_utc = getDateRangeQuery(

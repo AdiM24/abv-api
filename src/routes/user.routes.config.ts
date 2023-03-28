@@ -3,6 +3,8 @@ import express from "express";
 import UsersController from "../controllers/user.controller";
 import UsersMiddleware from "../middleware/user.middleware";
 import AuthMiddleware from "../middleware/auth.middleware";
+import UserController from "../controllers/user.controller";
+import UserMiddleware from "../middleware/user.middleware";
 
 export class UserRoutes extends CommonRoutesConfig {
   constructor(app: express.Application) {
@@ -29,6 +31,13 @@ export class UserRoutes extends CommonRoutesConfig {
     this.app
       .route("/users/series/change")
       .post(AuthMiddleware.auth, UsersController.changeDefaultSeries)
+
+    this.app
+      .route("/users/email")
+      .get(AuthMiddleware.auth, UserController.getUserPartnerEmails)
+      .post(AuthMiddleware.auth, UserMiddleware.validateClaimingUser, UserController.createUserPartnerEmail)
+      .delete(AuthMiddleware.auth, UserMiddleware.validateUserPartnerEmail, UserController.removeUserPartnerEmail)
+      .put(AuthMiddleware.auth, UserMiddleware.validateClaimingUser, UserController.updateUserPartnerEmail)
 
     return this.app;
   }

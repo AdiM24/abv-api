@@ -14,6 +14,7 @@ import { TimesheetRoutes } from "./routes/timesheet.routes.config";
 import {AutoFleetRoutes} from "./routes/auto-fleet.routes.config";
 import { RegisterRoutes } from "./routes/register.routes.config";
 import { ReceiptRoutes } from "./routes/receipt.routes.config";
+import {EmailRoutes} from "./routes/email.routes.config";
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ const app: Express = express();
 const port = process.env.PORT;
 const routes: Array<CommonRoutesConfig> = [];
 
-app.use(express.json());
+app.use(express.json({limit: '10MB'}));
 app.use(cors());
 
 const loggerOptions: expressWinston.LoggerOptions = {
@@ -44,7 +45,8 @@ routes.push(new EmployeeRoutes(app));
 routes.push(new TimesheetRoutes(app));
 routes.push(new AutoFleetRoutes(app));
 routes.push(new RegisterRoutes(app));
-routes.push(new ReceiptRoutes(app))
+routes.push(new ReceiptRoutes(app));
+routes.push(new EmailRoutes(app));
 
 const runningMessage = `Server running at http://localhost:${port}`;
 app.get("/", (req: express.Request, res: express.Response) => {

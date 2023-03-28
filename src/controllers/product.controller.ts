@@ -47,8 +47,6 @@ class ProductController {
   async updateProduct(req: express.Request, res: express.Response) {
     const result = await ProductService.updateProduct(req.body);
 
-    console.log(result);
-
     return res.status(200).send(result);
   }
 
