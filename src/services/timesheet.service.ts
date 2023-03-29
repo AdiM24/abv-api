@@ -39,7 +39,7 @@ class TimesheetService {
       where: {
         partner_id: userPartners.map((userPartner: Partner) => userPartner.partner_id)
       },
-      include: [{model: TimesheetEntry, as: "timesheetEntries"}]
+      include: [{model: TimesheetEntry, as: "TimesheetEntries"}]
     });
   }
 
