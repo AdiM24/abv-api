@@ -26,7 +26,7 @@ class PartnerMiddleware {
     }
 
     next();
-  }
+  };
 
   validatePartnerAlreadyExists = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const tin = req.body?.unique_identification_number;
@@ -42,6 +42,26 @@ class PartnerMiddleware {
 
     next();
   };
+
+  validatePartnerUpdate = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const requiredFields = ['name', 'unique_identification_number', 'trade_register_registration_number', 'address', 'vat_payer', 'vat_split', 'vat_collection', 'partner_id'];
+
+    if (!requiredFields.every((key: string) => Object.keys(req.body).includes(key))) {
+      return res.status(400).send({code: 400, message: 'Unul sau mai multi parametrii sunt invalizi'});
+    }
+
+    const existingPartner = PartnerService.getPartner(req.body.partner_id);
+
+    if (!existingPartner) {
+      return res.status(404).send({error: 404, message: 'Partenerul nu a fost gasit in sistem'});
+    }
+
+    if(await PartnerService.getUniquePartner(req.body.partner_id, req.body.unique_identification_number)) {
+      return res.status(400).send({error: 400, message: 'CUI-ul introdus nu este unic'});
+    }
+
+    next();
+  }
 
   validateUserPartner = async (req: CustomRequest, res: express.Response, next: express.NextFunction) => {
     const userId = (req.token as any)?._id;

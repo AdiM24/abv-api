@@ -76,6 +76,12 @@ class PartnerController {
 
     return res.status(200).send(result);
   }
+
+  async updatePartner(req: express.Request, res: express.Response) {
+    const result = await PartnerService.updatePartner(req.body);
+
+    return res.status(200).send(result);
+  }
 }
 
 export default new PartnerController();

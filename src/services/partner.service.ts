@@ -4,7 +4,7 @@ import {CreateAddressDto, CreateBankAccountDto, CreateContactDto, CreatePartnerD
 import {addOrUpdate} from "./utils.service";
 import {Op} from "sequelize";
 import {getDateRangeQuery, getLikeQuery, getStrictQuery,} from "../common/utils/query-utils.service";
-import {UpdateAddressDto, UpdateBankAccountDto, UpdateContactDto,} from "../dtos/update.partner.dto";
+import {UpdateAddressDto, UpdateBankAccountDto, UpdateContactDto, UpdatePartnerDto,} from "../dtos/update.partner.dto";
 
 class PartnerService {
   async addPartner(partnerToAdd: CreatePartnerDto, decodedToken: any) {
@@ -16,7 +16,7 @@ class PartnerService {
 
     try {
       if (partnerToAdd.vat_payer) {
-        partnerToAdd.trade_register_registration_number = 'RO' + partnerToAdd.unique_identification_number;
+        partnerToAdd.unique_identification_number = 'RO' + partnerToAdd.unique_identification_number;
       }
 
       if (partnerToAdd.is_user_partner) {
@@ -85,6 +85,36 @@ class PartnerService {
     } catch (err) {
       console.error(err);
     }
+  }
+
+  async updatePartner(partnerToAdd: UpdatePartnerDto) {
+    const models = initModels(sequelize);
+
+    const existingPartner = await models.Partner.findOne({
+      where: {
+        partner_id: partnerToAdd.partner_id
+      }
+    });
+
+    existingPartner.modified_at_utc = new Date();
+
+    const actualTin = partnerToAdd.unique_identification_number.split('RO');
+
+    if (partnerToAdd.vat_payer) {
+      partnerToAdd.unique_identification_number = `RO${actualTin[actualTin.length - 1]}`
+    } else {
+      partnerToAdd.unique_identification_number = actualTin[actualTin.length - 1]
+    }
+
+    try {
+      await existingPartner.update(partnerToAdd);
+
+      await existingPartner.save();
+    } catch (error) {
+      console.error(error);
+    }
+
+    return {code: 200, message: 'Partenerul a fost actualizat'};
   }
 
   async getPartners() {
@@ -350,6 +380,21 @@ class PartnerService {
         user_id: userId
       }
     })
+  }
+
+  async getUniquePartner(partnerId: number, unique: string) {
+    const models = initModels(sequelize);
+
+    const existingUser = await models.Partner.findOne({
+      where: {
+        unique_identification_number: unique,
+        [Op.not]: {
+          partner_id: partnerId
+        }
+      }
+    });
+
+    return existingUser;
   }
 }
 

@@ -37,7 +37,13 @@ class ProductService {
   async getProducts() {
     const models = initModels(sequelize);
 
-    const products = await models.Product.findAll();
+    const products = await models.Product.findAll({
+      where: {
+        [Op.not]: {
+          type: 'service'
+        }
+      }
+    });
 
     products.forEach((product: Product) => {
       product.get().created_at_utc.toLocaleString();
