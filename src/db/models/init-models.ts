@@ -152,6 +152,8 @@ export function initModels(sequelize: Sequelize) {
   Partner.hasMany(Invoice, { as: "Invoices", foreignKey: "buyer_id"});
   Invoice.belongsTo(Partner, { as: "client", foreignKey: "client_id"});
   Partner.hasMany(Invoice, { as: "client_Invoices", foreignKey: "client_id"});
+  Invoice.belongsTo(Partner, { as: "transporter", foreignKey: "transporter_id"});
+  Partner.hasMany(Invoice, { as: "transporter_Invoices", foreignKey: "transporter_id"});
   Receipt.belongsTo(Partner, { as: "buyer_partner", foreignKey: "buyer_partner_id"});
   Partner.hasMany(Receipt, { as: "Receipts", foreignKey: "buyer_partner_id"});
   Receipt.belongsTo(Partner, { as: "seller_partner", foreignKey: "seller_partner_id"});

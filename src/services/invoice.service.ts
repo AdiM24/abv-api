@@ -209,15 +209,25 @@ class InvoiceService {
   async addOrder(orderToAdd: any, decodedJwt: any = undefined) {
     const models = initModels(sequelize);
 
-    const invoiceData: CreateInvoiceDto = {
+    const userPartner = (await models.Partner.findOne({
+      where: {
+        user_id: decodedJwt._id
+      }
+    })).partner_id;
+
+    const invoiceData: any = {
+      client_id: userPartner,
       buyer_id: orderToAdd.buyer_id,
-      client_id: orderToAdd.client_id,
+      transporter_id: orderToAdd.transporter_id,
       created_at_utc: orderToAdd.created_at_utc,
       currency: orderToAdd.currency,
       number: orderToAdd.number,
       series: orderToAdd.series,
+      transporter_price: parseFloat(Number(orderToAdd.transport_price).toFixed(2)),
       total_price: parseFloat(Number(orderToAdd.price).toFixed(2)),
       total_price_incl_vat: 0,
+      driver_info: orderToAdd.driver_info,
+      car_reg_number: orderToAdd.car_reg_no,
       status: 'unpaid',
       sent_status: 'not sent',
       type: 'order',
@@ -313,12 +323,16 @@ class InvoiceService {
           model: Partner, as: 'client'
         },
         {
+          model: Partner, as: 'transporter'
+        },
+        {
           model: OrderDetails, as: 'OrderDetails',
           include: [{model: OrderGoods, as: 'OrderGoods'}]
         },
       ]
     })
   }
+
 
   async findInvoice(condition: WhereOptions<InvoiceAttributes>) {
     const models = initModels(sequelize);
@@ -405,6 +419,21 @@ class InvoiceService {
     existingInvoice.number = invoiceUpdate.number;
     existingInvoice.status = invoiceUpdate.status;
     existingInvoice.sent_status = invoiceUpdate.sent_status;
+
+    if (existingInvoice.type === 'order') {
+      if (invoiceUpdate.currency === 'RON') {
+        existingInvoice.total_price_incl_vat = parseFloat((Number(invoiceUpdate.total_price) + (Number(invoiceUpdate.total_price) * 19.0 / 100.0)).toFixed(2))
+      }
+
+      if (invoiceUpdate.currency === 'EUR') {
+        existingInvoice.total_price_incl_vat = invoiceUpdate.total_price
+      }
+
+      existingInvoice.transporter_price = invoiceUpdate.transporter_price;
+      existingInvoice.transporter_id = invoiceUpdate.transporter_id;
+      existingInvoice.driver_info = invoiceUpdate.driver_info;
+      existingInvoice.car_reg_number = invoiceUpdate.car_reg_number;
+    }
 
     try {
       await existingInvoice.save();
