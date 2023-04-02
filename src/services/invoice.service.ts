@@ -1,6 +1,6 @@
 import {sequelize} from "../db/sequelize";
 import {
-  BankAccount,
+  BankAccount, Contact,
   initModels,
   Invoice,
   InvoiceAttributes,
@@ -317,7 +317,8 @@ class InvoiceService {
       },
       include: [
         {
-          model: Partner, as: 'buyer'
+          model: Partner, as: 'buyer',
+          include: [{model: Contact, as :'Contacts'}]
         },
         {
           model: Partner, as: 'client'
@@ -332,7 +333,6 @@ class InvoiceService {
       ]
     })
   }
-
 
   async findInvoice(condition: WhereOptions<InvoiceAttributes>) {
     const models = initModels(sequelize);
