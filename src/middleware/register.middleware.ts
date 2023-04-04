@@ -2,6 +2,7 @@ import { CustomRequest } from "./auth.middleware";
 import express, { NextFunction } from "express";
 import RegisterService from "../services/register.service";
 import PartnerService from "../services/partner.service";
+import UserPartnerMappingService from "../services/user-partner-mapping.service";
 
 class RegisterMiddleware {
   async validateSufficientFunds(req: CustomRequest, res: express.Response, next: NextFunction) {
@@ -37,7 +38,7 @@ class RegisterMiddleware {
   }
 
   async validateUserRegister(req: CustomRequest, res: express.Response, next: NextFunction) {
-    const userPartners = await PartnerService.getUserPartners((req.token as any)._id);
+    const userPartners = await UserPartnerMappingService.getUserPartnerMappings((req.token as any)._id);
 
     const partner_id = req.body?.payment_type === "PLATA" ? req.body?.buyer_partner_id : req.body?.seller_partner_id;
 

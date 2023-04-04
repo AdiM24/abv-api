@@ -1,10 +1,19 @@
 import {sequelize} from "../db/sequelize";
-import {Address, AddressAttributes, BankAccount, Contact, initModels, Partner,} from "../db/models/init-models";
+import {
+  Address,
+  AddressAttributes,
+  BankAccount,
+  Contact,
+  initModels,
+  Partner,
+  UserPartnerMap,
+} from "../db/models/init-models";
 import {CreateAddressDto, CreateBankAccountDto, CreateContactDto, CreatePartnerDto,} from "../dtos/create.partner.dto";
 import {addOrUpdate} from "./utils.service";
 import {Op} from "sequelize";
 import {getDateRangeQuery, getLikeQuery, getStrictQuery,} from "../common/utils/query-utils.service";
 import {UpdateAddressDto, UpdateBankAccountDto, UpdateContactDto, UpdatePartnerDto,} from "../dtos/update.partner.dto";
+import UserPartnerMappingService from "./user-partner-mapping.service";
 
 class PartnerService {
   async addPartner(partnerToAdd: CreatePartnerDto, decodedToken: any) {
@@ -140,12 +149,13 @@ class PartnerService {
 
     let partners: Partner[] = [];
 
+    const userPartnerIds = await UserPartnerMappingService.getUserPartnerMappings(decodedToken._id);
     try {
       if (decodedToken) {
         partners = await models.Partner.findAll({
           where: {
             name: getLikeQuery(searchKey),
-            user_id: decodedToken._id
+            partner_id: userPartnerIds.map((userPartnerMap: UserPartnerMap) => userPartnerMap.partner_id)
           }
         })
       } else {
@@ -195,9 +205,11 @@ class PartnerService {
 
     let partnerAddresses: Address[];
 
+    const userPartnerIds = await UserPartnerMappingService.getUserPartnerMappings(decodedJwt._id);
+
     const userPartners = await models.Partner.findAll({
       where: {
-        user_id: decodedJwt._id
+        partner_id: userPartnerIds.map((userPartnerMap: UserPartnerMap) => userPartnerMap.partner_id)
       }
     });
 
@@ -370,16 +382,6 @@ class PartnerService {
     const models = initModels(sequelize);
 
     return await models.BankAccount.create(bankAccount);
-  }
-
-  async getUserPartners(userId: number) {
-    const models = initModels(sequelize);
-
-    return await models.Partner.findAll({
-      where: {
-        user_id: userId
-      }
-    })
   }
 
   async getUniquePartner(partnerId: number, unique: string) {

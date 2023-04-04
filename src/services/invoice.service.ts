@@ -1,6 +1,7 @@
 import {sequelize} from "../db/sequelize";
 import {
-  BankAccount, Contact,
+  BankAccount,
+  Contact,
   initModels,
   Invoice,
   InvoiceAttributes,
@@ -9,7 +10,8 @@ import {
   OrderGoods,
   Partner,
   Product,
-  UserInvoiceSeries
+  UserInvoiceSeries,
+  UserPartnerMap
 } from "../db/models/init-models";
 import {CreateInvoiceDto} from "../dtos/create.invoice.dto";
 import {
@@ -20,7 +22,7 @@ import {
 import {Op, WhereOptions} from "sequelize";
 import {getInQuery, getStrictQuery} from "../common/utils/query-utils.service";
 import UserService from "./user.service";
-import PartnerService from "./partner.service";
+import UserPartnerMappingService from "./user-partner-mapping.service";
 
 class InvoiceService {
   async getInvoices() {
@@ -36,15 +38,15 @@ class InvoiceService {
 
     const queryObject = {} as any;
 
-    const userPartners = (await PartnerService.getUserPartners(decodedJwt._id))
-      ?.map((userPartner: Partner) => userPartner.partner_id);
+    const userPartnerIds = (await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id))).map(
+      (userPartner: UserPartnerMap) => userPartner.partner_id);
 
     if (queryParams.type) {
       queryObject.type = getStrictQuery(queryParams.type);
       if (queryParams.type === 'issued') {
-        queryObject.client_id = getInQuery(userPartners);
+        queryObject.client_id = getInQuery(userPartnerIds);
       } else if (queryParams.type === 'received') {
-        queryObject.buyer_id = getInQuery(userPartners);
+        queryObject.buyer_id = getInQuery(userPartnerIds);
       }
     }
 
@@ -94,6 +96,7 @@ class InvoiceService {
       invoiceToAdd.car_reg_number = invoiceToAdd.car_reg_number.replace(/ /g, '').toUpperCase();
       invoiceToAdd.driver_name = decodedJwt.name;
       invoiceToAdd.created_at_utc = new Date().toUTCString();
+      invoiceToAdd.user_id = Number(decodedJwt._id);
     }
 
     const createdInvoice = await this.createInvoice(invoiceToAdd, models);
@@ -209,14 +212,11 @@ class InvoiceService {
   async addOrder(orderToAdd: any, decodedJwt: any = undefined) {
     const models = initModels(sequelize);
 
-    const userPartner = (await models.Partner.findOne({
-      where: {
-        user_id: decodedJwt._id
-      }
-    })).partner_id;
+    const userPartnerId = (await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id))).map(
+      (userPartner: UserPartnerMap) => userPartner.partner_id)[0];
 
     const invoiceData: any = {
-      client_id: userPartner,
+      client_id: userPartnerId,
       buyer_id: orderToAdd.buyer_id,
       transporter_id: orderToAdd.transporter_id,
       created_at_utc: orderToAdd.created_at_utc,
@@ -231,10 +231,15 @@ class InvoiceService {
       status: 'unpaid',
       sent_status: 'not sent',
       type: 'order',
+      user_id: Number(decodedJwt._id)
     }
 
     if (orderToAdd.currency === 'RON') {
-      invoiceData.total_price_incl_vat = parseFloat((Number(invoiceData.total_price) + (Number(invoiceData.total_price) * 19.0 / 100.0)).toFixed(2))
+      invoiceData.total_price_incl_vat =
+        parseFloat(
+          (Number(invoiceData.total_price) + (Number(invoiceData.total_price) * 19.0 / 100.0))
+            .toFixed(2)
+        )
     }
 
     if (orderToAdd.currency === 'EUR') {
@@ -318,7 +323,7 @@ class InvoiceService {
       include: [
         {
           model: Partner, as: 'buyer',
-          include: [{model: Contact, as :'Contacts'}]
+          include: [{model: Contact, as: 'Contacts'}]
         },
         {
           model: Partner, as: 'client'

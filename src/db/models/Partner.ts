@@ -9,7 +9,8 @@ import type { Contact, ContactId } from './Contact';
 import type { Employee, EmployeeId } from './Employee';
 import type { Invoice, InvoiceId } from './Invoice';
 import type { Receipt, ReceiptId } from './Receipt';
-import type { User, UserId } from './User';
+import type { UserPartnerEmail, UserPartnerEmailId } from './UserPartnerEmail';
+import type { UserPartnerMap, UserPartnerMapId } from './UserPartnerMap';
 
 export interface PartnerAttributes {
   partner_id: number;
@@ -26,12 +27,11 @@ export interface PartnerAttributes {
   created_at_utc: Date;
   modified_at_utc: Date;
   address?: string;
-  user_id?: number;
 }
 
 export type PartnerPk = "partner_id";
 export type PartnerId = Partner[PartnerPk];
-export type PartnerOptionalAttributes = "partner_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc" | "address" | "user_id";
+export type PartnerOptionalAttributes = "partner_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc" | "address";
 export type PartnerCreationAttributes = Optional<PartnerAttributes, PartnerOptionalAttributes>;
 
 export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes> implements PartnerAttributes {
@@ -49,7 +49,6 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   created_at_utc!: Date;
   modified_at_utc!: Date;
   address?: string;
-  user_id?: number;
 
   // Partner hasMany Address via partner_id
   Addresses!: Address[];
@@ -159,6 +158,18 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   hasClient_Invoice!: Sequelize.HasManyHasAssociationMixin<Invoice, InvoiceId>;
   hasClient_Invoices!: Sequelize.HasManyHasAssociationsMixin<Invoice, InvoiceId>;
   countClient_Invoices!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany Invoice via transporter_id
+  transporter_Invoices!: Invoice[];
+  getTransporter_Invoices!: Sequelize.HasManyGetAssociationsMixin<Invoice>;
+  setTransporter_Invoices!: Sequelize.HasManySetAssociationsMixin<Invoice, InvoiceId>;
+  addTransporter_Invoice!: Sequelize.HasManyAddAssociationMixin<Invoice, InvoiceId>;
+  addTransporter_Invoices!: Sequelize.HasManyAddAssociationsMixin<Invoice, InvoiceId>;
+  createTransporter_Invoice!: Sequelize.HasManyCreateAssociationMixin<Invoice>;
+  removeTransporter_Invoice!: Sequelize.HasManyRemoveAssociationMixin<Invoice, InvoiceId>;
+  removeTransporter_Invoices!: Sequelize.HasManyRemoveAssociationsMixin<Invoice, InvoiceId>;
+  hasTransporter_Invoice!: Sequelize.HasManyHasAssociationMixin<Invoice, InvoiceId>;
+  hasTransporter_Invoices!: Sequelize.HasManyHasAssociationsMixin<Invoice, InvoiceId>;
+  countTransporter_Invoices!: Sequelize.HasManyCountAssociationsMixin;
   // Partner hasMany Receipt via buyer_partner_id
   Receipts!: Receipt[];
   getReceipts!: Sequelize.HasManyGetAssociationsMixin<Receipt>;
@@ -183,11 +194,30 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   hasSeller_partner_Receipt!: Sequelize.HasManyHasAssociationMixin<Receipt, ReceiptId>;
   hasSeller_partner_Receipts!: Sequelize.HasManyHasAssociationsMixin<Receipt, ReceiptId>;
   countSeller_partner_Receipts!: Sequelize.HasManyCountAssociationsMixin;
-  // Partner belongsTo User via user_id
-  user!: User;
-  getUser!: Sequelize.BelongsToGetAssociationMixin<User>;
-  setUser!: Sequelize.BelongsToSetAssociationMixin<User, UserId>;
-  createUser!: Sequelize.BelongsToCreateAssociationMixin<User>;
+  // Partner hasMany UserPartnerEmail via partner_id
+  UserPartnerEmails!: UserPartnerEmail[];
+  getUserPartnerEmails!: Sequelize.HasManyGetAssociationsMixin<UserPartnerEmail>;
+  setUserPartnerEmails!: Sequelize.HasManySetAssociationsMixin<UserPartnerEmail, UserPartnerEmailId>;
+  addUserPartnerEmail!: Sequelize.HasManyAddAssociationMixin<UserPartnerEmail, UserPartnerEmailId>;
+  addUserPartnerEmails!: Sequelize.HasManyAddAssociationsMixin<UserPartnerEmail, UserPartnerEmailId>;
+  createUserPartnerEmail!: Sequelize.HasManyCreateAssociationMixin<UserPartnerEmail>;
+  removeUserPartnerEmail!: Sequelize.HasManyRemoveAssociationMixin<UserPartnerEmail, UserPartnerEmailId>;
+  removeUserPartnerEmails!: Sequelize.HasManyRemoveAssociationsMixin<UserPartnerEmail, UserPartnerEmailId>;
+  hasUserPartnerEmail!: Sequelize.HasManyHasAssociationMixin<UserPartnerEmail, UserPartnerEmailId>;
+  hasUserPartnerEmails!: Sequelize.HasManyHasAssociationsMixin<UserPartnerEmail, UserPartnerEmailId>;
+  countUserPartnerEmails!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany UserPartnerMap via partner_id
+  UserPartnerMaps!: UserPartnerMap[];
+  getUserPartnerMaps!: Sequelize.HasManyGetAssociationsMixin<UserPartnerMap>;
+  setUserPartnerMaps!: Sequelize.HasManySetAssociationsMixin<UserPartnerMap, UserPartnerMapId>;
+  addUserPartnerMap!: Sequelize.HasManyAddAssociationMixin<UserPartnerMap, UserPartnerMapId>;
+  addUserPartnerMaps!: Sequelize.HasManyAddAssociationsMixin<UserPartnerMap, UserPartnerMapId>;
+  createUserPartnerMap!: Sequelize.HasManyCreateAssociationMixin<UserPartnerMap>;
+  removeUserPartnerMap!: Sequelize.HasManyRemoveAssociationMixin<UserPartnerMap, UserPartnerMapId>;
+  removeUserPartnerMaps!: Sequelize.HasManyRemoveAssociationsMixin<UserPartnerMap, UserPartnerMapId>;
+  hasUserPartnerMap!: Sequelize.HasManyHasAssociationMixin<UserPartnerMap, UserPartnerMapId>;
+  hasUserPartnerMaps!: Sequelize.HasManyHasAssociationsMixin<UserPartnerMap, UserPartnerMapId>;
+  countUserPartnerMaps!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Partner {
     return Partner.init({
@@ -252,14 +282,6 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
     address: {
       type: DataTypes.STRING,
       allowNull: true
-    },
-    user_id: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-      references: {
-        model: 'User',
-        key: 'user_id'
-      }
     }
   }, {
     sequelize,

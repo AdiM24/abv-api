@@ -5,6 +5,7 @@ import type { InvoiceProduct, InvoiceProductId } from './InvoiceProduct';
 import type { OrderDetails, OrderDetailsId } from './OrderDetails';
 import type { Partner, PartnerId } from './Partner';
 import type { Receipt, ReceiptId } from './Receipt';
+import type { User, UserId } from './User';
 
 export interface InvoiceAttributes {
   invoice_id: number;
@@ -28,6 +29,7 @@ export interface InvoiceAttributes {
   total_paid_price: number;
   transporter_id?: number;
   transporter_price?: number;
+  user_id: number;
 }
 
 export type InvoicePk = "invoice_id";
@@ -57,6 +59,7 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   total_paid_price!: number;
   transporter_id?: number;
   transporter_price?: number;
+  user_id!: number;
 
   // Invoice belongsTo Address via drop_off_address_id
   drop_off_address!: Address;
@@ -119,6 +122,11 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   getTransporter!: Sequelize.BelongsToGetAssociationMixin<Partner>;
   setTransporter!: Sequelize.BelongsToSetAssociationMixin<Partner, PartnerId>;
   createTransporter!: Sequelize.BelongsToCreateAssociationMixin<Partner>;
+  // Invoice belongsTo User via user_id
+  user!: User;
+  getUser!: Sequelize.BelongsToGetAssociationMixin<User>;
+  setUser!: Sequelize.BelongsToSetAssociationMixin<User, UserId>;
+  createUser!: Sequelize.BelongsToCreateAssociationMixin<User>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Invoice {
     return Invoice.init({
@@ -233,6 +241,14 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
     transporter_price: {
       type: DataTypes.DECIMAL,
       allowNull: true
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'User',
+        key: 'user_id'
+      }
     }
   }, {
     sequelize,

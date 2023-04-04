@@ -20,4 +20,5 @@ export interface CreateInvoiceDto {
   currency?: 'RON' | 'EUR';
   total_price?: number;
   total_price_incl_vat?: number;
+  user_id?: number;
 }

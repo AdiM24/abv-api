@@ -3,6 +3,8 @@ import InvoiceService from "../services/invoice.service";
 import {CustomRequest} from "./auth.middleware";
 import PartnerService from "../services/partner.service";
 import {Partner} from "../db/models/Partner";
+import UserPartnerMappingService from "../services/user-partner-mapping.service";
+import {UserPartnerMap} from "../db/models/init-models";
 
 class InvoiceMiddleware {
   validateIssuedInvoiceCreationDate = async (
@@ -136,11 +138,11 @@ class InvoiceMiddleware {
     }
 
     const userId = (req.token as any)?._id;
-    const userPartners = await PartnerService.getUserPartners(Number(userId));
+    const userPartnerMappings = await UserPartnerMappingService.getUserPartnerMappings(Number(userId));
 
     if (req.body.type === 'issued') {
 
-      const existingUserPartner = userPartners.find((userPartner: Partner) => userPartner.partner_id === req.body.client_id);
+      const existingUserPartner = userPartnerMappings.find((userPartner: UserPartnerMap) => userPartner.partner_id === req.body.client_id);
 
       if (!existingUserPartner) {
         return res.status(404).send({code: 404, message: 'Firma nu este asociata acestui utilizator.'});
@@ -148,7 +150,7 @@ class InvoiceMiddleware {
     }
 
     if (req.body.type === 'received') {
-      const existingUserPartner = userPartners.find((userPartner: Partner) => userPartner.partner_id === req.body.buyer_id);
+      const existingUserPartner = userPartnerMappings.find((userPartner: UserPartnerMap) => userPartner.partner_id === req.body.buyer_id);
 
       if (!existingUserPartner) {
         return res.status(404).send({code: 404, message: 'Firma nu este asociata acestui utilizator.'});

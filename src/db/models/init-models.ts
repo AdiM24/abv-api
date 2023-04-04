@@ -35,6 +35,8 @@ import { UserInvoiceSeries as _UserInvoiceSeries } from "./UserInvoiceSeries";
 import type { UserInvoiceSeriesAttributes, UserInvoiceSeriesCreationAttributes } from "./UserInvoiceSeries";
 import { UserPartnerEmail as _UserPartnerEmail } from "./UserPartnerEmail";
 import type { UserPartnerEmailAttributes, UserPartnerEmailCreationAttributes } from "./UserPartnerEmail";
+import { UserPartnerMap as _UserPartnerMap } from "./UserPartnerMap";
+import type { UserPartnerMapAttributes, UserPartnerMapCreationAttributes } from "./UserPartnerMap";
 
 export {
   _Address as Address,
@@ -55,6 +57,7 @@ export {
   _User as User,
   _UserInvoiceSeries as UserInvoiceSeries,
   _UserPartnerEmail as UserPartnerEmail,
+  _UserPartnerMap as UserPartnerMap,
 };
 
 export type {
@@ -94,6 +97,8 @@ export type {
   UserInvoiceSeriesCreationAttributes,
   UserPartnerEmailAttributes,
   UserPartnerEmailCreationAttributes,
+  UserPartnerMapAttributes,
+  UserPartnerMapCreationAttributes,
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -115,6 +120,7 @@ export function initModels(sequelize: Sequelize) {
   const User = _User.initModel(sequelize);
   const UserInvoiceSeries = _UserInvoiceSeries.initModel(sequelize);
   const UserPartnerEmail = _UserPartnerEmail.initModel(sequelize);
+  const UserPartnerMap = _UserPartnerMap.initModel(sequelize);
 
   Invoice.belongsTo(Address, { as: "drop_off_address", foreignKey: "drop_off_address_id"});
   Address.hasMany(Invoice, { as: "Invoices", foreignKey: "drop_off_address_id"});
@@ -160,14 +166,18 @@ export function initModels(sequelize: Sequelize) {
   Partner.hasMany(Receipt, { as: "seller_partner_Receipts", foreignKey: "seller_partner_id"});
   UserPartnerEmail.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(UserPartnerEmail, { as: "UserPartnerEmails", foreignKey: "partner_id"});
+  UserPartnerMap.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
+  Partner.hasMany(UserPartnerMap, { as: "UserPartnerMaps", foreignKey: "partner_id"});
   InvoiceProduct.belongsTo(Product, { as: "product", foreignKey: "product_id"});
   Product.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "product_id"});
-  Partner.belongsTo(User, { as: "user", foreignKey: "user_id"});
-  User.hasMany(Partner, { as: "Partners", foreignKey: "user_id"});
+  Invoice.belongsTo(User, { as: "user", foreignKey: "user_id"});
+  User.hasMany(Invoice, { as: "Invoices", foreignKey: "user_id"});
   UserInvoiceSeries.belongsTo(User, { as: "user", foreignKey: "user_id"});
   User.hasMany(UserInvoiceSeries, { as: "UserInvoiceSeries", foreignKey: "user_id"});
   UserPartnerEmail.belongsTo(User, { as: "user", foreignKey: "user_id"});
   User.hasMany(UserPartnerEmail, { as: "UserPartnerEmails", foreignKey: "user_id"});
+  UserPartnerMap.belongsTo(User, { as: "user", foreignKey: "user_id"});
+  User.hasMany(UserPartnerMap, { as: "UserPartnerMaps", foreignKey: "user_id"});
 
   return {
     Address: Address,
@@ -188,5 +198,6 @@ export function initModels(sequelize: Sequelize) {
     User: User,
     UserInvoiceSeries: UserInvoiceSeries,
     UserPartnerEmail: UserPartnerEmail,
+    UserPartnerMap: UserPartnerMap,
   };
 }

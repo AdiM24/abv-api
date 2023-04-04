@@ -1,8 +1,9 @@
 import {CustomRequest} from "./auth.middleware";
 import express, {NextFunction} from "express";
-import PartnerService from "../services/partner.service";
 import AutoFleetService from "../services/auto-fleet.service";
 import {AutoFleet} from "../db/models/AutoFleet";
+import {UserPartnerMap} from "../db/models/init-models";
+import UserPartnerMappingService from "../services/user-partner-mapping.service";
 
 class AutoFleetMiddleware {
   async validateExistingRegNo(req: express.Request, res: express.Response, next: NextFunction) {
@@ -79,7 +80,7 @@ class AutoFleetMiddleware {
     next: NextFunction
   ) {
     const userId = (req.token as any)._id;
-    const userPartners = await PartnerService.getUserPartners(userId);
+    const userPartners = await UserPartnerMappingService.getUserPartnerMappings(Number(userId));
 
     let existingAutoFleet: AutoFleet;
 
@@ -95,7 +96,7 @@ class AutoFleetMiddleware {
       return res.status(404).send({code: 404, message: 'Masina nu a fost gasita in sistem'});
     }
 
-    if (!userPartners.some((userPartner) => userPartner.partner_id === existingAutoFleet.partner_id)) {
+    if (!userPartners.some((userPartner: UserPartnerMap) => userPartner.partner_id === existingAutoFleet.partner_id)) {
       return res.status(400).send({code: 400, message: 'Masina nu apartine uneia dintre firmele utilizatorului.'})
     }
 

@@ -2,6 +2,8 @@ import express from "express";
 import PartnerService from "../services/partner.service";
 import {CustomRequest} from "./auth.middleware";
 import {Partner} from "../db/models/Partner";
+import UserPartnerMappingService from "../services/user-partner-mapping.service";
+import {UserPartnerMap} from "../db/models/init-models";
 
 class PartnerMiddleware {
   validateQueryParams = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -65,20 +67,20 @@ class PartnerMiddleware {
 
   validateUserPartner = async (req: CustomRequest, res: express.Response, next: express.NextFunction) => {
     const userId = (req.token as any)?._id;
-    const userPartners = await PartnerService.getUserPartners(Number(userId));
-    let existingUserPartner: Partner;
+    const userPartners = await UserPartnerMappingService.getUserPartnerMappings(Number(userId));
+    let existingUserPartner: UserPartnerMap;
 
     if (!req.body?.partner_id || !req.query?.partner_id) {
       return next();
     }
 
     if (req.body?.partner_id) {
-      existingUserPartner = userPartners.find((userPartner: Partner) => userPartner.partner_id === req.body.partner_id);
+      existingUserPartner = userPartners.find((userPartner: UserPartnerMap) => userPartner.partner_id === req.body.partner_id);
     }
 
     if (req.query?.partner_id) {
       existingUserPartner = userPartners.find(
-        (userPartner: Partner) => Number(userPartner.partner_id) === Number(req.query.partner_id),
+        (userPartner: UserPartnerMap) => Number(userPartner.partner_id) === Number(req.query.partner_id),
       );
     }
 
