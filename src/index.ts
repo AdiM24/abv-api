@@ -1,7 +1,5 @@
 import express, { Express } from "express";
 import dotenv from "dotenv";
-import * as expressWinston from "express-winston";
-import * as winston from "winston";
 import cors from "cors";
 import { CommonRoutesConfig } from "./common/common.routes.config";
 import { UserRoutes } from "./routes/user.routes.config";
@@ -24,17 +22,6 @@ const routes: Array<CommonRoutesConfig> = [];
 
 app.use(express.json({limit: '10MB'}));
 app.use(cors());
-
-const loggerOptions: expressWinston.LoggerOptions = {
-  transports: [new winston.transports.Console()],
-  format: winston.format.combine(
-    winston.format.json(),
-    winston.format.prettyPrint(),
-    winston.format.colorize({ all: true })
-  ),
-};
-
-app.use(expressWinston.logger(loggerOptions));
 
 routes.push(new UserRoutes(app));
 routes.push(new AuthRoutes(app));
