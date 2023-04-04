@@ -10,28 +10,28 @@ export class ProductRoutes extends CommonRoutesConfig {
 
   configureRoutes(): express.Application {
     this.app
-      .route("/products")
+      .route("/api/products")
       .post(ProductController.addProduct)
       .get(ProductController.getProducts)
       .put(ProductController.updateProduct);
 
 
-    this.app.route("/products/:id")
+    this.app.route("/api/products/:id")
       .get(ProductController.getProduct);
 
     this.app
-      .route("/products/quantity/reserve")
+      .route("/api/products/quantity/reserve")
       .post(
         ProductMiddleware.validateProductExistsByName,
         ProductController.reserveProductQuantity
       )
 
     this.app
-      .route("/products/quantity/check")
+      .route("/api/products/quantity/check")
       .post(ProductController.checkProductQuantity)
 
     this.app
-      .route("/products/quantity/add")
+      .route("/api/products/quantity/add")
       .post(ProductController.addProductQuantity)
 
     return this.app;

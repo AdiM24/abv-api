@@ -12,7 +12,7 @@ export class EmployeeRoutes extends CommonRoutesConfig {
 
   configureRoutes(): express.Application {
     this.app
-      .route("/employees")
+      .route("/api/employees")
       .get(
         AuthMiddleware.auth,
         PartnerMiddleware.validateUserPartner,
@@ -31,9 +31,9 @@ export class EmployeeRoutes extends CommonRoutesConfig {
         EmployeeController.updateEmployee,
       );
 
-    this.app.route("/employees/autocomplete").get(EmployeeController.getEmployeeAutocompleteOptions);
+    this.app.route("/api/employees/autocomplete").get(EmployeeController.getEmployeeAutocompleteOptions);
 
-    this.app.route("/employees/:id").get(EmployeeController.getEmployee);
+    this.app.route("/api/employees/:id").get(EmployeeController.getEmployee);
 
     return this.app;
   }

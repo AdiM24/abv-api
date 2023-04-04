@@ -6,10 +6,10 @@ import AuthController from "../controllers/auth.controller";
 export class AuthRoutes extends CommonRoutesConfig {
     constructor(app: express.Application) {
         super(app, 'UserRoutes');
-    };
+    }
 
     configureRoutes(): express.Application {
-        this.app.route('/login')
+        this.app.route('/api/login')
             .post(
                 UsersMiddleware.validateRequiredUserBodyFields,
                 AuthController.login

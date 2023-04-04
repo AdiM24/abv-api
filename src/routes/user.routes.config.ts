@@ -13,7 +13,7 @@ export class UserRoutes extends CommonRoutesConfig {
 
   configureRoutes(): express.Application {
     this.app
-      .route("/users")
+      .route("/api/users")
       .get(AuthMiddleware.auth, UsersController.getUsers)
       .post(
         UsersMiddleware.validateRequiredUserBodyFields,
@@ -21,19 +21,19 @@ export class UserRoutes extends CommonRoutesConfig {
         UsersController.createUser
       );
 
-    this.app.route("/users/bulk").post(UsersController.createUsers);
+    this.app.route("/api/users/bulk").post(UsersController.createUsers);
 
     this.app
-      .route("/users/series")
+      .route("/api/users/series")
       .get(AuthMiddleware.auth, UsersController.getUserSeries)
       .post(AuthMiddleware.auth, UsersController.createUserSeries)
 
     this.app
-      .route("/users/series/change")
+      .route("/api/users/series/change")
       .post(AuthMiddleware.auth, UsersController.changeDefaultSeries)
 
     this.app
-      .route("/users/email")
+      .route("/api/users/email")
       .get(AuthMiddleware.auth, UserController.getUserPartnerEmails)
       .post(AuthMiddleware.auth, UserMiddleware.validateClaimingUser, UserController.createUserPartnerEmail)
       .delete(AuthMiddleware.auth, UserMiddleware.validateUserPartnerEmail, UserController.removeUserPartnerEmail)

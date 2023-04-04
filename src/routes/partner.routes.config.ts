@@ -11,38 +11,38 @@ export class PartnerRoutes extends CommonRoutesConfig {
 
   configureRoutes(): express.Application {
     this.app
-      .route("/partners")
+      .route("/api/partners")
       .post(AuthMiddleware.auth, PartnerMiddleware.validatePartnerAlreadyExists, PartnerController.addPartner)
       .get(AuthMiddleware.auth, PartnerMiddleware.validateUser, PartnerController.getPartners)
       .put(AuthMiddleware.auth, PartnerMiddleware.validatePartnerUpdate, PartnerController.updatePartner);
 
     this.app
-      .route("/partners/address/autocomplete")
+      .route("/api/partners/address/autocomplete")
       .get(AuthMiddleware.auth, PartnerController.getAddressAutocompleteOptions)
 
     this.app
-      .route("/partners/user/autocomplete")
+      .route("/api/partners/user/autocomplete")
       .get(AuthMiddleware.auth, PartnerMiddleware.validateQueryParams, PartnerController.getUserAutocompleteOptions)
 
     this.app
-      .route("/partners/autocomplete")
+      .route("/api/partners/autocomplete")
       .get(PartnerController.getAutocompleteOptions)
 
-    this.app.route("/partners/:id")
+    this.app.route("/api/partners/:id")
       .get(PartnerController.getPartner);
 
     this.app
-      .route("/partners/address")
+      .route("/api/partners/address")
       .post(PartnerController.addPartnerAddress)
       .put(PartnerController.updatePartnerAddresses);
 
     this.app
-      .route("/partners/bankaccounts")
+      .route("/api/partners/bankaccounts")
       .post(PartnerController.addPartnerBankAccount)
       .put(PartnerController.updatePartnerBankAccounts);
 
     this.app
-      .route("/partners/contacts")
+      .route("/api/partners/contacts")
       .put(
         PartnerController.updatePartnerContacts
       );

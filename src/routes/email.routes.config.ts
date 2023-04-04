@@ -10,7 +10,7 @@ export class EmailRoutes extends CommonRoutesConfig {
 
   configureRoutes(): express.Application {
 
-    this.app.route('/email/send')
+    this.app.route('/api/email/send')
       .post(AuthMiddleware.auth, EmailController.sendEmail)
 
     return this.app;

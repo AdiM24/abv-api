@@ -14,7 +14,7 @@ export class TimesheetRoutes extends CommonRoutesConfig {
   configureRoutes(): express.Application {
 
     this.app
-      .route('/timesheet')
+      .route('/api/timesheet')
       .get(
         TimesheetController.getTimesheetEntries
       )
@@ -23,7 +23,7 @@ export class TimesheetRoutes extends CommonRoutesConfig {
       );
 
     this.app
-      .route('/timesheet/employee')
+      .route('/api/timesheet/employee')
       .get(
         AuthMiddleware.auth,
         TimesheetController.getEmployeesTimesheet

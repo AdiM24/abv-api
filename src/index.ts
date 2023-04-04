@@ -36,7 +36,7 @@ routes.push(new ReceiptRoutes(app));
 routes.push(new EmailRoutes(app));
 
 const runningMessage = `Server running at http://localhost:${port}`;
-app.get("/", (req: express.Request, res: express.Response) => {
+app.get("/api/", (req: express.Request, res: express.Response) => {
   res.status(200).send(runningMessage);
 });
 

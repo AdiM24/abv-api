@@ -12,7 +12,7 @@ export class InvoiceRoutes extends CommonRoutesConfig {
 
   configureRoutes(): express.Application {
     this.app
-      .route("/invoices")
+      .route("/api/invoices")
       .get(
         AuthMiddleware.auth,
         InvoiceController.getInvoices
@@ -31,31 +31,31 @@ export class InvoiceRoutes extends CommonRoutesConfig {
       )
 
     this.app
-      .route("/invoices/:id")
+      .route("/api/invoices/:id")
       .get(InvoiceController.getInvoiceWithDetails)
       .delete(InvoiceController.removeInvoice)
 
     this.app
-      .route("/invoices/:id/product/update")
+      .route("/api/invoices/:id/product/update")
       .post(InvoiceMiddleware.validateExistingInvoiceProduct, InvoiceController.updateInvoiceProduct)
 
     this.app
-      .route("/invoices/:id/product/remove")
+      .route("/api/invoices/:id/product/remove")
       .post(InvoiceMiddleware.validateExistingInvoiceProduct, InvoiceController.removeInvoiceProduct)
 
     this.app
-      .route("/invoices/:id/product/add")
+      .route("/api/invoices/:id/product/add")
       .post(
         InvoiceMiddleware.validateExistingInvoice,
         ProductMiddleware.validateProductExists,
         InvoiceController.addInvoiceProduct)
 
     this.app
-      .route("/invoices/series")
+      .route("/api/invoices/series")
       .post(InvoiceController.findNextNumberForSeries);
 
     this.app
-      .route("/invoices/orders")
+      .route("/api/invoices/orders")
       .post(
         AuthMiddleware.auth,
         InvoiceMiddleware.validateIssuedInvoiceCreationDate,
@@ -64,18 +64,18 @@ export class InvoiceRoutes extends CommonRoutesConfig {
       );
 
     this.app
-      .route("/invoices/orders/:id")
+      .route("/api/invoices/orders/:id")
       .get(
         AuthMiddleware.auth,
         InvoiceController.getOrder
       )
 
     this.app
-      .route("/invoices/orders/goods/:id")
+      .route("/api/invoices/orders/goods/:id")
       .delete(AuthMiddleware.auth, InvoiceController.removeOrderGoods)
 
     this.app
-      .route("/invoices/orders/details/:id")
+      .route("/api/invoices/orders/details/:id")
       .post(AuthMiddleware.auth, InvoiceController.addOrderDetails)
       .put(AuthMiddleware.auth, InvoiceController.updateOrderDetails)
       .delete(AuthMiddleware.auth, InvoiceController.removeOrderDetails)

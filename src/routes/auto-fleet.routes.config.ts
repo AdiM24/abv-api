@@ -13,7 +13,7 @@ export class AutoFleetRoutes extends CommonRoutesConfig {
   configureRoutes(): express.Application {
 
     this.app
-      .route('/autofleet')
+      .route('/api/autofleet')
       .get(AuthMiddleware.auth, AutoFleetController.getAutoFleets)
       .post(
         AuthMiddleware.auth,
@@ -28,7 +28,7 @@ export class AutoFleetRoutes extends CommonRoutesConfig {
         AutoFleetController.updateAutoFleet)
 
     this.app
-      .route('/autofleet/:id')
+      .route('/api/autofleet/:id')
       .get(AuthMiddleware.auth, AutoFleetMiddleware.validatePartnerAutoFleet, AutoFleetController.getAutoFleet)
       .delete(AuthMiddleware.auth, AutoFleetMiddleware.validatePartnerAutoFleet, AutoFleetController.deleteAutoFleet)
 

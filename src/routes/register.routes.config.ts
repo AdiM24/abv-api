@@ -11,7 +11,7 @@ export class RegisterRoutes extends CommonRoutesConfig {
 
   configureRoutes(): express.Application {
     this.app
-      .route("/bankregister")
+      .route("/api/bankregister")
       .get(
         AuthMiddleware.auth,
         RegisterController.getBankRegisters)
@@ -20,7 +20,7 @@ export class RegisterRoutes extends CommonRoutesConfig {
         RegisterController.addBankRegister);
 
     this.app
-      .route("/bankregister/:id")
+      .route("/api/bankregister/:id")
       .get(
         AuthMiddleware.auth,
         RegisterController.getBankRegisterById
@@ -30,7 +30,7 @@ export class RegisterRoutes extends CommonRoutesConfig {
         RegisterController.removeBankRegister);
 
     this.app
-      .route("/cashregister")
+      .route("/api/cashregister")
       .get(
         AuthMiddleware.auth,
         RegisterController.getCashRegisters)
@@ -39,7 +39,7 @@ export class RegisterRoutes extends CommonRoutesConfig {
         RegisterController.addCashRegister);
 
     this.app
-      .route("/cashregister/:id")
+      .route("/api/cashregister/:id")
       .get(
         AuthMiddleware.auth,
         RegisterController.getCashRegisterById
@@ -49,13 +49,13 @@ export class RegisterRoutes extends CommonRoutesConfig {
         RegisterController.removeCashRegister);
 
     this.app
-      .route("/cashregister/op/:id")
+      .route("/api/cashregister/op/:id")
       .get(
         AuthMiddleware.auth,
         RegisterController.getCashRegisterOperations);
 
     this.app
-      .route("/bankregister/op/:id")
+      .route("/api/bankregister/op/:id")
       .get(
         AuthMiddleware.auth,
         RegisterController.getBankRegisterOperations);
