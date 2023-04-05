@@ -1,17 +1,17 @@
 import {CreateAutoFleetDto} from "../dtos/auto-fleet.dto";
 import {sequelize} from "../db/sequelize";
-import {AutoFleet, AutoFleetAttributes, initModels, Partner} from "../db/models/init-models";
-import PartnerService from "./partner.service";
+import {AutoFleet, AutoFleetAttributes, initModels, Partner, UserPartnerMap} from "../db/models/init-models";
+import UserPartnerMappingService from "./user-partner-mapping.service";
 
 class AutoFleetService {
   async getAutoFleets(decodedJwt: any) {
     const models = initModels(sequelize);
 
-    const userPartners = await PartnerService.getUserPartners(decodedJwt._id);
+    const userPartners = await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id));
 
     const partnerFleet = await models.AutoFleet.findAll({
       where: {
-        partner_id: userPartners.map((userPartner: Partner) => userPartner.partner_id)
+        partner_id: userPartners.map((userPartner: UserPartnerMap) => userPartner.partner_id)
       }
     });
 

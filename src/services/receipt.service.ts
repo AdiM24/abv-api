@@ -1,18 +1,17 @@
 import { CreateReceiptDto, RemoveReceiptDto } from "../dtos/receipt.dto";
 import { sequelize } from "../db/sequelize";
-import { BankRegister, CashRegister, initModels, InvoiceAttributes, Partner } from "../db/models/init-models";
-import PartnerService from "./partner.service";
-import { WhereOptions } from "sequelize";
+import {BankRegister, CashRegister, initModels, Partner, UserPartnerMap} from "../db/models/init-models";
+import UserPartnerMappingService from "./user-partner-mapping.service";
 
 class ReceiptService {
   async getReceipts(decodedJwt: any) {
     const models = initModels(sequelize);
 
-    const userPartners = await PartnerService.getUserPartners(decodedJwt._id);
+    const userPartners = await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id));
 
     return await models.Receipt.findAll({
       where: {
-        seller_partner_id: userPartners.map((userPartner: Partner) => userPartner.partner_id),
+        seller_partner_id: userPartners.map((userPartner: UserPartnerMap) => userPartner.partner_id),
         document_type: "Chitanta"
       },
       include: [

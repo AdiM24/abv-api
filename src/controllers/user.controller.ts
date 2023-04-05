@@ -3,6 +3,7 @@ import debug from "debug";
 import UserService from "../services/user.service";
 import {CustomRequest} from "../middleware/auth.middleware";
 import EmailService from "../services/email.service";
+import UserPartnerMappingService from "../services/user-partner-mapping.service";
 
 const log: debug.IDebugger = debug("app:users-controller");
 
@@ -66,6 +67,12 @@ class UsersController {
     const result = await UserService.removeUserPartnerEmail(Number(req.query?.user_partner_email));
 
     res.status(200).send(result);
+  }
+
+  async getUserPartner(req: CustomRequest, res: express.Response) {
+    const userPartner = await UserPartnerMappingService.getUserPartnerMappings(Number((req.token as any)._id));
+
+    return res.status(200).send(userPartner[0]);
   }
 }
 

@@ -13,6 +13,7 @@ import {AutoFleetRoutes} from "./routes/auto-fleet.routes.config";
 import { RegisterRoutes } from "./routes/register.routes.config";
 import { ReceiptRoutes } from "./routes/receipt.routes.config";
 import {EmailRoutes} from "./routes/email.routes.config";
+import {OrderRoutes} from "./routes/order.routes.config";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ routes.push(new AutoFleetRoutes(app));
 routes.push(new RegisterRoutes(app));
 routes.push(new ReceiptRoutes(app));
 routes.push(new EmailRoutes(app));
+routes.push(new OrderRoutes(app));
 
 const runningMessage = `Server running at http://localhost:${port}`;
 app.get("/api/", (req: express.Request, res: express.Response) => {

@@ -1,20 +1,22 @@
 import { sequelize } from "../db/sequelize";
-import { initModels, Partner, TimesheetEntry } from "../db/models/init-models";
+import {initModels, Partner, TimesheetEntry, UserPartnerMap} from "../db/models/init-models";
 import PartnerService from "./partner.service";
 import { BankRegisterAddDto } from "../dtos/bank-register.dto";
 import { CashRegisterAddDto } from "../dtos/cash-register.dto";
 import { getStrictQuery } from "../common/utils/query-utils.service";
 import { Op } from "sequelize";
+import UserPartnerMappingService from "./user-partner-mapping.service";
 
 class RegisterService {
   async getBankRegisters(decodedJwt: any) {
     const models = initModels(sequelize);
 
-    const userPartners = await PartnerService.getUserPartners(decodedJwt._id);
+
+    const userPartners = await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id));
 
     return await models.BankRegister.findAll({
       where: {
-        partner_id: userPartners.map((userPartner: Partner) => userPartner.partner_id)
+        partner_id: userPartners.map((userPartner: UserPartnerMap) => userPartner.partner_id)
       },
       include: [{model: Partner, as: "partner"}]
     });
@@ -79,11 +81,11 @@ class RegisterService {
   async getCashRegisters(decodedJwt: any) {
     const models = initModels(sequelize);
 
-    const userPartners = await PartnerService.getUserPartners(decodedJwt._id);
+    const userPartners = await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id));
 
     return await models.CashRegister.findAll({
       where: {
-        partner_id: userPartners.map((userPartner: Partner) => userPartner.partner_id)
+        partner_id: userPartners.map((userPartner: UserPartnerMap) => userPartner.partner_id)
       },
       include: [{model: Partner, as: "partner"}]
     });

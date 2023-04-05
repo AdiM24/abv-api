@@ -26,7 +26,10 @@ export class PartnerRoutes extends CommonRoutesConfig {
 
     this.app
       .route("/api/partners/autocomplete")
-      .get(PartnerController.getAutocompleteOptions)
+      .get(
+        AuthMiddleware.auth,
+        PartnerController.getAutocompleteOptions
+      )
 
     this.app.route("/api/partners/:id")
       .get(PartnerController.getPartner);

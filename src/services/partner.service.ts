@@ -149,9 +149,10 @@ class PartnerService {
 
     let partners: Partner[] = [];
 
-    const userPartnerIds = await UserPartnerMappingService.getUserPartnerMappings(decodedToken._id);
     try {
       if (decodedToken) {
+        const userPartnerIds = await UserPartnerMappingService.getUserPartnerMappings(decodedToken._id);
+
         partners = await models.Partner.findAll({
           where: {
             name: getLikeQuery(searchKey),

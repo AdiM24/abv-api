@@ -17,12 +17,6 @@ class InvoiceController {
     res.status(200).send(await InvoiceService.findInvoice({invoice_id: invoice_id}));
   }
 
-  async getOrder(req: express.Request, res:express.Response) {
-    const orderId = Number(req.params?.id);
-
-    res.status(200).send(await InvoiceService.getOrder(orderId));
-  }
-
   async getInvoiceWithDetails(req: express.Request, res: express.Response) {
     const invoiceId = Number(req.params?.id);
 
@@ -35,36 +29,6 @@ class InvoiceController {
     const addedInvoice = await InvoiceService.addInvoice(req.body, req.token);
 
     res.status(201).send({created: addedInvoice, msg: "Invoice created"});
-  }
-
-  async addOrder(req: CustomRequest, res: express.Response) {
-    const addedOrder = await InvoiceService.addOrder(req.body, req.token);
-
-    res.status(201).send({created: addedOrder, message: "Comanda a fost adaugata cu success"})
-  }
-
-  async removeOrderDetails(req: CustomRequest, res: express.Response) {
-    const result = await InvoiceService.removeOrderDetails(Number(req.params?.id));
-
-    res.status(200).send(result);
-  }
-
-  async removeOrderGoods(req: CustomRequest, res: express.Response) {
-    const result = await InvoiceService.removeOrderGoods(Number(req.params?.id));
-
-    res.status(200).send(result);
-  }
-
-  async updateOrderDetails(req: CustomRequest, res: express.Response) {
-    const result = await InvoiceService.updateOrderDetails(req.body);
-
-    res.status(200).send(result);
-  }
-
-  async addOrderDetails(req: CustomRequest, res: express.Response) {
-    const result = await InvoiceService.addOrderDetails(req.body);
-
-    res.status(200).send(result);
   }
 
   async findNextNumberForSeries(req: express.Request, res: express.Response) {

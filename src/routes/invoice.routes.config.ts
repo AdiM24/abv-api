@@ -54,32 +54,6 @@ export class InvoiceRoutes extends CommonRoutesConfig {
       .route("/api/invoices/series")
       .post(InvoiceController.findNextNumberForSeries);
 
-    this.app
-      .route("/api/invoices/orders")
-      .post(
-        AuthMiddleware.auth,
-        InvoiceMiddleware.validateIssuedInvoiceCreationDate,
-        InvoiceMiddleware.validateInvoiceDoesNotExist,
-        InvoiceController.addOrder
-      );
-
-    this.app
-      .route("/api/invoices/orders/:id")
-      .get(
-        AuthMiddleware.auth,
-        InvoiceController.getOrder
-      )
-
-    this.app
-      .route("/api/invoices/orders/goods/:id")
-      .delete(AuthMiddleware.auth, InvoiceController.removeOrderGoods)
-
-    this.app
-      .route("/api/invoices/orders/details/:id")
-      .post(AuthMiddleware.auth, InvoiceController.addOrderDetails)
-      .put(AuthMiddleware.auth, InvoiceController.updateOrderDetails)
-      .delete(AuthMiddleware.auth, InvoiceController.removeOrderDetails)
-
     return this.app;
   }
 }

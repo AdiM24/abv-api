@@ -1,7 +1,8 @@
 import { sequelize } from "../db/sequelize";
-import { initModels, Partner, TimesheetEntry } from "../db/models/init-models";
+import {initModels, Partner, TimesheetEntry, UserPartnerMap} from "../db/models/init-models";
 import PartnerService from "./partner.service";
 import { addOrUpdate } from "./utils.service";
+import UserPartnerMappingService from "./user-partner-mapping.service";
 
 class TimesheetService {
   async getTimesheetEntries() {
@@ -33,11 +34,11 @@ class TimesheetService {
   async getEmployeesTimesheet(decodedJwt: any) {
     const models = initModels(sequelize);
 
-    const userPartners = await PartnerService.getUserPartners(decodedJwt._id);
+    const userPartners = await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id));
 
     return await models.Employee.findAll({
       where: {
-        partner_id: userPartners.map((userPartner: Partner) => userPartner.partner_id)
+        partner_id: userPartners.map((userPartner: UserPartnerMap) => userPartner.partner_id)
       },
       include: [{model: TimesheetEntry, as: "TimesheetEntries"}]
     });

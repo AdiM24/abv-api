@@ -1,10 +1,10 @@
-import { CommonRoutesConfig } from "../common/common.routes.config";
+import {CommonRoutesConfig} from "../common/common.routes.config";
 import express from "express";
 import UsersController from "../controllers/user.controller";
-import UsersMiddleware from "../middleware/user.middleware";
-import AuthMiddleware from "../middleware/auth.middleware";
 import UserController from "../controllers/user.controller";
+import UsersMiddleware from "../middleware/user.middleware";
 import UserMiddleware from "../middleware/user.middleware";
+import AuthMiddleware from "../middleware/auth.middleware";
 
 export class UserRoutes extends CommonRoutesConfig {
   constructor(app: express.Application) {
@@ -39,6 +39,9 @@ export class UserRoutes extends CommonRoutesConfig {
       .delete(AuthMiddleware.auth, UserMiddleware.validateUserPartnerEmail, UserController.removeUserPartnerEmail)
       .put(AuthMiddleware.auth, UserMiddleware.validateClaimingUser, UserController.updateUserPartnerEmail)
 
+    this.app
+      .route("/api/user/partner")
+      .get(AuthMiddleware.auth, UserController.getUserPartner);
     return this.app;
   }
 }

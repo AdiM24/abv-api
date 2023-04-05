@@ -1,7 +1,6 @@
 import express from "express";
 import PartnerService from "../services/partner.service";
 import {CustomRequest} from "./auth.middleware";
-import {Partner} from "../db/models/Partner";
 import UserPartnerMappingService from "../services/user-partner-mapping.service";
 import {UserPartnerMap} from "../db/models/init-models";
 
