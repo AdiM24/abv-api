@@ -1,7 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { Order, OrderId } from './Order';
-import type { OrderGoods, OrderGoodsId } from './OrderGoods';
 
 export interface OrderDetailsAttributes {
   order_details_id: number;
@@ -32,18 +31,6 @@ export class OrderDetails extends Model<OrderDetailsAttributes, OrderDetailsCrea
   getOrder!: Sequelize.BelongsToGetAssociationMixin<Order>;
   setOrder!: Sequelize.BelongsToSetAssociationMixin<Order, OrderId>;
   createOrder!: Sequelize.BelongsToCreateAssociationMixin<Order>;
-  // OrderDetails hasMany OrderGoods via order_details_id
-  OrderGoods!: OrderGoods[];
-  getOrderGoods!: Sequelize.HasManyGetAssociationsMixin<OrderGoods>;
-  setOrderGoods!: Sequelize.HasManySetAssociationsMixin<OrderGoods, OrderGoodsId>;
-  addOrderGood!: Sequelize.HasManyAddAssociationMixin<OrderGoods, OrderGoodsId>;
-  addOrderGoods!: Sequelize.HasManyAddAssociationsMixin<OrderGoods, OrderGoodsId>;
-  createOrderGood!: Sequelize.HasManyCreateAssociationMixin<OrderGoods>;
-  removeOrderGood!: Sequelize.HasManyRemoveAssociationMixin<OrderGoods, OrderGoodsId>;
-  removeOrderGoods!: Sequelize.HasManyRemoveAssociationsMixin<OrderGoods, OrderGoodsId>;
-  hasOrderGood!: Sequelize.HasManyHasAssociationMixin<OrderGoods, OrderGoodsId>;
-  hasOrderGoods!: Sequelize.HasManyHasAssociationsMixin<OrderGoods, OrderGoodsId>;
-  countOrderGoods!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof OrderDetails {
     return OrderDetails.init({

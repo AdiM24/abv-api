@@ -5,7 +5,6 @@ import {
   OrderCreationAttributes,
   OrderDetails,
   OrderDetailsCreationAttributes,
-  OrderGoods,
   Partner,
   UserPartnerMap
 } from "../db/models/init-models";
@@ -42,12 +41,6 @@ class OrderService {
         order_details_id: orderDetailsId
       }
     });
-
-    await models.OrderGoods.destroy({
-      where: {
-        order_details_id: orderDetailsId
-      }
-    })
 
     await existingOrderDetails.destroy();
 
@@ -111,8 +104,7 @@ class OrderService {
           model: Partner, as: 'transporter'
         },
         {
-          model: OrderDetails, as: 'OrderDetails',
-          include: [{model: OrderGoods, as: 'OrderGoods'}]
+          model: OrderDetails, as: 'OrderDetails'
         },
       ]
     })

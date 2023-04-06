@@ -21,8 +21,6 @@ import { Order as _Order } from "./Order";
 import type { OrderAttributes, OrderCreationAttributes } from "./Order";
 import { OrderDetails as _OrderDetails } from "./OrderDetails";
 import type { OrderDetailsAttributes, OrderDetailsCreationAttributes } from "./OrderDetails";
-import { OrderGoods as _OrderGoods } from "./OrderGoods";
-import type { OrderGoodsAttributes, OrderGoodsCreationAttributes } from "./OrderGoods";
 import { Partner as _Partner } from "./Partner";
 import type { PartnerAttributes, PartnerCreationAttributes } from "./Partner";
 import { Product as _Product } from "./Product";
@@ -52,7 +50,6 @@ export {
   _InvoiceProduct as InvoiceProduct,
   _Order as Order,
   _OrderDetails as OrderDetails,
-  _OrderGoods as OrderGoods,
   _Partner as Partner,
   _Product as Product,
   _Receipt as Receipt,
@@ -86,8 +83,6 @@ export type {
   OrderCreationAttributes,
   OrderDetailsAttributes,
   OrderDetailsCreationAttributes,
-  OrderGoodsAttributes,
-  OrderGoodsCreationAttributes,
   PartnerAttributes,
   PartnerCreationAttributes,
   ProductAttributes,
@@ -118,7 +113,6 @@ export function initModels(sequelize: Sequelize) {
   const InvoiceProduct = _InvoiceProduct.initModel(sequelize);
   const Order = _Order.initModel(sequelize);
   const OrderDetails = _OrderDetails.initModel(sequelize);
-  const OrderGoods = _OrderGoods.initModel(sequelize);
   const Partner = _Partner.initModel(sequelize);
   const Product = _Product.initModel(sequelize);
   const Receipt = _Receipt.initModel(sequelize);
@@ -144,8 +138,6 @@ export function initModels(sequelize: Sequelize) {
   Invoice.hasMany(Receipt, { as: "Receipts", foreignKey: "invoice_id"});
   OrderDetails.belongsTo(Order, { as: "order", foreignKey: "order_id"});
   Order.hasMany(OrderDetails, { as: "OrderDetails", foreignKey: "order_id"});
-  OrderGoods.belongsTo(OrderDetails, { as: "order_detail", foreignKey: "order_details_id"});
-  OrderDetails.hasMany(OrderGoods, { as: "OrderGoods", foreignKey: "order_details_id"});
   Address.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(Address, { as: "Addresses", foreignKey: "partner_id"});
   AutoFleet.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
@@ -205,7 +197,6 @@ export function initModels(sequelize: Sequelize) {
     InvoiceProduct: InvoiceProduct,
     Order: Order,
     OrderDetails: OrderDetails,
-    OrderGoods: OrderGoods,
     Partner: Partner,
     Product: Product,
     Receipt: Receipt,
