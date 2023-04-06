@@ -36,15 +36,7 @@ class OrderService {
   async removeOrderDetails(orderDetailsId: number) {
     const models = initModels(sequelize);
 
-    const existingOrderDetails = await models.OrderDetails.findOne({
-      where: {
-        order_details_id: orderDetailsId
-      }
-    });
-
-    await existingOrderDetails.destroy();
-
-    return {code: 200, message: 'Detaliile comenzii au fost sterse'}
+    await models.OrderDetails.destroy({where: {order_details_id: orderDetailsId}});
   }
 
   async addOrder(orderToAdd: CreateOrderDto, decodedJwt: any = undefined) {
@@ -193,6 +185,20 @@ class OrderService {
     await models.Order.update(orderToUpdate, {where: {order_id: orderToUpdate.order_id}})
 
     return true;
+  }
+
+  async removeOrder(orderId: number) {
+    const models = initModels(sequelize);
+
+    try {
+      await sequelize.transaction(async (transaction: Transaction) => {
+        await models.OrderDetails.destroy({where: {order_id: orderId}, transaction: transaction});
+        await models.Order.destroy({where: {order_id: orderId}, transaction: transaction});
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
   }
 }
 

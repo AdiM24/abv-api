@@ -22,9 +22,9 @@ class OrderController {
   }
 
   async removeOrderDetails(req: CustomRequest, res: express.Response) {
-    const result = await OrderService.removeOrderDetails(Number(req.params?.id));
+    await OrderService.removeOrderDetails(Number(req.params?.id));
 
-    res.status(200).send(result);
+    res.status(200).send({code: 200, message: 'Detaliile comenzii au fost sterse'});
   }
 
   async updateOrderDetails(req: CustomRequest, res: express.Response) {
@@ -49,6 +49,12 @@ class OrderController {
     const orders = await OrderService.getOrders(req.token);
 
     res.status(200).send(orders);
+  }
+
+  async removeOrder(req: CustomRequest, res: express.Response) {
+    await OrderService.removeOrder(Number(req.params?.id));
+
+    res.status(200).send({code: 200, message: 'Comanda a fost stearsa'});
   }
 }
 

@@ -43,10 +43,11 @@ export class OrderDetails extends Model<OrderDetailsAttributes, OrderDetailsCrea
     order_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
+      onDelete: 'CASCADE',
       references: {
         model: 'Order',
-        key: 'order_id'
-      }
+        key: 'order_id',
+      },
     },
     location: {
       type: DataTypes.STRING,

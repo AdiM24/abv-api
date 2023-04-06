@@ -136,8 +136,8 @@ export function initModels(sequelize: Sequelize) {
   Invoice.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "invoice_id"});
   Receipt.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
   Invoice.hasMany(Receipt, { as: "Receipts", foreignKey: "invoice_id"});
-  OrderDetails.belongsTo(Order, { as: "order", foreignKey: "order_id"});
-  Order.hasMany(OrderDetails, { as: "OrderDetails", foreignKey: "order_id"});
+  OrderDetails.belongsTo(Order, { as: "order", foreignKey: "order_id", onDelete: 'CASCADE', hooks:true});
+  Order.hasMany(OrderDetails, { as: "OrderDetails", foreignKey: "order_id", onDelete: 'CASCADE', hooks: true});
   Address.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(Address, { as: "Addresses", foreignKey: "partner_id"});
   AutoFleet.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
