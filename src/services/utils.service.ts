@@ -1,10 +1,8 @@
-import { Model, ModelStatic } from "sequelize";
-import { MakeNullishOptional } from "sequelize/types/utils";
+import {Model, ModelStatic} from "sequelize";
+import {MakeNullishOptional} from "sequelize/types/utils";
 
-export async function addOrUpdate<
-  T extends MakeNullishOptional<E["_creationAttributes"]>,
-  E extends Model
->(
+export async function addOrUpdate<T extends MakeNullishOptional<E["_creationAttributes"]>,
+  E extends Model>(
   value: T,
   condition: any,
   entity: ModelStatic<E>,
@@ -15,11 +13,11 @@ export async function addOrUpdate<
     if (Object.values(condition).some((val) => val === undefined)) {
       existingEntity = undefined
     } else {
-      existingEntity = await entity.findOne({ where: condition });
+      existingEntity = await entity.findOne({where: condition});
     }
 
     if (existingEntity) {
-      if(updateCallback) updateCallback();
+      if (updateCallback) updateCallback();
       await existingEntity.update(value);
       return existingEntity;
     } else {
@@ -33,4 +31,12 @@ export async function addOrUpdate<
 
 export function convertToUtc(date: Date) {
   return new Date(date.toISOString());
+}
+
+export function calculatePercentage(number: number, percentage: number) {
+  return parseFloat((number + ((percentage / 100) * number)).toFixed(2));
+}
+
+export function reversePercentage(total: number, percentage: number) {
+  return parseFloat(((total * 100) / (percentage + 100)).toFixed(2));
 }

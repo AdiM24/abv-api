@@ -136,8 +136,10 @@ export function initModels(sequelize: Sequelize) {
   Invoice.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "invoice_id"});
   Receipt.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
   Invoice.hasMany(Receipt, { as: "Receipts", foreignKey: "invoice_id"});
-  OrderDetails.belongsTo(Order, { as: "order", foreignKey: "order_id", onDelete: 'CASCADE', hooks:true});
-  Order.hasMany(OrderDetails, { as: "OrderDetails", foreignKey: "order_id", onDelete: 'CASCADE', hooks: true});
+  Invoice.belongsTo(Order, { as: "order_reference", foreignKey: "order_reference_id"});
+  Order.hasMany(Invoice, { as: "Invoices", foreignKey: "order_reference_id"});
+  OrderDetails.belongsTo(Order, { as: "order", foreignKey: "order_id"});
+  Order.hasMany(OrderDetails, { as: "OrderDetails", foreignKey: "order_id"});
   Address.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(Address, { as: "Addresses", foreignKey: "partner_id"});
   AutoFleet.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
@@ -156,8 +158,6 @@ export function initModels(sequelize: Sequelize) {
   Partner.hasMany(Invoice, { as: "Invoices", foreignKey: "buyer_id"});
   Invoice.belongsTo(Partner, { as: "client", foreignKey: "client_id"});
   Partner.hasMany(Invoice, { as: "client_Invoices", foreignKey: "client_id"});
-  Invoice.belongsTo(Partner, { as: "transporter", foreignKey: "transporter_id"});
-  Partner.hasMany(Invoice, { as: "transporter_Invoices", foreignKey: "transporter_id"});
   Order.belongsTo(Partner, { as: "buyer", foreignKey: "buyer_id"});
   Partner.hasMany(Order, { as: "Orders", foreignKey: "buyer_id"});
   Order.belongsTo(Partner, { as: "client", foreignKey: "client_id"});

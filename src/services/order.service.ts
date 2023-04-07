@@ -1,6 +1,8 @@
 import {
   Contact,
   initModels,
+  InvoiceCreationAttributes,
+  InvoiceProductCreationAttributes,
   OrderAttributes,
   OrderCreationAttributes,
   OrderDetails,
@@ -11,6 +13,8 @@ import {
 import {sequelize} from "../db/sequelize";
 import UserPartnerMappingService from "./user-partner-mapping.service";
 import {Transaction} from "sequelize";
+import InvoiceService from "./invoice.service";
+import {reversePercentage} from "./utils.service";
 
 class OrderService {
   applyTax(price: number) {
@@ -179,8 +183,10 @@ class OrderService {
   async updateOrder(orderToUpdate: OrderAttributes, decodedToken: any) {
     const models = initModels(sequelize);
 
-    if (orderToUpdate.client_currency === 'RON') orderToUpdate.client_price = this.applyTax(orderToUpdate.client_price);
-    if (orderToUpdate.transporter_currency === 'RON') orderToUpdate.transporter_price = this.applyTax(orderToUpdate.transporter_price);
+    const currentOrder = await models.Order.findOne({where: {order_id: orderToUpdate.order_id}})
+
+    if (orderToUpdate.client_currency === 'RON' && orderToUpdate.client_price !== currentOrder.client_price) orderToUpdate.client_price = this.applyTax(orderToUpdate.client_price);
+    if (orderToUpdate.transporter_currency === 'RON' && orderToUpdate.transporter_price !== currentOrder.transporter_price) orderToUpdate.transporter_price = this.applyTax(orderToUpdate.transporter_price);
 
     await models.Order.update(orderToUpdate, {where: {order_id: orderToUpdate.order_id}})
 
@@ -194,6 +200,116 @@ class OrderService {
       await sequelize.transaction(async (transaction: Transaction) => {
         await models.OrderDetails.destroy({where: {order_id: orderId}, transaction: transaction});
         await models.Order.destroy({where: {order_id: orderId}, transaction: transaction});
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
+  }
+
+  async cloneOrder(orderId: number, decodedToken: any) {
+    const models = initModels(sequelize);
+
+    const existingOrder = await models.Order.findOne({
+      where: {order_id: orderId},
+      raw: true
+    });
+
+    const existingOrderDetails = await models.OrderDetails.findAll({
+      where: {order_id: orderId},
+      raw: true
+    });
+
+    const nextNumber = await this.findNextOrderSeriesNumber(existingOrder.series, existingOrder.client_id);
+
+    delete existingOrder.order_id;
+    existingOrder.number = nextNumber;
+
+    try {
+      await sequelize.transaction(async (transaction: Transaction) => {
+
+        const createdOrder = await models.Order.create(existingOrder, {transaction: transaction});
+
+        existingOrderDetails.forEach((orderDetails: OrderDetails) => {
+          orderDetails.order_id = createdOrder.order_id;
+          delete orderDetails.order_details_id;
+        });
+
+        await models.OrderDetails.bulkCreate(existingOrderDetails, {transaction: transaction});
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async generateInvoice(order: OrderAttributes, decodedToken: any) {
+    const models = initModels(sequelize);
+
+    let transportService = await models.Product.findOne({
+      where: {
+        type: 'service',
+        product_name: 'Servicii transport'
+      }
+    });
+
+    const defaultInvoiceSerie = (await models.UserInvoiceSeries.findOne({
+      where: {invoice_type: 'issued', user_id: Number(decodedToken._id)}
+    })).series;
+
+    const nextNumber = await InvoiceService.findNextSeriesNumber(defaultInvoiceSerie, 'issued');
+
+    const currentDate = new Date(Date.now());
+
+    const deadlineDays = (await models.Partner.findOne({
+      where: {partner_id: order.client_id}
+    })).invoice_deadline_days;
+
+    try {
+      await sequelize.transaction(async (transaction: Transaction) => {
+        if (!transportService) {
+          transportService = await models.Product.create({
+            type: 'service',
+            product_name: 'Servicii transport',
+            quantity: 1,
+            created_at_utc: currentDate.toString(),
+            modified_at_utc: currentDate.toString(),
+            vat: 19,
+            unit_of_measure: 'OP',
+            purchase_price: 1,
+            material: ''
+          }, {transaction: transaction});
+        }
+
+        const invoiceData: InvoiceCreationAttributes = {
+          series: defaultInvoiceSerie,
+          number: nextNumber,
+          client_id: order.client_id,
+          created_at_utc: currentDate.toString(),
+          deadline_at_utc: deadlineDays ? new Date(currentDate.setDate(currentDate.getDate() + deadlineDays)).toString() : null,
+          user_id: Number(decodedToken._id),
+          sent_status: 'not sent',
+          status: 'unpaid',
+          currency: order.client_currency,
+          total_price_incl_vat: order.client_price,
+          total_price: order.client_currency === 'EUR' ? order.client_price : reversePercentage(order.client_price, 19),
+          total_vat: order.client_currency === 'EUR' ? 0 : parseFloat((order.client_price - reversePercentage(order.client_price, 19)).toFixed(2)),
+          type: 'issued',
+          order_reference_id: order.order_id,
+          total_paid_price: 0,
+          buyer_id: order.buyer_id
+        }
+
+        const createdInvoice = await models.Invoice.create(invoiceData, {transaction: transaction});
+
+        const invoiceProduct: InvoiceProductCreationAttributes = {
+          product_id: transportService.product_id,
+          invoice_id: createdInvoice.invoice_id,
+          quantity: 1,
+          sold_at_utc: currentDate.toString(),
+          selling_price: order.client_price
+        }
+
+        await models.InvoiceProduct.create(invoiceProduct, {transaction: transaction});
       });
     } catch (err) {
       console.error(err);

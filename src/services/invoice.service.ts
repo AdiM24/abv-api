@@ -57,7 +57,7 @@ class InvoiceService {
         {model: Partner, as: 'buyer'},
         {model: Partner, as: 'client'}
       ],
-      order: [["created_at_utc", "DESC"]]
+      order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
   }
 
@@ -230,8 +230,6 @@ class InvoiceService {
         existingInvoice.total_price_incl_vat = invoiceUpdate.total_price
       }
 
-      existingInvoice.transporter_price = invoiceUpdate.transporter_price;
-      existingInvoice.transporter_id = invoiceUpdate.transporter_id;
       existingInvoice.driver_info = invoiceUpdate.driver_info;
       existingInvoice.car_reg_number = invoiceUpdate.car_reg_number;
     }

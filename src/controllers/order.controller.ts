@@ -56,6 +56,18 @@ class OrderController {
 
     res.status(200).send({code: 200, message: 'Comanda a fost stearsa'});
   }
+
+  async generateInvoice(req: CustomRequest, res: express.Response) {
+    await OrderService.generateInvoice(req.body, req.token);
+
+    res.status(200).send({code: 200, message: 'Factura a fost generata'});
+  }
+
+  async cloneOrder(req: CustomRequest, res: express.Response) {
+    await OrderService.cloneOrder(req.body.order_id, req.token);
+
+    res.status(200).send({code: 200, message: 'Comanda a fost clonata'});
+  }
 }
 
 export default new OrderController();

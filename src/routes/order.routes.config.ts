@@ -45,6 +45,18 @@ export class OrderRoutes extends CommonRoutesConfig {
       .put(AuthMiddleware.auth, OrderController.updateOrderDetails)
       .delete(AuthMiddleware.auth, OrderController.removeOrderDetails)
 
+    this.app
+      .route("/api/orders/clone")
+      .post(AuthMiddleware.auth,
+        OrderMiddleware.validateUserOrder,
+        OrderController.cloneOrder
+      )
+
+    this.app
+      .route("/api/orders/generate")
+      .post(AuthMiddleware.auth,
+        OrderMiddleware.validateUserOrder,
+        OrderController.generateInvoice)
     return this.app;
   }
 }

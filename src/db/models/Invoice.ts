@@ -2,7 +2,7 @@ import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { Address, AddressId } from './Address';
 import type { InvoiceProduct, InvoiceProductId } from './InvoiceProduct';
-import type { OrderDetails, OrderDetailsId } from './OrderDetails';
+import type { Order, OrderId } from './Order';
 import type { Partner, PartnerId } from './Partner';
 import type { Receipt, ReceiptId } from './Receipt';
 import type { User, UserId } from './User';
@@ -27,14 +27,13 @@ export interface InvoiceAttributes {
   car_reg_number?: string;
   currency?: "RON" | "EUR";
   total_paid_price: number;
-  transporter_id?: number;
-  transporter_price?: number;
   user_id: number;
+  order_reference_id?: number;
 }
 
 export type InvoicePk = "invoice_id";
 export type InvoiceId = Invoice[InvoicePk];
-export type InvoiceOptionalAttributes = "invoice_id" | "deadline_at_utc" | "created_at_utc" | "sent_status" | "total_price" | "total_vat" | "total_price_incl_vat" | "pickup_address_id" | "drop_off_address_id" | "driver_info" | "car_reg_number" | "currency" | "total_paid_price" | "transporter_id" | "transporter_price";
+export type InvoiceOptionalAttributes = "invoice_id" | "deadline_at_utc" | "created_at_utc" | "sent_status" | "total_price" | "total_vat" | "total_price_incl_vat" | "pickup_address_id" | "drop_off_address_id" | "driver_info" | "car_reg_number" | "currency" | "total_paid_price" | "order_reference_id";
 export type InvoiceCreationAttributes = Optional<InvoiceAttributes, InvoiceOptionalAttributes>;
 
 export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes> implements InvoiceAttributes {
@@ -57,9 +56,8 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   car_reg_number?: string;
   currency?: "RON" | "EUR";
   total_paid_price!: number;
-  transporter_id?: number;
-  transporter_price?: number;
   user_id!: number;
+  order_reference_id?: number;
 
   // Invoice belongsTo Address via drop_off_address_id
   drop_off_address!: Address;
@@ -83,18 +81,6 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   hasInvoiceProduct!: Sequelize.HasManyHasAssociationMixin<InvoiceProduct, InvoiceProductId>;
   hasInvoiceProducts!: Sequelize.HasManyHasAssociationsMixin<InvoiceProduct, InvoiceProductId>;
   countInvoiceProducts!: Sequelize.HasManyCountAssociationsMixin;
-  // Invoice hasMany OrderDetails via invoice_id
-  OrderDetails!: OrderDetails[];
-  getOrderDetails!: Sequelize.HasManyGetAssociationsMixin<OrderDetails>;
-  setOrderDetails!: Sequelize.HasManySetAssociationsMixin<OrderDetails, OrderDetailsId>;
-  addOrderDetail!: Sequelize.HasManyAddAssociationMixin<OrderDetails, OrderDetailsId>;
-  addOrderDetails!: Sequelize.HasManyAddAssociationsMixin<OrderDetails, OrderDetailsId>;
-  createOrderDetail!: Sequelize.HasManyCreateAssociationMixin<OrderDetails>;
-  removeOrderDetail!: Sequelize.HasManyRemoveAssociationMixin<OrderDetails, OrderDetailsId>;
-  removeOrderDetails!: Sequelize.HasManyRemoveAssociationsMixin<OrderDetails, OrderDetailsId>;
-  hasOrderDetail!: Sequelize.HasManyHasAssociationMixin<OrderDetails, OrderDetailsId>;
-  hasOrderDetails!: Sequelize.HasManyHasAssociationsMixin<OrderDetails, OrderDetailsId>;
-  countOrderDetails!: Sequelize.HasManyCountAssociationsMixin;
   // Invoice hasMany Receipt via invoice_id
   Receipts!: Receipt[];
   getReceipts!: Sequelize.HasManyGetAssociationsMixin<Receipt>;
@@ -107,6 +93,11 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   hasReceipt!: Sequelize.HasManyHasAssociationMixin<Receipt, ReceiptId>;
   hasReceipts!: Sequelize.HasManyHasAssociationsMixin<Receipt, ReceiptId>;
   countReceipts!: Sequelize.HasManyCountAssociationsMixin;
+  // Invoice belongsTo Order via order_reference_id
+  order_reference!: Order;
+  getOrder_reference!: Sequelize.BelongsToGetAssociationMixin<Order>;
+  setOrder_reference!: Sequelize.BelongsToSetAssociationMixin<Order, OrderId>;
+  createOrder_reference!: Sequelize.BelongsToCreateAssociationMixin<Order>;
   // Invoice belongsTo Partner via buyer_id
   buyer!: Partner;
   getBuyer!: Sequelize.BelongsToGetAssociationMixin<Partner>;
@@ -117,11 +108,6 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   getClient!: Sequelize.BelongsToGetAssociationMixin<Partner>;
   setClient!: Sequelize.BelongsToSetAssociationMixin<Partner, PartnerId>;
   createClient!: Sequelize.BelongsToCreateAssociationMixin<Partner>;
-  // Invoice belongsTo Partner via transporter_id
-  transporter!: Partner;
-  getTransporter!: Sequelize.BelongsToGetAssociationMixin<Partner>;
-  setTransporter!: Sequelize.BelongsToSetAssociationMixin<Partner, PartnerId>;
-  createTransporter!: Sequelize.BelongsToCreateAssociationMixin<Partner>;
   // Invoice belongsTo User via user_id
   user!: User;
   getUser!: Sequelize.BelongsToGetAssociationMixin<User>;
@@ -153,14 +139,14 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
       }
     },
     deadline_at_utc: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE utc")
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     },
     created_at_utc: {
       type: DataTypes.DATEONLY,
       allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE utc")
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     },
     status: {
       type: DataTypes.ENUM("paid","overdue","incomplete payment","unpaid"),
@@ -230,24 +216,20 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
       allowNull: false,
       defaultValue: 0
     },
-    transporter_id: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-      references: {
-        model: 'Partner',
-        key: 'partner_id'
-      }
-    },
-    transporter_price: {
-      type: DataTypes.DECIMAL,
-      allowNull: true
-    },
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'User',
         key: 'user_id'
+      }
+    },
+    order_reference_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Order',
+        key: 'order_id'
       }
     }
   }, {

@@ -3,6 +3,7 @@ import express, { NextFunction } from "express";
 import RegisterService from "../services/register.service";
 import PartnerService from "../services/partner.service";
 import UserPartnerMappingService from "../services/user-partner-mapping.service";
+import UserService from "../services/user.service";
 
 class RegisterMiddleware {
   async validateSufficientFunds(req: CustomRequest, res: express.Response, next: NextFunction) {
@@ -38,11 +39,13 @@ class RegisterMiddleware {
   }
 
   async validateUserRegister(req: CustomRequest, res: express.Response, next: NextFunction) {
+    const register = req.body.register_type === 'BANK'
+      ? await RegisterService.getBankRegisterById(req.body.bank_register_id)
+      : await RegisterService.getCashRegisterById(req.body.cash_register_id)
+
     const userPartners = await UserPartnerMappingService.getUserPartnerMappings((req.token as any)._id);
 
-    const partner_id = req.body?.payment_type === "PLATA" ? req.body?.buyer_partner_id : req.body?.seller_partner_id;
-
-    if(!userPartners.some(userPartner => userPartner.partner_id === partner_id)) {
+    if(!userPartners.some(userPartner => Number(userPartner.partner_id) === Number(register.partner_id))) {
       return res.status(400).send({
         code: 400,
         message: "Firma de care apartine casa/contul nu este asociata acestui utilizator"
