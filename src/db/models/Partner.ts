@@ -8,6 +8,7 @@ import type { CashRegister, CashRegisterId } from './CashRegister';
 import type { Contact, ContactId } from './Contact';
 import type { Employee, EmployeeId } from './Employee';
 import type { Invoice, InvoiceId } from './Invoice';
+import type { Order, OrderId } from './Order';
 import type { Receipt, ReceiptId } from './Receipt';
 import type { UserPartnerEmail, UserPartnerEmailId } from './UserPartnerEmail';
 import type { UserPartnerMap, UserPartnerMapId } from './UserPartnerMap';
@@ -27,11 +28,12 @@ export interface PartnerAttributes {
   created_at_utc: Date;
   modified_at_utc: Date;
   address?: string;
+  type?: "Client" | "Transportator" | "Prospect";
 }
 
 export type PartnerPk = "partner_id";
 export type PartnerId = Partner[PartnerPk];
-export type PartnerOptionalAttributes = "partner_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc" | "address";
+export type PartnerOptionalAttributes = "partner_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc" | "address" | "type";
 export type PartnerCreationAttributes = Optional<PartnerAttributes, PartnerOptionalAttributes>;
 
 export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes> implements PartnerAttributes {
@@ -49,6 +51,7 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   created_at_utc!: Date;
   modified_at_utc!: Date;
   address?: string;
+  type?: "Client" | "Transportator" | "Prospect";
 
   // Partner hasMany Address via partner_id
   Addresses!: Address[];
@@ -158,18 +161,42 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   hasClient_Invoice!: Sequelize.HasManyHasAssociationMixin<Invoice, InvoiceId>;
   hasClient_Invoices!: Sequelize.HasManyHasAssociationsMixin<Invoice, InvoiceId>;
   countClient_Invoices!: Sequelize.HasManyCountAssociationsMixin;
-  // Partner hasMany Invoice via transporter_id
-  transporter_Invoices!: Invoice[];
-  getTransporter_Invoices!: Sequelize.HasManyGetAssociationsMixin<Invoice>;
-  setTransporter_Invoices!: Sequelize.HasManySetAssociationsMixin<Invoice, InvoiceId>;
-  addTransporter_Invoice!: Sequelize.HasManyAddAssociationMixin<Invoice, InvoiceId>;
-  addTransporter_Invoices!: Sequelize.HasManyAddAssociationsMixin<Invoice, InvoiceId>;
-  createTransporter_Invoice!: Sequelize.HasManyCreateAssociationMixin<Invoice>;
-  removeTransporter_Invoice!: Sequelize.HasManyRemoveAssociationMixin<Invoice, InvoiceId>;
-  removeTransporter_Invoices!: Sequelize.HasManyRemoveAssociationsMixin<Invoice, InvoiceId>;
-  hasTransporter_Invoice!: Sequelize.HasManyHasAssociationMixin<Invoice, InvoiceId>;
-  hasTransporter_Invoices!: Sequelize.HasManyHasAssociationsMixin<Invoice, InvoiceId>;
-  countTransporter_Invoices!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany Order via buyer_id
+  Orders!: Order[];
+  getOrders!: Sequelize.HasManyGetAssociationsMixin<Order>;
+  setOrders!: Sequelize.HasManySetAssociationsMixin<Order, OrderId>;
+  addOrder!: Sequelize.HasManyAddAssociationMixin<Order, OrderId>;
+  addOrders!: Sequelize.HasManyAddAssociationsMixin<Order, OrderId>;
+  createOrder!: Sequelize.HasManyCreateAssociationMixin<Order>;
+  removeOrder!: Sequelize.HasManyRemoveAssociationMixin<Order, OrderId>;
+  removeOrders!: Sequelize.HasManyRemoveAssociationsMixin<Order, OrderId>;
+  hasOrder!: Sequelize.HasManyHasAssociationMixin<Order, OrderId>;
+  hasOrders!: Sequelize.HasManyHasAssociationsMixin<Order, OrderId>;
+  countOrders!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany Order via client_id
+  client_Orders!: Order[];
+  getClient_Orders!: Sequelize.HasManyGetAssociationsMixin<Order>;
+  setClient_Orders!: Sequelize.HasManySetAssociationsMixin<Order, OrderId>;
+  addClient_Order!: Sequelize.HasManyAddAssociationMixin<Order, OrderId>;
+  addClient_Orders!: Sequelize.HasManyAddAssociationsMixin<Order, OrderId>;
+  createClient_Order!: Sequelize.HasManyCreateAssociationMixin<Order>;
+  removeClient_Order!: Sequelize.HasManyRemoveAssociationMixin<Order, OrderId>;
+  removeClient_Orders!: Sequelize.HasManyRemoveAssociationsMixin<Order, OrderId>;
+  hasClient_Order!: Sequelize.HasManyHasAssociationMixin<Order, OrderId>;
+  hasClient_Orders!: Sequelize.HasManyHasAssociationsMixin<Order, OrderId>;
+  countClient_Orders!: Sequelize.HasManyCountAssociationsMixin;
+  // Partner hasMany Order via transporter_id
+  transporter_Orders!: Order[];
+  getTransporter_Orders!: Sequelize.HasManyGetAssociationsMixin<Order>;
+  setTransporter_Orders!: Sequelize.HasManySetAssociationsMixin<Order, OrderId>;
+  addTransporter_Order!: Sequelize.HasManyAddAssociationMixin<Order, OrderId>;
+  addTransporter_Orders!: Sequelize.HasManyAddAssociationsMixin<Order, OrderId>;
+  createTransporter_Order!: Sequelize.HasManyCreateAssociationMixin<Order>;
+  removeTransporter_Order!: Sequelize.HasManyRemoveAssociationMixin<Order, OrderId>;
+  removeTransporter_Orders!: Sequelize.HasManyRemoveAssociationsMixin<Order, OrderId>;
+  hasTransporter_Order!: Sequelize.HasManyHasAssociationMixin<Order, OrderId>;
+  hasTransporter_Orders!: Sequelize.HasManyHasAssociationsMixin<Order, OrderId>;
+  countTransporter_Orders!: Sequelize.HasManyCountAssociationsMixin;
   // Partner hasMany Receipt via buyer_partner_id
   Receipts!: Receipt[];
   getReceipts!: Sequelize.HasManyGetAssociationsMixin<Receipt>;
@@ -281,6 +308,10 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
     },
     address: {
       type: DataTypes.STRING,
+      allowNull: true
+    },
+    type: {
+      type: DataTypes.ENUM("Client","Transportator","Prospect"),
       allowNull: true
     }
   }, {

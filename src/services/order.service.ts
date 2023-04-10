@@ -2,7 +2,7 @@ import {
   Contact,
   initModels,
   InvoiceCreationAttributes,
-  InvoiceProductCreationAttributes,
+  InvoiceProductCreationAttributes, Order,
   OrderAttributes,
   OrderCreationAttributes,
   OrderDetails,
@@ -123,6 +123,9 @@ class OrderService {
         {
           model: Partner, as: 'transporter'
         },
+        {
+          model: OrderDetails, as: 'OrderDetails'
+        }
       ]
     });
 

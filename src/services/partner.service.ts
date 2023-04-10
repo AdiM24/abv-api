@@ -242,11 +242,9 @@ class PartnerService {
       queryObject.user_id = getStrictQuery(queryParams.user_id);
     }
 
-    if (queryParams.created_at_from || queryParams.created_at_to)
-      queryObject.created_at_utc = getDateRangeQuery(
-        queryParams.created_at_from,
-        queryParams.created_at_to
-      );
+    if (queryParams.type) {
+      queryObject.type = getStrictQuery(queryParams.type);
+    }
 
     if (queryParams.name) queryObject.name = getLikeQuery(queryParams.name);
 
