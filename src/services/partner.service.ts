@@ -6,14 +6,16 @@ import {
   Contact,
   initModels,
   Partner,
+  User,
   UserPartnerMap,
 } from "../db/models/init-models";
 import {CreateAddressDto, CreateBankAccountDto, CreateContactDto, CreatePartnerDto,} from "../dtos/create.partner.dto";
 import {addOrUpdate} from "./utils.service";
 import {Op} from "sequelize";
-import {getDateRangeQuery, getLikeQuery, getStrictQuery,} from "../common/utils/query-utils.service";
+import {getLikeQuery, getStrictQuery,} from "../common/utils/query-utils.service";
 import {UpdateAddressDto, UpdateBankAccountDto, UpdateContactDto, UpdatePartnerDto,} from "../dtos/update.partner.dto";
 import UserPartnerMappingService from "./user-partner-mapping.service";
+import {PartnerCommentCreationAttributes} from "../db/models/PartnerComment";
 
 class PartnerService {
   async addPartner(partnerToAdd: CreatePartnerDto, decodedToken: any) {
@@ -396,6 +398,61 @@ class PartnerService {
     });
 
     return existingUser;
+  }
+
+  async getPartnerComments(partner_id: number) {
+    const models = initModels(sequelize);
+
+    const partnerComments = await models.PartnerComment.findAll({
+      where: {
+        partner_id: partner_id
+      },
+      include: [
+        {model: User, as: 'user', attributes: ["first_name", "last_name"]}
+      ]
+    });
+
+    return partnerComments
+  }
+
+  async getPartnerComment(comment_id: number) {
+    const models = initModels(sequelize);
+
+    const partnerComment = await models.PartnerComment.findOne({
+      where: {
+        partner_comment_id: comment_id
+      }
+    });
+
+    return partnerComment;
+  }
+
+  async addPartnerComment(partnerComment: { partner_id: number, comment: string }, decodedJwt: any) {
+    const models = initModels(sequelize);
+
+    const partnerCommentToAdd: PartnerCommentCreationAttributes = {
+      comment: partnerComment.comment,
+      partner_id: partnerComment.partner_id,
+      user_id: decodedJwt._id,
+      created_at_utc: new Date().toUTCString()
+    }
+
+    await models.PartnerComment.create(partnerCommentToAdd);
+
+    return {code: 201, message: 'Comentariul a fost adaugat'}
+  }
+
+  async deletePartnerComment(comment_id: number) {
+    const models = initModels(sequelize);
+
+    await models.PartnerComment.destroy({
+      where: {
+        partner_comment_id: comment_id
+      }
+    });
+
+    return {code: 200, message: 'Comentariul a fost sters'}
+
   }
 }
 

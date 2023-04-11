@@ -17,6 +17,11 @@ export class PartnerRoutes extends CommonRoutesConfig {
       .put(AuthMiddleware.auth, PartnerMiddleware.validatePartnerUpdate, PartnerController.updatePartner);
 
     this.app
+      .route("/api/partners/comments")
+      .get(AuthMiddleware.auth, PartnerController.getPartnerComments)
+      .post(AuthMiddleware.auth, PartnerMiddleware.validateUserPartner, PartnerController.addPartnerComment)
+      .delete(AuthMiddleware.auth, PartnerMiddleware.validateUserPartner, PartnerMiddleware.validateUserPartnerComment, PartnerController.deletePartnerComment)
+    this.app
       .route("/api/partners/address/autocomplete")
       .get(AuthMiddleware.auth, PartnerController.getAddressAutocompleteOptions)
 

@@ -89,6 +89,18 @@ class PartnerMiddleware {
 
     next();
   };
+
+  validateUserPartnerComment = async (req: CustomRequest, res: express.Response, next: express.NextFunction) => {
+    const userId = (req.token as any)._id;
+
+    const userComment = await PartnerService.getPartnerComment(req.body.partner_comment_id);
+
+    if (userComment.user_id !== userId) {
+      return res.status(400).send('Comentariul nu apartine acestui utilizator!');
+    }
+
+    next();
+  }
 }
 
 export default new PartnerMiddleware();

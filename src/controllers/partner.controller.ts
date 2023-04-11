@@ -82,6 +82,24 @@ class PartnerController {
 
     return res.status(200).send(result);
   }
+
+  async getPartnerComments(req: express.Request, res: express.Response) {
+    const result = await PartnerService.getPartnerComments(Number(req.query.partner_id));
+
+    res.status(200).send(result);
+  }
+
+  async addPartnerComment(req: CustomRequest, res: express.Response) {
+    const result = await PartnerService.addPartnerComment(req.body, req.token);
+
+    res.status(201).send(result);
+  }
+
+  async deletePartnerComment(req: CustomRequest, res: express.Response) {
+    const result = await PartnerService.deletePartnerComment(req.body.partner_comment_id);
+
+    res.status(200).send(result);
+  }
 }
 
 export default new PartnerController();

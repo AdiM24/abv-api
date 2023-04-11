@@ -23,6 +23,8 @@ import { OrderDetails as _OrderDetails } from "./OrderDetails";
 import type { OrderDetailsAttributes, OrderDetailsCreationAttributes } from "./OrderDetails";
 import { Partner as _Partner } from "./Partner";
 import type { PartnerAttributes, PartnerCreationAttributes } from "./Partner";
+import { PartnerComment as _PartnerComment } from "./PartnerComment";
+import type { PartnerCommentAttributes, PartnerCommentCreationAttributes } from "./PartnerComment";
 import { Product as _Product } from "./Product";
 import type { ProductAttributes, ProductCreationAttributes } from "./Product";
 import { Receipt as _Receipt } from "./Receipt";
@@ -51,6 +53,7 @@ export {
   _Order as Order,
   _OrderDetails as OrderDetails,
   _Partner as Partner,
+  _PartnerComment as PartnerComment,
   _Product as Product,
   _Receipt as Receipt,
   _TimesheetEntry as TimesheetEntry,
@@ -85,6 +88,8 @@ export type {
   OrderDetailsCreationAttributes,
   PartnerAttributes,
   PartnerCreationAttributes,
+  PartnerCommentAttributes,
+  PartnerCommentCreationAttributes,
   ProductAttributes,
   ProductCreationAttributes,
   ReceiptAttributes,
@@ -114,6 +119,7 @@ export function initModels(sequelize: Sequelize) {
   const Order = _Order.initModel(sequelize);
   const OrderDetails = _OrderDetails.initModel(sequelize);
   const Partner = _Partner.initModel(sequelize);
+  const PartnerComment = _PartnerComment.initModel(sequelize);
   const Product = _Product.initModel(sequelize);
   const Receipt = _Receipt.initModel(sequelize);
   const TimesheetEntry = _TimesheetEntry.initModel(sequelize);
@@ -164,6 +170,8 @@ export function initModels(sequelize: Sequelize) {
   Partner.hasMany(Order, { as: "client_Orders", foreignKey: "client_id"});
   Order.belongsTo(Partner, { as: "transporter", foreignKey: "transporter_id"});
   Partner.hasMany(Order, { as: "transporter_Orders", foreignKey: "transporter_id"});
+  PartnerComment.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
+  Partner.hasMany(PartnerComment, { as: "PartnerComments", foreignKey: "partner_id"});
   Receipt.belongsTo(Partner, { as: "buyer_partner", foreignKey: "buyer_partner_id"});
   Partner.hasMany(Receipt, { as: "Receipts", foreignKey: "buyer_partner_id"});
   Receipt.belongsTo(Partner, { as: "seller_partner", foreignKey: "seller_partner_id"});
@@ -178,6 +186,8 @@ export function initModels(sequelize: Sequelize) {
   User.hasMany(Invoice, { as: "Invoices", foreignKey: "user_id"});
   Order.belongsTo(User, { as: "user", foreignKey: "user_id"});
   User.hasMany(Order, { as: "Orders", foreignKey: "user_id"});
+  PartnerComment.belongsTo(User, { as: "user", foreignKey: "user_id"});
+  User.hasMany(PartnerComment, { as: "PartnerComments", foreignKey: "user_id"});
   UserInvoiceSeries.belongsTo(User, { as: "user", foreignKey: "user_id"});
   User.hasMany(UserInvoiceSeries, { as: "UserInvoiceSeries", foreignKey: "user_id"});
   UserPartnerEmail.belongsTo(User, { as: "user", foreignKey: "user_id"});
@@ -198,6 +208,7 @@ export function initModels(sequelize: Sequelize) {
     Order: Order,
     OrderDetails: OrderDetails,
     Partner: Partner,
+    PartnerComment: PartnerComment,
     Product: Product,
     Receipt: Receipt,
     TimesheetEntry: TimesheetEntry,
