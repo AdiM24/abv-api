@@ -1,12 +1,11 @@
 import express from "express";
 import RegisterService from "../services/register.service";
 import { CustomRequest } from "../middleware/auth.middleware";
-import AutoFleetService from "../services/auto-fleet.service";
 
 class RegisterController {
   async getBankRegisters(req: CustomRequest, res: express.Response) {
     const bankRegisters = Object.keys(req.query).length
-      ? await RegisterService.getFilteredBankRegisters(req.query)
+      ? await RegisterService.getFilteredBankRegisters(req.query, req.token)
       : await RegisterService.getBankRegisters(req.token);
 
     res.status(200).send(bankRegisters);
@@ -30,7 +29,7 @@ class RegisterController {
 
   async getCashRegisters(req: CustomRequest, res: express.Response) {
     const cashRegisters = Object.keys(req.query).length
-      ? await RegisterService.getFilteredCashRegisters(req.query)
+      ? await RegisterService.getFilteredCashRegisters(req.query, req.token)
       : await RegisterService.getCashRegisters(req.token);
 
     res.status(200).send(cashRegisters);

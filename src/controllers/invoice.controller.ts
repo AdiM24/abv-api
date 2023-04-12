@@ -64,7 +64,11 @@ class InvoiceController {
   async removeInvoice(req: express.Request, res: express.Response) {
     const result = await InvoiceService.removeInvoice(Number(req.params?.id));
 
-    res.send(result).status(202);
+    if (result.code === 500) {
+      res.status(500).send(result);
+    } else {
+      res.status(202).send(result);
+    }
   }
 }
 

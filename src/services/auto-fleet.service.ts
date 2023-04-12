@@ -2,6 +2,8 @@ import {CreateAutoFleetDto} from "../dtos/auto-fleet.dto";
 import {sequelize} from "../db/sequelize";
 import {AutoFleet, AutoFleetAttributes, initModels, Partner, UserPartnerMap} from "../db/models/init-models";
 import UserPartnerMappingService from "./user-partner-mapping.service";
+import {getInQuery, getLikeQuery} from "../common/utils/query-utils.service";
+import {Op} from "sequelize";
 
 class AutoFleetService {
   async getAutoFleets(decodedJwt: any) {
@@ -12,6 +14,35 @@ class AutoFleetService {
     const partnerFleet = await models.AutoFleet.findAll({
       where: {
         partner_id: userPartners.map((userPartner: UserPartnerMap) => userPartner.partner_id)
+      }
+    });
+
+    return partnerFleet;
+  }
+
+  async getFilteredAutoFleets(queryParams: any, decodedJwt: any) {
+    const models = initModels(sequelize);
+
+    const userPartnerIds = (await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id))).map(
+      (userPartner: UserPartnerMap) => userPartner.partner_id);
+
+    const queryObject = {} as any;
+
+    queryObject.partner_id = getInQuery(userPartnerIds);
+
+    if (queryParams.reg_no) {
+      queryObject.reg_no = getLikeQuery(queryParams.reg_no);
+    }
+
+    if (queryParams.model) {
+      queryObject.model = getLikeQuery(queryParams.model);
+    }
+
+    const partnerFleet = await models.AutoFleet.findAll({
+      where: {
+        [Op.and]: {
+          ...queryObject
+        }
       }
     });
 

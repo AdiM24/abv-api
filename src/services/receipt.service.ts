@@ -2,6 +2,8 @@ import { CreateReceiptDto, RemoveReceiptDto } from "../dtos/receipt.dto";
 import { sequelize } from "../db/sequelize";
 import {BankRegister, CashRegister, initModels, Partner, UserPartnerMap} from "../db/models/init-models";
 import UserPartnerMappingService from "./user-partner-mapping.service";
+import {getDateRangeQuery, getInQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
+import {Op} from "sequelize";
 
 class ReceiptService {
   async getReceipts(decodedJwt: any) {
@@ -13,6 +15,43 @@ class ReceiptService {
       where: {
         seller_partner_id: userPartners.map((userPartner: UserPartnerMap) => userPartner.partner_id),
         document_type: "Chitanta"
+      },
+      include: [
+        { model: Partner, as: "seller_partner" },
+        { model: Partner, as: "buyer_partner" },
+        { model: CashRegister, as: "cash_register" }
+      ]
+    });
+  }
+
+  async getFilteredReceipts(queryParams: any, decodedJwt: any) {
+    const models = initModels(sequelize);
+
+    const userPartnerIds = (await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id))).map(
+      (userPartner: UserPartnerMap) => userPartner.partner_id);
+
+    const queryObject = {} as any;
+
+    queryObject.seller_partner_id = getInQuery(userPartnerIds);
+    queryObject.document_type = 'Chitanta';
+
+    if (queryParams.series) {
+      queryObject.series = getLikeQuery(queryParams.series);
+    }
+
+    if (queryParams.number) {
+      queryObject.number = getStrictQuery(queryParams.number);
+    }
+
+    if (queryParams.created_from || queryParams.created_to) {
+      queryObject.created_at_utc = getDateRangeQuery(queryParams.created_from, queryParams.created_to);
+    }
+
+    return await models.Receipt.findAll({
+      where: {
+        [Op.and]: {
+          ...queryObject
+        }
       },
       include: [
         { model: Partner, as: "seller_partner" },

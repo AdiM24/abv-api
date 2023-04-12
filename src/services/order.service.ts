@@ -2,7 +2,7 @@ import {
   Contact,
   initModels,
   InvoiceCreationAttributes,
-  InvoiceProductCreationAttributes, Order,
+  InvoiceProductCreationAttributes,
   OrderAttributes,
   OrderCreationAttributes,
   OrderDetails,
@@ -12,9 +12,10 @@ import {
 } from "../db/models/init-models";
 import {sequelize} from "../db/sequelize";
 import UserPartnerMappingService from "./user-partner-mapping.service";
-import {Transaction} from "sequelize";
+import {Op, Transaction} from "sequelize";
 import InvoiceService from "./invoice.service";
 import {reversePercentage} from "./utils.service";
+import {getDateRangeQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
 
 class OrderService {
   applyTax(price: number) {
@@ -132,6 +133,50 @@ class OrderService {
     return orders;
   }
 
+  async getFilteredOrders(queryParams: any, decodedToken: any) {
+    const models = initModels(sequelize);
+
+    const queryObject = {} as any;
+
+    queryObject.user_id = getStrictQuery(Number(decodedToken._id));
+
+    if (queryParams.series) {
+      queryObject.series = getLikeQuery(queryParams.series);
+    }
+
+    if (queryParams.number) {
+      queryObject.number = getStrictQuery(queryParams.number);
+    }
+
+    if (queryParams.created_from || queryParams.created_to) {
+      queryObject.created_at_utc = getDateRangeQuery(queryParams.created_from, queryParams.created_to);
+    }
+
+    const orders = await models.Order.findAll({
+      where: {
+        [Op.and]: {
+          ...queryObject
+        }
+      },
+      include: [
+        {
+          model: Partner, as: 'buyer',
+        },
+        {
+          model: Partner, as: 'client'
+        },
+        {
+          model: Partner, as: 'transporter'
+        },
+        {
+          model: OrderDetails, as: 'OrderDetails'
+        }
+      ]
+    });
+
+    return orders;
+  }
+
   async addOrderDetails(orderDetails: any) {
     const models = initModels(sequelize);
 
@@ -204,7 +249,10 @@ class OrderService {
         await models.OrderDetails.destroy({where: {order_id: orderId}, transaction: transaction});
         await models.Order.destroy({where: {order_id: orderId}, transaction: transaction});
       });
+
+      return {code: 200, message: 'Comanda a fost stearsa'};
     } catch (err) {
+      return {code: 500, message: 'Comanda nu poate fi stearsa'}
       console.error(err);
     }
 

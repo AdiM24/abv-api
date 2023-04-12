@@ -1,16 +1,14 @@
-import { sequelize } from "../db/sequelize";
-import {initModels, Partner, TimesheetEntry, UserPartnerMap} from "../db/models/init-models";
-import PartnerService from "./partner.service";
-import { BankRegisterAddDto } from "../dtos/bank-register.dto";
-import { CashRegisterAddDto } from "../dtos/cash-register.dto";
-import { getStrictQuery } from "../common/utils/query-utils.service";
-import { Op } from "sequelize";
+import {sequelize} from "../db/sequelize";
+import {initModels, Partner, UserPartnerMap} from "../db/models/init-models";
+import {BankRegisterAddDto} from "../dtos/bank-register.dto";
+import {CashRegisterAddDto} from "../dtos/cash-register.dto";
+import {getInQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
+import {Op} from "sequelize";
 import UserPartnerMappingService from "./user-partner-mapping.service";
 
 class RegisterService {
   async getBankRegisters(decodedJwt: any) {
     const models = initModels(sequelize);
-
 
     const userPartners = await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id));
 
@@ -33,16 +31,21 @@ class RegisterService {
     })
   }
 
-  async getFilteredBankRegisters(queryParams: any) {
+  async getFilteredBankRegisters(queryParams: any, decodedJwt: any) {
     const models = initModels(sequelize);
 
     const queryObject = {} as any;
 
-    if(queryParams.partner_id) {
-      queryObject.partner_id = getStrictQuery(queryParams.partner_id);
+    const userPartnerIds = (await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id))).map(
+      (userPartner: UserPartnerMap) => userPartner.partner_id);
+
+    queryObject.partner_id = getInQuery(userPartnerIds)
+
+    if (queryParams.iban) {
+      queryObject.iban = getLikeQuery(queryParams.iban);
     }
 
-    if(queryParams.currency) {
+    if (queryParams.currency) {
       queryObject.currency = getStrictQuery(queryParams.currency)
     }
 
@@ -51,21 +54,28 @@ class RegisterService {
         [Op.and]: {
           ...queryObject,
         }
-      }
+      },
+      include: [{model: Partner, as: "partner"}]
     })
   }
 
 
-  async getFilteredCashRegisters(queryParams: any) {
+  async getFilteredCashRegisters(queryParams: any, decodedJwt: any) {
     const models = initModels(sequelize);
 
     const queryObject = {} as any;
 
-    if(queryParams.partner_id) {
-      queryObject.partner_id = getStrictQuery(queryParams.partner_id);
+    const userPartnerIds = (await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id))).map(
+      (userPartner: UserPartnerMap) => userPartner.partner_id);
+
+    queryObject.partner_id = getInQuery(userPartnerIds)
+
+
+    if (queryParams.name) {
+      queryObject.name = getLikeQuery(queryParams.name);
     }
 
-    if(queryParams.currency) {
+    if (queryParams.currency) {
       queryObject.currency = getStrictQuery(queryParams.currency)
     }
 
@@ -74,7 +84,8 @@ class RegisterService {
         [Op.and]: {
           ...queryObject,
         }
-      }
+      },
+      include: [{model: Partner, as: "partner"}]
     })
   }
 

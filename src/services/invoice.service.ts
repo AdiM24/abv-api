@@ -17,7 +17,7 @@ import {
   UpdateInvoiceProduct
 } from "../dtos/create.invoice-product.dto";
 import {Op, WhereOptions} from "sequelize";
-import {getInQuery, getStrictQuery} from "../common/utils/query-utils.service";
+import {getDateRangeQuery, getInQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
 import UserService from "./user.service";
 import UserPartnerMappingService from "./user-partner-mapping.service";
 
@@ -45,6 +45,18 @@ class InvoiceService {
       } else if (queryParams.type === 'received') {
         queryObject.buyer_id = getInQuery(userPartnerIds);
       }
+    }
+
+    if (queryParams.series) {
+      queryObject.series = getLikeQuery(queryParams.series);
+    }
+
+    if (queryParams.number) {
+      queryObject.number = getStrictQuery(queryParams.number);
+    }
+
+    if (queryParams.created_from || queryParams.created_to) {
+      queryObject.created_at_utc = getDateRangeQuery(queryParams.created_from, queryParams.created_to);
     }
 
     return await models.Invoice.findAll({
@@ -481,9 +493,10 @@ class InvoiceService {
 
     try {
       await existingInvoice.destroy();
+
       return {code: 200, message: `Invoice successfully deleted`}
     } catch (err) {
-      console.error(err);
+      return {code: 500, message: `Factura nu poate fi stearsa.`}
     }
 
   }

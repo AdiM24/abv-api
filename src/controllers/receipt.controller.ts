@@ -1,11 +1,12 @@
 import express from "express";
-import RegisterService from "../services/register.service";
-import { CustomRequest } from "../middleware/auth.middleware";
+import {CustomRequest} from "../middleware/auth.middleware";
 import ReceiptService from "../services/receipt.service";
 
 class ReceiptController {
   async getReceipts(req: CustomRequest, res: express.Response) {
-    const receipts = await ReceiptService.getReceipts(req.token);
+    const receipts = Object.keys(req.query).length
+      ? await ReceiptService.getFilteredReceipts(req.query, req.token)
+      : await ReceiptService.getReceipts(req.token);
 
     res.status(200).send(receipts);
   }
@@ -31,9 +32,9 @@ class ReceiptController {
   }
 
   async findNextSeriesNumber(req: express.Request, res: express.Response) {
-    const nextNumberForSeries = await  ReceiptService.findNextSeriesNumber(req.body?.series);
+    const nextNumberForSeries = await ReceiptService.findNextSeriesNumber(req.body?.series);
 
-    res.status(200).send({ number: nextNumberForSeries });
+    res.status(200).send({number: nextNumberForSeries});
   }
 
   async removeReceipt(req: express.Request, res: express.Response) {

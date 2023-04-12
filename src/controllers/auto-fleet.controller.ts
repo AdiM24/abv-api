@@ -1,6 +1,7 @@
 import express from "express";
 import AutoFleetService from "../services/auto-fleet.service";
 import {CustomRequest} from "../middleware/auth.middleware";
+import InvoiceService from "../services/invoice.service";
 
 class AutoFleetController {
   async createAutoFleet(req: express.Request, res: express.Response) {
@@ -22,7 +23,9 @@ class AutoFleetController {
   }
 
   async getAutoFleets(req: CustomRequest, res: express.Response) {
-    const autoFleets = await AutoFleetService.getAutoFleets(req.token);
+    const autoFleets = Object.keys(req.query).length
+      ? await AutoFleetService.getFilteredAutoFleets(req.query, req.token)
+      : await AutoFleetService.getAutoFleets(req.token);
 
     return res.status(200).send(autoFleets);
   }
