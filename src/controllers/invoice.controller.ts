@@ -6,7 +6,7 @@ class InvoiceController {
   async getInvoices(req: CustomRequest, res: express.Response) {
     const invoices = Object.keys(req.query).length
       ? await InvoiceService.getFilteredInvoices(req.query, req.token)
-      : await InvoiceService.getInvoices();
+      : await InvoiceService.getInvoices(req.token);
 
     res.status(200).send(invoices);
   }

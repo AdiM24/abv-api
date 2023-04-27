@@ -101,6 +101,34 @@ class PartnerMiddleware {
 
     next();
   }
+
+  validateExistingUserAddress = async (req: express.Request, res: express.Response, next: express.NextFunction)  => {
+    if (!req.body.address_id) {
+      return res.status(400).send({code: 400, message:"Adresa este invalida."})
+    }
+
+    const existingAddress = PartnerService.getPartnerAddress(req.body.address_id);
+
+    if (!existingAddress) {
+      return res.status(404).send({code: 404, message:"Adresa nu exista in sistem."});
+    }
+
+    next();
+  }
+
+  validateExistingBankAccount = async (req: express.Request, res: express.Response, next: express.NextFunction)  => {
+    if (!req.body.bank_account_id) {
+      return res.status(400).send({code: 400, message:"Contul bancar este invalid."})
+    }
+
+    const existingBankAccount = PartnerService.getBankAccount(req.body.bank_account_id);
+
+    if (!existingBankAccount) {
+      return res.status(404).send({code: 404, message:"Contul bancar nu exista in sistem."});
+    }
+
+    next();
+  }
 }
 
 export default new PartnerMiddleware();

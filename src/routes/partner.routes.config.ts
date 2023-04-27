@@ -21,6 +21,7 @@ export class PartnerRoutes extends CommonRoutesConfig {
       .get(AuthMiddleware.auth, PartnerController.getPartnerComments)
       .post(AuthMiddleware.auth, PartnerMiddleware.validateUserPartner, PartnerController.addPartnerComment)
       .delete(AuthMiddleware.auth, PartnerMiddleware.validateUserPartner, PartnerMiddleware.validateUserPartnerComment, PartnerController.deletePartnerComment)
+
     this.app
       .route("/api/partners/address/autocomplete")
       .get(AuthMiddleware.auth, PartnerController.getAddressAutocompleteOptions)
@@ -41,13 +42,13 @@ export class PartnerRoutes extends CommonRoutesConfig {
 
     this.app
       .route("/api/partners/address")
-      .post(PartnerController.addPartnerAddress)
-      .put(PartnerController.updatePartnerAddresses);
+      .post(AuthMiddleware.auth, PartnerController.addPartnerAddress)
+      .put(AuthMiddleware.auth, PartnerMiddleware.validateExistingUserAddress, PartnerController.updatePartnerAddress);
 
     this.app
       .route("/api/partners/bankaccounts")
-      .post(PartnerController.addPartnerBankAccount)
-      .put(PartnerController.updatePartnerBankAccounts);
+      .post(AuthMiddleware.auth, PartnerController.addPartnerBankAccount)
+      .put(AuthMiddleware.auth, PartnerMiddleware.validateExistingBankAccount, PartnerController.updatePartnerBankAccounts);
 
     this.app
       .route("/api/partners/contacts")

@@ -25,6 +25,12 @@ class AuthService {
       return 'Incorrect username or password';
     }
 
+    const userRole = await models.UserRoles.findOne({
+      where: {
+        user_id: user.user_id
+      }
+    });
+
     const isMatch = await comparePassword(userLoginInfo.password, user.password);
 
     if (!isMatch) {
@@ -34,7 +40,8 @@ class AuthService {
     const token = jwt.sign({
       _id: user.user_id?.toString(),
       email: user.email,
-      name: user.first_name + " " + user.last_name
+      name: user.first_name + " " + user.last_name,
+      role: userRole.role
     }, SECRET_KEY, {
       expiresIn: '2 days'
     });

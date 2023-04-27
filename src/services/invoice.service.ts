@@ -20,12 +20,20 @@ import {Op, WhereOptions} from "sequelize";
 import {getDateRangeQuery, getInQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
 import UserService from "./user.service";
 import UserPartnerMappingService from "./user-partner-mapping.service";
+import {Roles} from "../common/enums/roles";
 
 class InvoiceService {
-  async getInvoices() {
+  async getInvoices(decodedJwt: any) {
     const models = initModels(sequelize);
 
+    const queryObject: any = {};
+
+    if (decodedJwt.role !== Roles.Administrator) {
+      queryObject.user_id = Number(decodedJwt._id);
+    }
+
     return await models.Invoice.findAll({
+      where: queryObject,
       include: [{model: Partner, as: 'buyer'}]
     });
   }
@@ -57,6 +65,10 @@ class InvoiceService {
 
     if (queryParams.created_from || queryParams.created_to) {
       queryObject.created_at_utc = getDateRangeQuery(queryParams.created_from, queryParams.created_to);
+    }
+
+    if (decodedJwt.role !== Roles.Administrator) {
+      queryObject.user_id = Number(decodedJwt._id);
     }
 
     return await models.Invoice.findAll({
@@ -175,7 +187,6 @@ class InvoiceService {
 
   async getInvoiceWithDetails(invoiceId: number) {
     const models = initModels(sequelize);
-
 
     const invoice: Invoice = await models.Invoice.findOne(
       {

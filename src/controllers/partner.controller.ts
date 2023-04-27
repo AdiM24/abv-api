@@ -59,14 +59,14 @@ class PartnerController {
     return res.status(200).send(result);
   }
 
-  async updatePartnerAddresses(req: express.Request, res: express.Response) {
-    const result = await PartnerService.updatePartnerAddresses(req.body)
+  async updatePartnerAddress(req: express.Request, res: express.Response) {
+    const result = await PartnerService.updatePartnerAddress(req.body)
 
     return res.status(200).send(result);
   }
 
   async updatePartnerBankAccounts(req: express.Request, res: express.Response) {
-    const result = await PartnerService.updatePartnerBankAccounts(req.body)
+    const result = await PartnerService.updatePartnerBankAccount(req.body)
 
     return res.status(200).send(result);
   }

@@ -203,6 +203,29 @@ class PartnerService {
     return partner;
   }
 
+  // Addresses
+  async getPartnerAddress(address_id: number) {
+    const models = initModels(sequelize);
+
+    return await models.Address.findOne({
+      where: {
+        address_id: address_id
+      },
+      raw: true
+    });
+  }
+
+  async getBankAccount(bank_account_id: number) {
+    const models = initModels(sequelize);
+
+    return await models.BankAccount.findOne({
+      where: {
+        bank_account_id: bank_account_id
+      },
+      raw: true
+    });
+  }
+
   async getPartnerAddressOptions(searchKey: string, decodedJwt: any) {
     const models = initModels(sequelize);
 
@@ -235,6 +258,28 @@ class PartnerService {
     }))
   }
 
+  async updatePartnerAddress(address: UpdateAddressDto) {
+    const models = initModels(sequelize);
+
+    const updatedAddress = await models.Address.update(address, {
+      where: {
+        address_id: address.address_id,
+        partner_id: address.partner_id,
+      },
+      returning: true,
+    });
+
+    return updatedAddress;
+  }
+
+  async addPartnerAddress(addressToAdd: CreateAddressDto) {
+    const models = initModels(sequelize);
+
+    return await models.Address.create(addressToAdd);
+  }
+
+  // ---------
+
   async getFilteredPartners(queryParams: any) {
     const models = initModels(sequelize);
 
@@ -262,40 +307,6 @@ class PartnerService {
         },
       },
     });
-  }
-
-  async updatePartnerAddresses(addresses: UpdateAddressDto[]) {
-    const models = initModels(sequelize);
-
-    let existingAddress: UpdateAddressDto = {} as UpdateAddressDto;
-
-    return await Promise.all(
-      addresses.map(async (address: UpdateAddressDto) => {
-        existingAddress = await models.Address.findOne({
-          where: {
-            address_id: address.address_id,
-            partner_id: address.partner_id,
-          },
-        });
-
-        if (!existingAddress) {
-          return;
-        }
-
-        address.partner_id = existingAddress.partner_id;
-        address.address_id = existingAddress.address_id;
-
-        await models.Address.update(address, {
-          where: {
-            address_id: address.address_id,
-            partner_id: address.partner_id,
-          },
-          returning: true,
-        });
-
-        return address;
-      })
-    );
   }
 
   async updatePartnerContacts(contacts: UpdateContactDto[]) {
@@ -332,35 +343,18 @@ class PartnerService {
     );
   }
 
-  async updatePartnerBankAccounts(bankAccounts: UpdateBankAccountDto[]) {
+  async updatePartnerBankAccount(bankAccount: UpdateBankAccountDto) {
     const models = initModels(sequelize);
 
-    let existingBankAccount: UpdateBankAccountDto = {} as UpdateBankAccountDto;
+    const updatedBankAccount = await models.BankAccount.update(bankAccount, {
+      where: {
+        bank_account_id: bankAccount.bank_account_id,
+        partner_id: bankAccount.partner_id,
+      },
+      returning: true,
+    });
 
-    return await Promise.all(
-      bankAccounts.map(async (bankAccount: UpdateBankAccountDto) => {
-        existingBankAccount = await models.BankAccount.findOne({
-          where: {
-            bank_account_id: bankAccount.bank_account_id,
-            partner_id: bankAccount.partner_id,
-          },
-        });
-
-        if (!existingBankAccount) {
-          return;
-        }
-
-        await models.BankAccount.update(bankAccount, {
-          where: {
-            bank_account_id: bankAccount.bank_account_id,
-            partner_id: bankAccount.partner_id,
-          },
-          returning: true,
-        });
-
-        return bankAccount;
-      })
-    );
+    return updatedBankAccount;
   }
 
   async getPartnerByTin(tin: string) {
@@ -373,11 +367,6 @@ class PartnerService {
     }));
   }
 
-  async addPartnerAddress(addressToAdd: CreateAddressDto) {
-    const models = initModels(sequelize);
-
-    return await models.Address.create(addressToAdd);
-  }
 
   async addPartnerBankAccount(bankAccount: CreateBankAccountDto) {
     const models = initModels(sequelize);

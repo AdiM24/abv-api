@@ -16,6 +16,7 @@ import {Op, Transaction} from "sequelize";
 import InvoiceService from "./invoice.service";
 import {reversePercentage} from "./utils.service";
 import {getDateRangeQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
+import {Roles} from "../common/enums/roles";
 
 class OrderService {
   applyTax(price: number) {
@@ -110,9 +111,15 @@ class OrderService {
   async getOrders(decodedToken: any) {
     const models = initModels(sequelize);
 
+    const queryObject: any = {}
+
+    if (decodedToken.role !== Roles.Administrator) {
+      queryObject.user_id = getStrictQuery(Number(decodedToken._id));
+    }
+
     const orders = await models.Order.findAll({
       where: {
-        user_id: Number(decodedToken._id)
+        ...queryObject
       },
       include: [
         {
@@ -138,7 +145,9 @@ class OrderService {
 
     const queryObject = {} as any;
 
-    queryObject.user_id = getStrictQuery(Number(decodedToken._id));
+    if (decodedToken.role !== Roles.Administrator) {
+      queryObject.user_id = getStrictQuery(Number(decodedToken._id));
+    }
 
     if (queryParams.series) {
       queryObject.series = getLikeQuery(queryParams.series);

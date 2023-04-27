@@ -20,7 +20,6 @@ export class OrderRoutes extends CommonRoutesConfig {
         OrderMiddleware.validateOrderMinRequirements,
         OrderController.addOrder)
       .put(AuthMiddleware.auth,
-        OrderMiddleware.validateOrderCreationDate,
         OrderMiddleware.validateUserPartner,
         OrderMiddleware.validateUserOrder,
         OrderController.updateOrder)
