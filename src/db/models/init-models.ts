@@ -13,6 +13,8 @@ import { Contact as _Contact } from "./Contact";
 import type { ContactAttributes, ContactCreationAttributes } from "./Contact";
 import { Employee as _Employee } from "./Employee";
 import type { EmployeeAttributes, EmployeeCreationAttributes } from "./Employee";
+import { ImageFiles as _ImageFiles } from "./ImageFiles";
+import type { ImageFilesAttributes, ImageFilesCreationAttributes } from "./ImageFiles";
 import { Invoice as _Invoice } from "./Invoice";
 import type { InvoiceAttributes, InvoiceCreationAttributes } from "./Invoice";
 import { InvoiceProduct as _InvoiceProduct } from "./InvoiceProduct";
@@ -25,6 +27,8 @@ import { Partner as _Partner } from "./Partner";
 import type { PartnerAttributes, PartnerCreationAttributes } from "./Partner";
 import { PartnerComment as _PartnerComment } from "./PartnerComment";
 import type { PartnerCommentAttributes, PartnerCommentCreationAttributes } from "./PartnerComment";
+import { PartnerImage as _PartnerImage } from "./PartnerImage";
+import type { PartnerImageAttributes, PartnerImageCreationAttributes } from "./PartnerImage";
 import { Product as _Product } from "./Product";
 import type { ProductAttributes, ProductCreationAttributes } from "./Product";
 import { Receipt as _Receipt } from "./Receipt";
@@ -50,12 +54,14 @@ export {
   _CashRegister as CashRegister,
   _Contact as Contact,
   _Employee as Employee,
+  _ImageFiles as ImageFiles,
   _Invoice as Invoice,
   _InvoiceProduct as InvoiceProduct,
   _Order as Order,
   _OrderDetails as OrderDetails,
   _Partner as Partner,
   _PartnerComment as PartnerComment,
+  _PartnerImage as PartnerImage,
   _Product as Product,
   _Receipt as Receipt,
   _TimesheetEntry as TimesheetEntry,
@@ -81,6 +87,8 @@ export type {
   ContactCreationAttributes,
   EmployeeAttributes,
   EmployeeCreationAttributes,
+  ImageFilesAttributes,
+  ImageFilesCreationAttributes,
   InvoiceAttributes,
   InvoiceCreationAttributes,
   InvoiceProductAttributes,
@@ -93,6 +101,8 @@ export type {
   PartnerCreationAttributes,
   PartnerCommentAttributes,
   PartnerCommentCreationAttributes,
+  PartnerImageAttributes,
+  PartnerImageCreationAttributes,
   ProductAttributes,
   ProductCreationAttributes,
   ReceiptAttributes,
@@ -119,12 +129,14 @@ export function initModels(sequelize: Sequelize) {
   const CashRegister = _CashRegister.initModel(sequelize);
   const Contact = _Contact.initModel(sequelize);
   const Employee = _Employee.initModel(sequelize);
+  const ImageFiles = _ImageFiles.initModel(sequelize);
   const Invoice = _Invoice.initModel(sequelize);
   const InvoiceProduct = _InvoiceProduct.initModel(sequelize);
   const Order = _Order.initModel(sequelize);
   const OrderDetails = _OrderDetails.initModel(sequelize);
   const Partner = _Partner.initModel(sequelize);
   const PartnerComment = _PartnerComment.initModel(sequelize);
+  const PartnerImage = _PartnerImage.initModel(sequelize);
   const Product = _Product.initModel(sequelize);
   const Receipt = _Receipt.initModel(sequelize);
   const TimesheetEntry = _TimesheetEntry.initModel(sequelize);
@@ -144,6 +156,8 @@ export function initModels(sequelize: Sequelize) {
   CashRegister.hasMany(Receipt, { as: "Receipts", foreignKey: "cash_register_id"});
   TimesheetEntry.belongsTo(Employee, { as: "employee", foreignKey: "employee_id"});
   Employee.hasMany(TimesheetEntry, { as: "TimesheetEntries", foreignKey: "employee_id"});
+  PartnerImage.belongsTo(ImageFiles, { as: "image", foreignKey: "image_id"});
+  ImageFiles.hasMany(PartnerImage, { as: "PartnerImages", foreignKey: "image_id"});
   InvoiceProduct.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
   Invoice.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "invoice_id"});
   Receipt.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
@@ -178,6 +192,8 @@ export function initModels(sequelize: Sequelize) {
   Partner.hasMany(Order, { as: "transporter_Orders", foreignKey: "transporter_id"});
   PartnerComment.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
   Partner.hasMany(PartnerComment, { as: "PartnerComments", foreignKey: "partner_id"});
+  PartnerImage.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
+  Partner.hasMany(PartnerImage, { as: "PartnerImages", foreignKey: "partner_id"});
   Receipt.belongsTo(Partner, { as: "buyer_partner", foreignKey: "buyer_partner_id"});
   Partner.hasMany(Receipt, { as: "Receipts", foreignKey: "buyer_partner_id"});
   Receipt.belongsTo(Partner, { as: "seller_partner", foreignKey: "seller_partner_id"});
@@ -211,12 +227,14 @@ export function initModels(sequelize: Sequelize) {
     CashRegister: CashRegister,
     Contact: Contact,
     Employee: Employee,
+    ImageFiles: ImageFiles,
     Invoice: Invoice,
     InvoiceProduct: InvoiceProduct,
     Order: Order,
     OrderDetails: OrderDetails,
     Partner: Partner,
     PartnerComment: PartnerComment,
+    PartnerImage: PartnerImage,
     Product: Product,
     Receipt: Receipt,
     TimesheetEntry: TimesheetEntry,

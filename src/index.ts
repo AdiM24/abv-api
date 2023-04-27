@@ -14,6 +14,8 @@ import { RegisterRoutes } from "./routes/register.routes.config";
 import { ReceiptRoutes } from "./routes/receipt.routes.config";
 import {EmailRoutes} from "./routes/email.routes.config";
 import {OrderRoutes} from "./routes/order.routes.config";
+import morgan from "morgan";
+import {ImageRoutes} from "./routes/image.routes.config";
 
 dotenv.config();
 
@@ -22,6 +24,7 @@ const port = process.env.PORT;
 const routes: Array<CommonRoutesConfig> = [];
 
 app.use(express.json({limit: '10MB'}));
+app.use(morgan('dev'));
 app.use(cors());
 
 routes.push(new UserRoutes(app));
@@ -36,6 +39,7 @@ routes.push(new RegisterRoutes(app));
 routes.push(new ReceiptRoutes(app));
 routes.push(new EmailRoutes(app));
 routes.push(new OrderRoutes(app));
+routes.push(new ImageRoutes(app));
 
 const runningMessage = `Server running at http://localhost:${port}`;
 app.get("/api/", (req: express.Request, res: express.Response) => {
