@@ -74,6 +74,12 @@ class UsersController {
 
     return res.status(200).send(userPartner[0]);
   }
+
+  async changePassword(req: express.Request, res: express.Response) {
+    await UserService.changeUserPassword(req.body);
+
+    return res.status(200).send({message:'success'});
+  }
 }
 
 export default new UsersController();

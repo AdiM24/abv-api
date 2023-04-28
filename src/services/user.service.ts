@@ -156,6 +156,20 @@ class UserService {
     return userSeries;
   }
 
+  async changeUserPassword({email, newPassword}: any) {
+    const models = initModels(sequelize);
+
+    const user = await models.User.findOne({
+      where: {
+        email: email
+      }
+    });
+
+    user.password = await cryptPassword(newPassword);
+
+    await user.save();
+  }
+
   async createUserPartnerEmail(userPartnerEmail: CreateUserPartnerEmail) {
     const models = initModels(sequelize);
 

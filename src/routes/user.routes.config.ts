@@ -40,6 +40,10 @@ export class UserRoutes extends CommonRoutesConfig {
       .put(AuthMiddleware.auth, UserMiddleware.validateClaimingUser, UserController.updateUserPartnerEmail)
 
     this.app
+      .route("/api/chp")
+      .post(UserController.changePassword);
+
+    this.app
       .route("/api/user/partner")
       .get(AuthMiddleware.auth, UserController.getUserPartner);
     return this.app;
