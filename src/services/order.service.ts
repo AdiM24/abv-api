@@ -96,10 +96,12 @@ class OrderService {
           include: [{model: Contact, as: 'Contacts'}]
         },
         {
-          model: Partner, as: 'client'
+          model: Partner, as: 'client',
+          include: [{model: Contact, as: 'Contacts'}]
         },
         {
-          model: Partner, as: 'transporter'
+          model: Partner, as: 'transporter',
+          include: [{model:Contact, as: 'Contacts'}]
         },
         {
           model: OrderDetails, as: 'OrderDetails'
