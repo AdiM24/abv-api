@@ -59,6 +59,12 @@ class PartnerController {
     return res.status(200).send(result);
   }
 
+  async addPartnerContact(req: express.Request, res: express.Response) {
+    const result = await PartnerService.addPartnerContact(req.body);
+
+    return res.status(201).send(result);
+  }
+
   async updatePartnerAddress(req: express.Request, res: express.Response) {
     const result = await PartnerService.updatePartnerAddress(req.body)
 
@@ -71,8 +77,8 @@ class PartnerController {
     return res.status(200).send(result);
   }
 
-  async updatePartnerContacts(req: express.Request, res: express.Response) {
-    const result = await PartnerService.updatePartnerContacts(req.body)
+  async updatePartnerContact(req: express.Request, res: express.Response) {
+    const result = await PartnerService.updatePartnerContact(req.body)
 
     return res.status(200).send(result);
   }
@@ -97,6 +103,12 @@ class PartnerController {
 
   async deletePartnerComment(req: CustomRequest, res: express.Response) {
     const result = await PartnerService.deletePartnerComment(req.body.partner_comment_id);
+
+    res.status(200).send(result);
+  }
+
+  async deletePartnerContact(req: express.Request, res: express.Response) {
+    const result = await PartnerService.deletePartnerContact(req.body.contact_id);
 
     res.status(200).send(result);
   }

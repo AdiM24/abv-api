@@ -309,38 +309,22 @@ class PartnerService {
     });
   }
 
-  async updatePartnerContacts(contacts: UpdateContactDto[]) {
+  async addPartnerContact(contactToAdd: CreateContactDto) {
     const models = initModels(sequelize);
 
-    let existingContact: UpdateContactDto = {} as UpdateContactDto;
+    return await models.Contact.create(contactToAdd);
+  }
 
-    return await Promise.all(
-      contacts.map(async (contact: UpdateContactDto) => {
-        existingContact = await models.Contact.findOne({
-          where: {
-            contact_id: contact.contact_id,
-            partner_id: contact.partner_id,
-          },
-        });
+  async updatePartnerContact(contact: UpdateContactDto) {
+    const models = initModels(sequelize);
 
-        if (!existingContact) {
-          return;
-        }
-
-        contact.partner_id = existingContact.partner_id;
-        contact.contact_id = existingContact.contact_id;
-
-        await models.Contact.update(contact, {
-          where: {
-            contact_id: contact.contact_id,
-            partner_id: contact.partner_id,
-          },
-          returning: true,
-        });
-
-        return contact;
-      })
-    );
+    return await models.Contact.update(contact, {
+      where: {
+        contact_id: contact.contact_id,
+        partner_id: contact.partner_id,
+      },
+      returning: true,
+    });
   }
 
   async updatePartnerBankAccount(bankAccount: UpdateBankAccountDto) {
@@ -442,6 +426,18 @@ class PartnerService {
 
     return {code: 200, message: 'Comentariul a fost sters'}
 
+  }
+
+  async deletePartnerContact(contact_id: number) {
+    const models = initModels(sequelize);
+
+    await models.Contact.destroy({
+      where: {
+        contact_id: contact_id
+      }
+    });
+
+    return {code: 200, message: 'Contactul a fost sters.'}
   }
 }
 

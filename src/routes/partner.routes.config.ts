@@ -52,8 +52,17 @@ export class PartnerRoutes extends CommonRoutesConfig {
 
     this.app
       .route("/api/partners/contacts")
+      .post(
+        AuthMiddleware.auth,
+        PartnerController.addPartnerContact
+      )
       .put(
-        PartnerController.updatePartnerContacts
+        AuthMiddleware.auth,
+        PartnerController.updatePartnerContact
+      )
+      .delete(
+        AuthMiddleware.auth,
+        PartnerController.deletePartnerContact
       );
 
     return this.app;
