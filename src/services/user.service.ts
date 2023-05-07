@@ -156,6 +156,12 @@ class UserService {
     return userSeries;
   }
 
+  async addUserRoles(userRole: any) {
+    const models = initModels(sequelize);
+
+    await models.UserRoles.create(userRole);
+  }
+
   async changeUserPassword({email, newPassword}: any) {
     const models = initModels(sequelize);
 
