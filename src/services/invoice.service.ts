@@ -87,7 +87,7 @@ class InvoiceService {
 
   async createInvoice(invoiceToAdd: CreateInvoiceDto, models: any) {
     let createdInvoice: Invoice;
-    
+
     invoiceToAdd.series = invoiceToAdd.series.toUpperCase();
     invoiceToAdd.deadline_at_utc = invoiceToAdd.deadline_at_utc ? invoiceToAdd.deadline_at_utc : null;
 

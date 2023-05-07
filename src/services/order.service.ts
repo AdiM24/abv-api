@@ -101,7 +101,7 @@ class OrderService {
         },
         {
           model: Partner, as: 'transporter',
-          include: [{model:Contact, as: 'Contacts'}]
+          include: [{model: Contact, as: 'Contacts'}]
         },
         {
           model: OrderDetails, as: 'OrderDetails'
@@ -321,10 +321,17 @@ class OrderService {
     const nextNumber = await InvoiceService.findNextSeriesNumber(defaultInvoiceSerie, 'issued');
 
     const currentDate = new Date(Date.now());
+    let deadlineDate = new Date(Date.now());
 
     const deadlineDays = (await models.Partner.findOne({
       where: {partner_id: order.client_id}
     })).invoice_deadline_days;
+
+    if (deadlineDays) {
+      deadlineDate.setDate(deadlineDate.getDate() + Number(deadlineDays));
+    } else {
+      deadlineDate = null;
+    }
 
     try {
       await sequelize.transaction(async (transaction: Transaction) => {
@@ -342,19 +349,25 @@ class OrderService {
           }, {transaction: transaction});
         }
 
+        const price = order.client_currency === 'EUR' ? order.client_price : reversePercentage(order.client_price, 19);
+        const vat = (
+          (parseFloat((Number(order.client_price) * 100).toFixed(2))
+            - (price * 100))
+          / 100 )
+
         const invoiceData: InvoiceCreationAttributes = {
           series: defaultInvoiceSerie,
           number: nextNumber,
           client_id: order.client_id,
           created_at_utc: currentDate.toString(),
-          deadline_at_utc: deadlineDays ? new Date(currentDate.setDate(currentDate.getDate() + deadlineDays)).toString() : null,
+          deadline_at_utc: deadlineDays ? deadlineDate.toString() : null,
           user_id: Number(decodedToken._id),
           sent_status: 'not sent',
           status: 'unpaid',
           currency: order.client_currency,
           total_price_incl_vat: order.client_price,
           total_price: order.client_currency === 'EUR' ? order.client_price : reversePercentage(order.client_price, 19),
-          total_vat: order.client_currency === 'EUR' ? 0 : parseFloat((order.client_price - reversePercentage(order.client_price, 19)).toFixed(2)),
+          total_vat: order.client_currency === 'EUR' ? 0 : vat,
           type: 'issued',
           order_reference_id: order.order_id,
           total_paid_price: 0,
