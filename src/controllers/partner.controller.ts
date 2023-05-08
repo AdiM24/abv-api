@@ -112,6 +112,18 @@ class PartnerController {
 
     res.status(200).send(result);
   }
+
+  async deletePartnerAddress(req: express.Request, res: express.Response) {
+    const result = await PartnerService.deletePartnerAddress(req.body.address_id);
+
+    res.status(result.code).send(result);
+  }
+
+  async deletePartnerBankAccount(req: express.Request, res: express.Response) {
+    const result = await PartnerService.deletePartnerBankAccount(req.body.bank_account_id);
+
+    res.status(result.code).send(result);
+  }
 }
 
 export default new PartnerController();

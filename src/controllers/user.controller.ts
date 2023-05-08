@@ -80,6 +80,12 @@ class UsersController {
 
     return res.status(200).send({message:'success'});
   }
+
+  async deleteUserSeries(req: express.Request, res: express.Response) {
+    const result = await UserService.deleteUserSeries(req.body.series_id);
+
+    return res.status(200).send(result);
+  }
 }
 
 export default new UsersController();

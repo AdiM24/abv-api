@@ -27,6 +27,7 @@ export class UserRoutes extends CommonRoutesConfig {
       .route("/api/users/series")
       .get(AuthMiddleware.auth, UsersController.getUserSeries)
       .post(AuthMiddleware.auth, UsersController.createUserSeries)
+      .delete(AuthMiddleware.auth, UserControllgier.deleteUserSeries);
 
     this.app
       .route("/api/users/series/change")

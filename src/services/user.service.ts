@@ -245,8 +245,7 @@ class UserService {
       await existingUserPartner.save();
 
       return {code: 200, message: 'Datele utilizatorului au fost actualizate'}
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
     }
   }
@@ -264,9 +263,21 @@ class UserService {
       await existingUserPartner.destroy();
 
       return {code: 200, message: 'Datele utilizatorului au fost sterse'}
-    } catch(err) {
+    } catch (err) {
       console.error(err);
     }
+  }
+
+  async deleteUserSeries(series_id: number) {
+    const models = initModels(sequelize);
+
+    await models.UserInvoiceSeries.destroy({
+      where: {
+        user_invoice_series_id: series_id
+      }
+    });
+
+    return {code: 200, message: 'Seria a fost stearsa'};
   }
 }
 

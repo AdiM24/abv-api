@@ -43,12 +43,14 @@ export class PartnerRoutes extends CommonRoutesConfig {
     this.app
       .route("/api/partners/address")
       .post(AuthMiddleware.auth, PartnerController.addPartnerAddress)
-      .put(AuthMiddleware.auth, PartnerMiddleware.validateExistingUserAddress, PartnerController.updatePartnerAddress);
+      .put(AuthMiddleware.auth, PartnerMiddleware.validateExistingUserAddress, PartnerController.updatePartnerAddress)
+      .delete(AuthMiddleware.auth, PartnerController.deletePartnerAddress);
 
     this.app
       .route("/api/partners/bankaccounts")
       .post(AuthMiddleware.auth, PartnerController.addPartnerBankAccount)
-      .put(AuthMiddleware.auth, PartnerMiddleware.validateExistingBankAccount, PartnerController.updatePartnerBankAccounts);
+      .put(AuthMiddleware.auth, PartnerMiddleware.validateExistingBankAccount, PartnerController.updatePartnerBankAccounts)
+      .delete(AuthMiddleware.auth, PartnerMiddleware.validateExistingBankAccount, PartnerController.deletePartnerBankAccount)
 
     this.app
       .route("/api/partners/contacts")

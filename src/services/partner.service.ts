@@ -433,12 +433,42 @@ class PartnerService {
 
     await models.Contact.destroy({
       where: {
-        contact_id: contact_id
+        contact_id: Number(contact_id)
       }
     });
 
     return {code: 200, message: 'Contactul a fost sters.'}
   }
+
+  async deletePartnerBankAccount(bank_account_id: number) {
+    const models = initModels(sequelize);
+
+    await models.BankAccount.destroy({
+      where: {
+        bank_account_id: Number(bank_account_id)
+      }
+    });
+
+    return {code: 200, message: 'Contul bancar a fost sters.'}
+  }
+
+  async deletePartnerAddress(address_id: number) {
+    const models = initModels(sequelize);
+
+    try {
+      await models.Address.destroy({
+        where: {
+          address_id: Number(address_id)
+        }
+      });
+    } catch (err) {
+      return {code: 400, message: 'Adresa nu poate fi stearsa.'};
+    }
+
+
+    return {code: 200, message: 'Adresa a fost stearsa.'}
+  }
+
 }
 
 export default new PartnerService();
