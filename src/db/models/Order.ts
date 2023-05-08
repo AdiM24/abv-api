@@ -22,6 +22,8 @@ export interface OrderAttributes {
   transporter_currency: "RON" | "EUR";
   user_id: number;
   created_at_utc: Date;
+  client_contact?: string;
+  transporter_contact?: string;
 }
 
 export type OrderPk = "order_id";
@@ -32,7 +34,9 @@ export type OrderOptionalAttributes =
   | "car_reg_number"
   | "package_info"
   | "remarks_transporter"
-  | "remarks_buyer";
+  | "remarks_buyer"
+  | "client_contact"
+  | "transporter_contact";
 export type OrderCreationAttributes = Optional<OrderAttributes, OrderOptionalAttributes>;
 
 export class Order extends Model<OrderAttributes, OrderCreationAttributes> implements OrderAttributes {
@@ -52,7 +56,9 @@ export class Order extends Model<OrderAttributes, OrderCreationAttributes> imple
   transporter_price!: number;
   transporter_currency!: "RON" | "EUR";
   user_id!: number;
-  created_at_utc!: Date
+  created_at_utc!: Date;
+  client_contact?: string;
+  transporter_contact?: string;
 
   // Order hasMany OrderDetails via order_id
   OrderDetails!: OrderDetails[];
@@ -175,7 +181,15 @@ export class Order extends Model<OrderAttributes, OrderCreationAttributes> imple
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: Sequelize.Sequelize.fn('now')
-      }
+      },
+      client_contact: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      transporter_contact: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
     }, {
       sequelize,
       tableName: 'Order',
