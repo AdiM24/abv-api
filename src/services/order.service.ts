@@ -324,7 +324,7 @@ class OrderService {
     let deadlineDate = new Date(Date.now());
 
     const deadlineDays = (await models.Partner.findOne({
-      where: {partner_id: order.client_id}
+      where: {partner_id: order.buyer_id}
     })).invoice_deadline_days;
 
     if (deadlineDays) {
