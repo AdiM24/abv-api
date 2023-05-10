@@ -96,7 +96,7 @@ class AutoFleetMiddleware {
       return res.status(404).send({code: 404, message: 'Masina nu a fost gasita in sistem'});
     }
 
-    if (!userPartners.some((userPartner: UserPartnerMap) => userPartner.partner_id === existingAutoFleet.partner_id)) {
+    if (!userPartners.some((userPartner: UserPartnerMap) => Number(userPartner.partner_id) === Number(existingAutoFleet.partner_id))) {
       return res.status(400).send({code: 400, message: 'Masina nu apartine uneia dintre firmele utilizatorului.'})
     }
 

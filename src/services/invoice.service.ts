@@ -34,7 +34,8 @@ class InvoiceService {
 
     return await models.Invoice.findAll({
       where: queryObject,
-      include: [{model: Partner, as: 'buyer'}]
+      include: [{model: Partner, as: 'buyer'}],
+      order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
   }
 

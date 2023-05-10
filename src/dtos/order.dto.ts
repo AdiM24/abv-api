@@ -17,7 +17,10 @@ interface CreateOrderDto {
 }
 
 interface CreateOrderDetailsDto {
+  company: string;
+  address: string;
   location: string;
+  reference: string;
   date_from: Date;
   date_to: Date;
   remarks: string;

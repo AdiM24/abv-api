@@ -5,26 +5,32 @@ import type { Order, OrderId } from './Order';
 export interface OrderDetailsAttributes {
   order_details_id: number;
   order_id: number;
-  location?: string;
+  company?: string;
   date_from: Date;
   date_to: Date;
   remarks?: string;
   type: "PICKUP" | "DROPOFF";
+  address?: string;
+  location?: string;
+  reference?: string;
 }
 
 export type OrderDetailsPk = "order_details_id";
 export type OrderDetailsId = OrderDetails[OrderDetailsPk];
-export type OrderDetailsOptionalAttributes = "order_details_id" | "location" | "date_from" | "date_to" | "remarks";
+export type OrderDetailsOptionalAttributes = "order_details_id" | "company" | "date_from" | "date_to" | "remarks" | "address" | "location" | "reference";
 export type OrderDetailsCreationAttributes = Optional<OrderDetailsAttributes, OrderDetailsOptionalAttributes>;
 
 export class OrderDetails extends Model<OrderDetailsAttributes, OrderDetailsCreationAttributes> implements OrderDetailsAttributes {
   order_details_id!: number;
   order_id!: number;
-  location?: string;
+  company?: string;
   date_from!: Date;
   date_to!: Date;
   remarks?: string;
   type!: "PICKUP" | "DROPOFF";
+  address?: string;
+  location?: string;
+  reference?: string;
 
   // OrderDetails belongsTo Order via order_id
   order!: Order;
@@ -43,13 +49,12 @@ export class OrderDetails extends Model<OrderDetailsAttributes, OrderDetailsCrea
     order_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
-      onDelete: 'CASCADE',
       references: {
         model: 'Order',
-        key: 'order_id',
-      },
+        key: 'order_id'
+      }
     },
-    location: {
+    company: {
       type: DataTypes.STRING,
       allowNull: true
     },
@@ -70,6 +75,18 @@ export class OrderDetails extends Model<OrderDetailsAttributes, OrderDetailsCrea
     type: {
       type: DataTypes.ENUM("PICKUP","DROPOFF"),
       allowNull: false
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    reference: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     sequelize,

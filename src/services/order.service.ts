@@ -136,7 +136,8 @@ class OrderService {
         {
           model: OrderDetails, as: 'OrderDetails'
         }
-      ]
+      ],
+      order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
 
     return orders;
@@ -182,7 +183,8 @@ class OrderService {
         {
           model: OrderDetails, as: 'OrderDetails'
         }
-      ]
+      ],
+      order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
 
     return orders;
