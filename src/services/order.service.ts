@@ -14,7 +14,7 @@ import {sequelize} from "../db/sequelize";
 import UserPartnerMappingService from "./user-partner-mapping.service";
 import {Op, Transaction} from "sequelize";
 import InvoiceService from "./invoice.service";
-import {reversePercentage} from "./utils.service";
+import {calculatePercentage, reversePercentage} from "./utils.service";
 import {getDateRangeQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
 import {Roles} from "../common/enums/roles";
 
@@ -244,10 +244,10 @@ class OrderService {
   async updateOrder(orderToUpdate: OrderAttributes, decodedToken: any) {
     const models = initModels(sequelize);
 
-    const currentOrder = await models.Order.findOne({where: {order_id: orderToUpdate.order_id}})
+    const existingOrder = await models.Order.findOne({where: {order_id: orderToUpdate.order_id}})
 
-    if (orderToUpdate.client_currency === 'RON' && orderToUpdate.client_price !== currentOrder.client_price) orderToUpdate.client_price = this.applyTax(orderToUpdate.client_price);
-    if (orderToUpdate.transporter_currency === 'RON' && orderToUpdate.transporter_price !== currentOrder.transporter_price) orderToUpdate.transporter_price = this.applyTax(orderToUpdate.transporter_price);
+    if (orderToUpdate.client_price !== existingOrder.client_price) orderToUpdate.client_price = calculatePercentage(orderToUpdate.client_price, orderToUpdate.client_vat);
+    if (orderToUpdate.transporter_price !== existingOrder.transporter_price) orderToUpdate.transporter_price = calculatePercentage(orderToUpdate.transporter_price, orderToUpdate.transporter_vat);
 
     await models.Order.update(orderToUpdate, {where: {order_id: orderToUpdate.order_id}})
 
@@ -344,18 +344,15 @@ class OrderService {
             quantity: 1,
             created_at_utc: currentDate.toString(),
             modified_at_utc: currentDate.toString(),
-            vat: 19,
+            vat: order.client_vat,
             unit_of_measure: 'OP',
             purchase_price: 1,
             material: ''
           }, {transaction: transaction});
         }
 
-        const price = order.client_currency === 'EUR' ? order.client_price : reversePercentage(order.client_price, 19);
-        const vat = (
-          (parseFloat((Number(order.client_price) * 100).toFixed(2))
-            - (price * 100))
-          / 100 )
+        const price = reversePercentage(Number(order.client_price), Number(order.client_vat));
+        const vat = parseFloat((((Number(order.client_price) * 100) - (price * 100)) / 100).toFixed(2));
 
         const invoiceData: InvoiceCreationAttributes = {
           series: defaultInvoiceSerie,
@@ -367,9 +364,9 @@ class OrderService {
           sent_status: 'not sent',
           status: 'unpaid',
           currency: order.client_currency,
-          total_price_incl_vat: order.client_price,
-          total_price: order.client_currency === 'EUR' ? order.client_price : reversePercentage(order.client_price, 19),
-          total_vat: order.client_currency === 'EUR' ? 0 : vat,
+          total_price_incl_vat: price + Number(vat),
+          total_price: price,
+          total_vat: vat,
           type: 'issued',
           order_reference_id: order.order_id,
           total_paid_price: 0,
@@ -383,7 +380,7 @@ class OrderService {
           invoice_id: createdInvoice.invoice_id,
           quantity: 1,
           sold_at_utc: currentDate.toString(),
-          selling_price: order.client_price
+          selling_price: reversePercentage(Number(order.client_price), Number(order.client_vat))
         }
 
         await models.InvoiceProduct.create(invoiceProduct, {transaction: transaction});

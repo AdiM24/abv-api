@@ -1,8 +1,9 @@
 import * as Sequelize from 'sequelize';
-import {DataTypes, Model, Optional} from 'sequelize';
-import type {OrderDetails, OrderDetailsId} from './OrderDetails';
-import type {Partner, PartnerId} from './Partner';
-import type {User, UserId} from './User';
+import { DataTypes, Model, Optional } from 'sequelize';
+import type { Invoice, InvoiceId } from './Invoice';
+import type { OrderDetails, OrderDetailsId } from './OrderDetails';
+import type { Partner, PartnerId } from './Partner';
+import type { User, UserId } from './User';
 
 export interface OrderAttributes {
   order_id: number;
@@ -24,19 +25,13 @@ export interface OrderAttributes {
   created_at_utc: Date;
   client_contact?: string;
   transporter_contact?: string;
+  transporter_vat?: number;
+  client_vat?: number;
 }
 
 export type OrderPk = "order_id";
 export type OrderId = Order[OrderPk];
-export type OrderOptionalAttributes =
-  "order_id"
-  | "driver_info"
-  | "car_reg_number"
-  | "package_info"
-  | "remarks_transporter"
-  | "remarks_buyer"
-  | "client_contact"
-  | "transporter_contact";
+export type OrderOptionalAttributes = "order_id" | "driver_info" | "car_reg_number" | "package_info" | "remarks_transporter" | "remarks_buyer" | "created_at_utc" | "client_contact" | "transporter_contact" | "transporter_vat" | "client_vat";
 export type OrderCreationAttributes = Optional<OrderAttributes, OrderOptionalAttributes>;
 
 export class Order extends Model<OrderAttributes, OrderCreationAttributes> implements OrderAttributes {
@@ -59,7 +54,21 @@ export class Order extends Model<OrderAttributes, OrderCreationAttributes> imple
   created_at_utc!: Date;
   client_contact?: string;
   transporter_contact?: string;
+  transporter_vat?: number;
+  client_vat?: number;
 
+  // Order hasMany Invoice via order_reference_id
+  Invoices!: Invoice[];
+  getInvoices!: Sequelize.HasManyGetAssociationsMixin<Invoice>;
+  setInvoices!: Sequelize.HasManySetAssociationsMixin<Invoice, InvoiceId>;
+  addInvoice!: Sequelize.HasManyAddAssociationMixin<Invoice, InvoiceId>;
+  addInvoices!: Sequelize.HasManyAddAssociationsMixin<Invoice, InvoiceId>;
+  createInvoice!: Sequelize.HasManyCreateAssociationMixin<Invoice>;
+  removeInvoice!: Sequelize.HasManyRemoveAssociationMixin<Invoice, InvoiceId>;
+  removeInvoices!: Sequelize.HasManyRemoveAssociationsMixin<Invoice, InvoiceId>;
+  hasInvoice!: Sequelize.HasManyHasAssociationMixin<Invoice, InvoiceId>;
+  hasInvoices!: Sequelize.HasManyHasAssociationsMixin<Invoice, InvoiceId>;
+  countInvoices!: Sequelize.HasManyCountAssociationsMixin;
   // Order hasMany OrderDetails via order_id
   OrderDetails!: OrderDetails[];
   getOrderDetails!: Sequelize.HasManyGetAssociationsMixin<OrderDetails>;
@@ -95,115 +104,125 @@ export class Order extends Model<OrderAttributes, OrderCreationAttributes> imple
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Order {
     return Order.init({
-      order_id: {
-        autoIncrement: true,
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        primaryKey: true
+    order_id: {
+      autoIncrement: true,
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      primaryKey: true
+    },
+    client_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: 'Partner',
+        key: 'partner_id'
+      }
+    },
+    transporter_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: 'Partner',
+        key: 'partner_id'
+      }
+    },
+    buyer_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: 'Partner',
+        key: 'partner_id'
+      }
+    },
+    series: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    number: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    driver_info: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    car_reg_number: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    package_info: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    remarks_transporter: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    remarks_buyer: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    client_price: {
+      type: DataTypes.DECIMAL,
+      allowNull: false
+    },
+    client_currency: {
+      type: DataTypes.ENUM("RON","EUR"),
+      allowNull: false
+    },
+    transporter_price: {
+      type: DataTypes.DECIMAL,
+      allowNull: false
+    },
+    transporter_currency: {
+      type: DataTypes.ENUM("RON","EUR"),
+      allowNull: false
+    },
+    user_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: 'User',
+        key: 'user_id'
+      }
+    },
+    created_at_utc: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('now')
+    },
+    client_contact: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    transporter_contact: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    transporter_vat: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 19
+    },
+    client_vat: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 19
+    }
+  }, {
+    sequelize,
+    tableName: 'Order',
+    schema: 'public',
+    timestamps: false,
+    indexes: [
+      {
+        name: "Order_pk",
+        unique: true,
+        fields: [
+          { name: "order_id" },
+        ]
       },
-      client_id: {
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-          model: 'Partner',
-          key: 'partner_id'
-        }
-      },
-      transporter_id: {
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-          model: 'Partner',
-          key: 'partner_id'
-        }
-      },
-      buyer_id: {
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-          model: 'Partner',
-          key: 'partner_id'
-        }
-      },
-      series: {
-        type: DataTypes.STRING,
-        allowNull: false
-      },
-      number: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-      },
-      driver_info: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
-      car_reg_number: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
-      package_info: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
-      remarks_transporter: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
-      remarks_buyer: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
-      client_price: {
-        type: DataTypes.DECIMAL,
-        allowNull: false
-      },
-      client_currency: {
-        type: DataTypes.ENUM("RON", "EUR"),
-        allowNull: false
-      },
-      transporter_price: {
-        type: DataTypes.DECIMAL,
-        allowNull: false
-      },
-      transporter_currency: {
-        type: DataTypes.ENUM("RON", "EUR"),
-        allowNull: false
-      },
-      user_id: {
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-          model: 'User',
-          key: 'user_id'
-        }
-      },
-      created_at_utc: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.Sequelize.fn('now')
-      },
-      client_contact: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
-      transporter_contact: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
-    }, {
-      sequelize,
-      tableName: 'Order',
-      schema: 'public',
-      timestamps: false,
-      indexes: [
-        {
-          name: "Order_pk",
-          unique: true,
-          fields: [
-            {name: "order_id"},
-          ]
-        },
-      ]
-    });
+    ]
+  });
   }
 }
