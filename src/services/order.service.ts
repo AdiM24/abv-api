@@ -246,9 +246,11 @@ class OrderService {
 
     const existingOrder = await models.Order.findOne({where: {order_id: orderToUpdate.order_id}})
 
-    if (orderToUpdate.client_price !== existingOrder.client_price) orderToUpdate.client_price = calculatePercentage(orderToUpdate.client_price, orderToUpdate.client_vat);
-    if (orderToUpdate.transporter_price !== existingOrder.transporter_price) orderToUpdate.transporter_price = calculatePercentage(orderToUpdate.transporter_price, orderToUpdate.transporter_vat);
-
+    if (Number(orderToUpdate.client_price) !== Number(existingOrder.client_price))
+      orderToUpdate.client_price = calculatePercentage(Number(orderToUpdate.client_price), Number(orderToUpdate.client_vat));
+    if (Number(orderToUpdate.transporter_price) !== Number(existingOrder.transporter_price))
+      orderToUpdate.transporter_price = calculatePercentage(Number(orderToUpdate.transporter_price), Number(orderToUpdate.transporter_vat));
+    
     await models.Order.update(orderToUpdate, {where: {order_id: orderToUpdate.order_id}})
 
     return true;

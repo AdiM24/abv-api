@@ -55,6 +55,17 @@ class UserService {
     }
   }
 
+  async getUser(user_id: number) {
+    const models = initModels(sequelize);
+
+    return await models.User.findOne({
+      attributes: ['first_name', 'last_name'],
+      where: {
+        user_id: user_id
+      }
+    });
+  }
+
   async getUserByEmail(email: string) {
     const models = initModels(sequelize);
 

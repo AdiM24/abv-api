@@ -4,6 +4,7 @@ import InvoiceService from "../services/invoice.service";
 import {CustomRequest} from "./auth.middleware";
 import UserPartnerMappingService from "../services/user-partner-mapping.service";
 import {UserPartnerMap} from "../db/models/init-models";
+import UserService from "../services/user.service";
 
 class OrderMiddleware {
   validateOrderCreationDate = async (
@@ -91,7 +92,10 @@ class OrderMiddleware {
     }
 
     if (!(req.body.order_details.some((elem: any) => elem.type === 'PICKUP') && req.body.order_details.some((elem: any) => elem.type === 'DROPOFF'))) {
-      return res.status(400).send({code: 400, message:'Sunt obligatorii cel putin o locatie ridicare si o locatie livrare'})
+      return res.status(400).send({
+        code: 400,
+        message: 'Sunt obligatorii cel putin o locatie ridicare si o locatie livrare'
+      })
     }
 
     next();
@@ -107,11 +111,16 @@ class OrderMiddleware {
     const existingOrder = await OrderService.getOrder(orderId);
 
     if (!existingOrder) {
-      return res.status(404).send({code: 404, message:'Comanda nu a fost gasita'});
+      return res.status(404).send({code: 404, message: 'Comanda nu a fost gasita'});
     }
 
     if (Number(existingOrder.user_id) !== Number((req.token as any)._id)) {
-      return res.status(400).send({code: 400, message: 'Operatiunea nu poate fi finalizata'});
+      const user = await UserService.getUser(existingOrder.user_id);
+
+      return res.status(400).send({
+        code: 400,
+        message: `Operatiunea nu poate fi finalizata. Comanda apartine utilizatorului ${user.first_name} ${user.last_name}.`
+      });
     }
 
     next();
