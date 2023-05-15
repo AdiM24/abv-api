@@ -118,7 +118,7 @@ class InvoiceService {
       invoiceToAdd.drop_off_address_id = invoiceToAdd.drop_off_address.address_id;
       invoiceToAdd.car_reg_number = invoiceToAdd.car_reg_number.replace(/ /g, '').toUpperCase();
       invoiceToAdd.driver_name = decodedJwt.name;
-      invoiceToAdd.created_at_utc = new Date().toUTCString();
+      invoiceToAdd.created_at_utc = new Date(Date.now()).toLocaleDateString('ro-RO');
       invoiceToAdd.user_id = Number(decodedJwt._id);
     }
 

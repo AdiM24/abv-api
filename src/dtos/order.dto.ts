@@ -14,6 +14,8 @@ interface CreateOrderDto {
   transporter_currency: 'RON' | 'EUR';
   order_details: CreateOrderDetailsDto[];
   created_at_utc: Date;
+  client_vat: number;
+  transporter_vat: number;
 }
 
 interface CreateOrderDetailsDto {

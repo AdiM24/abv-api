@@ -60,8 +60,11 @@ class OrderService {
       user_id: Number(decodedJwt._id)
     }
 
-    if (orderToAdd.client_currency === 'RON') orderData.client_price = this.applyTax(orderData.client_price);
-    if (orderToAdd.transporter_currency === 'RON') orderData.transporter_price = this.applyTax(orderData.transporter_price);
+    orderData.client_price = calculatePercentage(Number(orderToAdd.client_price), Number(orderToAdd.client_vat));
+    orderData.transporter_price = calculatePercentage(Number(orderToAdd.transporter_price), Number(orderToAdd.transporter_vat));
+
+    // if (orderToAdd.client_currency === 'RON') orderData.client_price = this.applyTax(orderData.client_price);
+    // if (orderToAdd.transporter_currency === 'RON') orderData.transporter_price = this.applyTax(orderData.transporter_price);
 
     try {
       await sequelize.transaction(async (transaction: Transaction) => {
@@ -250,7 +253,7 @@ class OrderService {
       orderToUpdate.client_price = calculatePercentage(Number(orderToUpdate.client_price), Number(orderToUpdate.client_vat));
     if (Number(orderToUpdate.transporter_price) !== Number(existingOrder.transporter_price))
       orderToUpdate.transporter_price = calculatePercentage(Number(orderToUpdate.transporter_price), Number(orderToUpdate.transporter_vat));
-    
+
     await models.Order.update(orderToUpdate, {where: {order_id: orderToUpdate.order_id}})
 
     return true;
