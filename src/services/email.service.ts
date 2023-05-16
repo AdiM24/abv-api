@@ -6,7 +6,7 @@ import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 class EmailService {
 
-  async sendEmail({partner_id, receiverEmailAddress, attachments}: any, decodedToken: any) {
+  async sendEmail({partner_id, receiverEmailAddress, attachments, attachmentName}: any, decodedToken: any) {
     const models = initModels(sequelize);
 
     const userId = decodedToken._id;
@@ -44,7 +44,8 @@ class EmailService {
       `,
         attachments: [
           {
-            path: attachments
+            path: attachments,
+            filename: attachmentName
           }
         ]
       });

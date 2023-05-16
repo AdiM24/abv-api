@@ -347,6 +347,9 @@ class OrderService {
             purchase_price: 1,
             material: ''
           }, {transaction: transaction});
+        } else {
+          transportService.vat = order.client_vat;
+          await transportService.save();
         }
 
         const price = parseFloat(Number(order.client_price).toFixed(2));
