@@ -60,8 +60,8 @@ class OrderService {
       user_id: Number(decodedJwt._id)
     }
 
-    orderData.client_price = calculatePercentage(Number(orderToAdd.client_price), Number(orderToAdd.client_vat));
-    orderData.transporter_price = calculatePercentage(Number(orderToAdd.transporter_price), Number(orderToAdd.transporter_vat));
+    orderData.client_price = parseFloat(Number(orderToAdd.client_price).toFixed(2));
+    orderData.transporter_price = parseFloat(Number(orderToAdd.transporter_price).toFixed(2));
 
     // if (orderToAdd.client_currency === 'RON') orderData.client_price = this.applyTax(orderData.client_price);
     // if (orderToAdd.transporter_currency === 'RON') orderData.transporter_price = this.applyTax(orderData.transporter_price);
@@ -247,13 +247,6 @@ class OrderService {
   async updateOrder(orderToUpdate: OrderAttributes, decodedToken: any) {
     const models = initModels(sequelize);
 
-    const existingOrder = await models.Order.findOne({where: {order_id: orderToUpdate.order_id}})
-
-    if (Number(orderToUpdate.client_price) !== Number(existingOrder.client_price))
-      orderToUpdate.client_price = calculatePercentage(Number(orderToUpdate.client_price), Number(orderToUpdate.client_vat));
-    if (Number(orderToUpdate.transporter_price) !== Number(existingOrder.transporter_price))
-      orderToUpdate.transporter_price = calculatePercentage(Number(orderToUpdate.transporter_price), Number(orderToUpdate.transporter_vat));
-
     await models.Order.update(orderToUpdate, {where: {order_id: orderToUpdate.order_id}})
 
     return true;
@@ -356,8 +349,8 @@ class OrderService {
           }, {transaction: transaction});
         }
 
-        const price = reversePercentage(Number(order.client_price), Number(order.client_vat));
-        const vat = parseFloat((((Number(order.client_price) * 100) - (price * 100)) / 100).toFixed(2));
+        const price = parseFloat(Number(order.client_price).toFixed(2));
+        const vat = parseFloat((calculatePercentage(Number(order.client_price), Number(order.client_vat)) - Number(order.client_price)).toFixed(2))
 
         const invoiceData: InvoiceCreationAttributes = {
           series: defaultInvoiceSerie,
@@ -385,7 +378,7 @@ class OrderService {
           invoice_id: createdInvoice.invoice_id,
           quantity: 1,
           sold_at_utc: currentDate.toString(),
-          selling_price: reversePercentage(Number(order.client_price), Number(order.client_vat))
+          selling_price: parseFloat(Number(order.client_price).toFixed(2))
         }
 
         await models.InvoiceProduct.create(invoiceProduct, {transaction: transaction});
