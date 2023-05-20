@@ -26,33 +26,39 @@ export class InvoiceRoutes extends CommonRoutesConfig {
         InvoiceController.addInvoice
       )
       .put(
+        AuthMiddleware.auth,
         InvoiceMiddleware.validateIssuedInvoiceCreationDate,
         InvoiceController.updateInvoiceData
       )
 
     this.app
+      .route("/api/invoices/notice")
+      .post(AuthMiddleware.auth, InvoiceMiddleware.validateUserPartner, InvoiceController.addNotice)
+
+    this.app
       .route("/api/invoices/:id")
-      .get(InvoiceController.getInvoiceWithDetails)
-      .delete(InvoiceController.removeInvoice)
+      .get(AuthMiddleware.auth, InvoiceController.getInvoiceWithDetails)
+      .delete(AuthMiddleware.auth, InvoiceController.removeInvoice)
 
     this.app
       .route("/api/invoices/:id/product/update")
-      .post(InvoiceMiddleware.validateExistingInvoiceProduct, InvoiceController.updateInvoiceProduct)
+      .post(AuthMiddleware.auth, InvoiceMiddleware.validateExistingInvoiceProduct, InvoiceController.updateInvoiceProduct)
 
     this.app
       .route("/api/invoices/:id/product/remove")
-      .post(InvoiceMiddleware.validateExistingInvoiceProduct, InvoiceController.removeInvoiceProduct)
+      .post(AuthMiddleware.auth, InvoiceMiddleware.validateExistingInvoiceProduct, InvoiceController.removeInvoiceProduct)
 
     this.app
       .route("/api/invoices/:id/product/add")
       .post(
+        AuthMiddleware.auth,
         InvoiceMiddleware.validateExistingInvoice,
         ProductMiddleware.validateProductExists,
         InvoiceController.addInvoiceProduct)
 
     this.app
       .route("/api/invoices/series")
-      .post(InvoiceController.findNextNumberForSeries);
+      .post(AuthMiddleware.auth, InvoiceController.findNextNumberForSeries);
 
     return this.app;
   }

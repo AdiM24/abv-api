@@ -290,6 +290,27 @@ class UserService {
 
     return {code: 200, message: 'Seria a fost stearsa'};
   }
+
+  async getUserVehicle(token: any) {
+    const models = initModels(sequelize);
+    const userId = token._id;
+
+    const userVehicle = await models.UserVehicle.findOne({
+      attributes: ['vehicle_id'],
+      where: {
+        user_id: Number(userId)
+      },
+      raw: true
+    });
+
+    const vehicle = await models.AutoFleet.findOne({
+      where: {
+        auto_fleet_id: Number(userVehicle.vehicle_id)
+      }
+    });
+
+    return vehicle;
+  }
 }
 
 export default new UserService();

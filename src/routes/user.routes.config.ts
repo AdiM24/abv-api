@@ -47,6 +47,11 @@ export class UserRoutes extends CommonRoutesConfig {
     this.app
       .route("/api/user/partner")
       .get(AuthMiddleware.auth, UserController.getUserPartner);
+
+    this.app
+      .route("/api/user/vehicle")
+      .get(AuthMiddleware.auth, UserController.getUserVehicle)
+
     return this.app;
   }
 }

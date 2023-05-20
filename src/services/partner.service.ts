@@ -231,18 +231,9 @@ class PartnerService {
 
     let partnerAddresses: Address[];
 
-    const userPartnerIds = await UserPartnerMappingService.getUserPartnerMappings(decodedJwt._id);
-
-    const userPartners = await models.Partner.findAll({
-      where: {
-        partner_id: userPartnerIds.map((userPartnerMap: UserPartnerMap) => userPartnerMap.partner_id)
-      }
-    });
-
     try {
       partnerAddresses = await models.Address.findAll({
         where: {
-          partner_id: userPartners.map((userPartner: Partner) => userPartner.partner_id),
           nickname: getLikeQuery(searchKey)
         }
       })
@@ -272,9 +263,18 @@ class PartnerService {
     return updatedAddress;
   }
 
-  async addPartnerAddress(addressToAdd: CreateAddressDto) {
+  async addPartnerAddress(addressToAdd: AddressAttributes) {
     const models = initModels(sequelize);
 
+    if (addressToAdd.address_id) {
+      return await models.Address.update(addressToAdd, {
+        where: {
+          address_id: addressToAdd.address_id
+        }
+      });
+    }
+
+    delete addressToAdd.address_id;
     return await models.Address.create(addressToAdd);
   }
 
@@ -350,7 +350,6 @@ class PartnerService {
       }
     }));
   }
-
 
   async addPartnerBankAccount(bankAccount: CreateBankAccountDto) {
     const models = initModels(sequelize);

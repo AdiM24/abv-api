@@ -35,6 +35,12 @@ class AutoFleetController {
 
     return res.status(200).send(autoFleet);
   }
+
+  async getAutoFleetOptions(req: CustomRequest, res: express.Response) {
+    const autoFleetOptions = await AutoFleetService.getAutoFleetOptions(req.token);
+
+    res.status(200).send(autoFleetOptions);
+  }
 }
 
 export default new AutoFleetController();

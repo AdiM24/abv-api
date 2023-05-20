@@ -31,6 +31,12 @@ class InvoiceController {
     res.status(201).send({created: addedInvoice, msg: "Invoice created"});
   }
 
+  async addNotice(req: CustomRequest, res: express.Response) {
+    const response = await InvoiceService.createNotice(req.body, req.token);
+
+    res.status(response?.code).send(response);
+  }
+
   async findNextNumberForSeries(req: express.Request, res: express.Response) {
     const nextNumberForSeries = await InvoiceService.findNextSeriesNumber(req.body?.series, req.body?.type);
 

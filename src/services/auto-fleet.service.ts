@@ -142,6 +142,26 @@ class AutoFleetService {
 
     return existingVehicle;
   }
+
+  async getAutoFleetOptions(token: any) {
+    const models = initModels(sequelize);
+
+    const userPartnerIds = (await models.UserPartnerMap.findAll({
+      attributes: ['partner_id'],
+      where: {
+        user_id: token._id
+      }
+    })).map((userPartner) => userPartner.partner_id);
+
+    const autoFleetOptions = await models.AutoFleet.findAll({
+      attributes: ['reg_no'],
+      where: {
+        partner_id: userPartnerIds
+      }
+    });
+
+    return autoFleetOptions;
+  }
 }
 
 export default new AutoFleetService();

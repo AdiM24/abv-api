@@ -45,6 +45,8 @@ import { UserPartnerMap as _UserPartnerMap } from "./UserPartnerMap";
 import type { UserPartnerMapAttributes, UserPartnerMapCreationAttributes } from "./UserPartnerMap";
 import { UserRoles as _UserRoles } from "./UserRoles";
 import type { UserRolesAttributes, UserRolesCreationAttributes } from "./UserRoles";
+import { UserVehicle as _UserVehicle } from "./UserVehicle";
+import type { UserVehicleAttributes, UserVehicleCreationAttributes } from "./UserVehicle";
 
 export {
   _Address as Address,
@@ -70,6 +72,7 @@ export {
   _UserPartnerEmail as UserPartnerEmail,
   _UserPartnerMap as UserPartnerMap,
   _UserRoles as UserRoles,
+  _UserVehicle as UserVehicle,
 };
 
 export type {
@@ -119,6 +122,8 @@ export type {
   UserPartnerMapCreationAttributes,
   UserRolesAttributes,
   UserRolesCreationAttributes,
+  UserVehicleAttributes,
+  UserVehicleCreationAttributes,
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -145,11 +150,14 @@ export function initModels(sequelize: Sequelize) {
   const UserPartnerEmail = _UserPartnerEmail.initModel(sequelize);
   const UserPartnerMap = _UserPartnerMap.initModel(sequelize);
   const UserRoles = _UserRoles.initModel(sequelize);
+  const UserVehicle = _UserVehicle.initModel(sequelize);
 
   Invoice.belongsTo(Address, { as: "drop_off_address", foreignKey: "drop_off_address_id"});
   Address.hasMany(Invoice, { as: "Invoices", foreignKey: "drop_off_address_id"});
   Invoice.belongsTo(Address, { as: "pickup_address", foreignKey: "pickup_address_id"});
   Address.hasMany(Invoice, { as: "pickup_address_Invoices", foreignKey: "pickup_address_id"});
+  UserVehicle.belongsTo(AutoFleet, { as: "vehicle", foreignKey: "vehicle_id"});
+  AutoFleet.hasMany(UserVehicle, { as: "UserVehicles", foreignKey: "vehicle_id"});
   Receipt.belongsTo(BankRegister, { as: "bank_register", foreignKey: "bank_register_id"});
   BankRegister.hasMany(Receipt, { as: "Receipts", foreignKey: "bank_register_id"});
   Receipt.belongsTo(CashRegister, { as: "cash_register", foreignKey: "cash_register_id"});
@@ -218,6 +226,8 @@ export function initModels(sequelize: Sequelize) {
   User.hasMany(UserPartnerMap, { as: "UserPartnerMaps", foreignKey: "user_id"});
   UserRoles.belongsTo(User, { as: "user", foreignKey: "user_id"});
   User.hasMany(UserRoles, { as: "UserRoles", foreignKey: "user_id"});
+  UserVehicle.belongsTo(User, { as: "user", foreignKey: "user_id"});
+  User.hasMany(UserVehicle, { as: "UserVehicles", foreignKey: "user_id"});
 
   return {
     Address: Address,
@@ -243,5 +253,6 @@ export function initModels(sequelize: Sequelize) {
     UserPartnerEmail: UserPartnerEmail,
     UserPartnerMap: UserPartnerMap,
     UserRoles: UserRoles,
+    UserVehicle: UserVehicle,
   };
 }

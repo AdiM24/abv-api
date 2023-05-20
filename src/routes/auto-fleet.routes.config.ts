@@ -28,9 +28,14 @@ export class AutoFleetRoutes extends CommonRoutesConfig {
         AutoFleetController.updateAutoFleet)
 
     this.app
+      .route('/api/autofleet/options')
+      .get(AuthMiddleware.auth, AutoFleetController.getAutoFleetOptions)
+
+    this.app
       .route('/api/autofleet/:id')
       .get(AuthMiddleware.auth, AutoFleetMiddleware.validatePartnerAutoFleet, AutoFleetController.getAutoFleet)
-      .delete(AuthMiddleware.auth, AutoFleetMiddleware.validatePartnerAutoFleet, AutoFleetController.deleteAutoFleet)
+      .delete(AuthMiddleware.auth, AutoFleetMiddleware.validatePartnerAutoFleet, AutoFleetController.deleteAutoFleet);
+
 
     return this.app;
   }

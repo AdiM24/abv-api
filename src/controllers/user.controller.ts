@@ -86,6 +86,12 @@ class UsersController {
 
     return res.status(200).send(result);
   }
+
+  async getUserVehicle(req: CustomRequest, res: express.Response) {
+    const result = await UserService.getUserVehicle(req.token);
+
+    return res.status(200).send(result);
+  }
 }
 
 export default new UsersController();

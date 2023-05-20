@@ -9,8 +9,8 @@ import type { User, UserId } from './User';
 
 export interface InvoiceAttributes {
   invoice_id: number;
-  client_id: number;
-  buyer_id: number;
+  client_id?: number;
+  buyer_id?: number;
   deadline_at_utc?: string;
   created_at_utc?: string;
   status: "paid" | "overdue" | "incomplete payment" | "unpaid";
@@ -33,13 +33,13 @@ export interface InvoiceAttributes {
 
 export type InvoicePk = "invoice_id";
 export type InvoiceId = Invoice[InvoicePk];
-export type InvoiceOptionalAttributes = "invoice_id" | "deadline_at_utc" | "created_at_utc" | "sent_status" | "total_price" | "total_vat" | "total_price_incl_vat" | "pickup_address_id" | "drop_off_address_id" | "driver_info" | "car_reg_number" | "currency" | "total_paid_price" | "order_reference_id";
+export type InvoiceOptionalAttributes = "invoice_id" | "client_id" | "buyer_id" | "deadline_at_utc" | "created_at_utc" | "sent_status" | "total_price" | "total_vat" | "total_price_incl_vat" | "pickup_address_id" | "drop_off_address_id" | "driver_info" | "car_reg_number" | "currency" | "total_paid_price" | "order_reference_id";
 export type InvoiceCreationAttributes = Optional<InvoiceAttributes, InvoiceOptionalAttributes>;
 
 export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes> implements InvoiceAttributes {
   invoice_id!: number;
-  client_id!: number;
-  buyer_id!: number;
+  client_id?: number;
+  buyer_id?: number;
   deadline_at_utc?: string;
   created_at_utc?: string;
   status!: "paid" | "overdue" | "incomplete payment" | "unpaid";
@@ -124,7 +124,7 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
     },
     client_id: {
       type: DataTypes.BIGINT,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'Partner',
         key: 'partner_id'
@@ -132,7 +132,7 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
     },
     buyer_id: {
       type: DataTypes.BIGINT,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'Partner',
         key: 'partner_id'

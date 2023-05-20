@@ -16,11 +16,12 @@ import {
   InvoiceProductInformation,
   UpdateInvoiceProduct
 } from "../dtos/create.invoice-product.dto";
-import {Op, WhereOptions} from "sequelize";
+import {Op, Transaction, WhereOptions} from "sequelize";
 import {getDateRangeQuery, getInQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
 import UserService from "./user.service";
 import UserPartnerMappingService from "./user-partner-mapping.service";
 import {Roles} from "../common/enums/roles";
+import {calculatePercentage} from "./utils.service";
 
 class InvoiceService {
   async getInvoices(decodedJwt: any) {
@@ -84,6 +85,70 @@ class InvoiceService {
       ],
       order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
+  }
+
+  async createNotice(noticeToAdd: any, token: any) {
+    const models = initModels(sequelize);
+
+    try {
+      await sequelize.transaction(async (transaction: Transaction) => {
+        const notice: InvoiceAttributes = {} as InvoiceAttributes;
+
+        const dropOffAddress = noticeToAdd.drop_off_address;
+        const pickupAddress = noticeToAdd.pickup_address;
+
+        if (!dropOffAddress?.partner_id) {
+          const newDropOffLocation = await models.Address.create({nickname: dropOffAddress.nickname}, {transaction});
+
+          notice.drop_off_address_id = newDropOffLocation.address_id;
+        } else {
+          notice.drop_off_address_id = dropOffAddress.address_id;
+          notice.buyer_id = dropOffAddress.partner_id;
+        }
+
+        if (!pickupAddress?.partner_id) {
+          const newPickupLocation = await models.Address.create({nickname: pickupAddress.nickname}, {transaction});
+
+          notice.pickup_address_id = newPickupLocation.address_id;
+        } else {
+          notice.pickup_address_id = pickupAddress.address_id;
+          notice.client_id = pickupAddress.partner_id;
+        }
+
+        notice.type = noticeToAdd.type;
+        notice.car_reg_number = noticeToAdd.reg_no;
+        notice.created_at_utc = new Date(Date.now()).toLocaleString();
+        notice.user_id = Number(token._id);
+        notice.series = (await UserService.getUserSeries(token._id, 'notice', true) as UserInvoiceSeries).series;
+        notice.number = await this.findNextSeriesNumber(notice.series, notice.type);
+        notice.status = noticeToAdd.status;
+
+        const createdNotice = await models.Invoice.create(notice, {transaction});
+        const product = await models.Product.findOne({where: {product_id: Number(noticeToAdd.product_id)}});
+
+        const invoiceProduct: CreateInvoiceProductDto = {
+          invoice_id: createdNotice.get('invoice_id'),
+          product_id: product.product_id,
+          quantity: parseFloat(Number(noticeToAdd.quantity).toFixed(2)),
+          selling_price: parseFloat(Number(product.purchase_price).toFixed(2)),
+          sold_at_utc: new Date(Date.now()).toLocaleString()
+        }
+
+        createdNotice.total_price = parseFloat((Number(product.purchase_price) * Number(invoiceProduct.quantity)).toFixed(2))
+        createdNotice.total_vat = parseFloat((calculatePercentage(Number(createdNotice.total_price), Number(product.vat)) - createdNotice.total_price).toFixed(2));
+        createdNotice.total_price_incl_vat = parseFloat((createdNotice.total_price + createdNotice.total_vat).toFixed(2));
+
+        product.quantity = Number(product.quantity) - Number(noticeToAdd.quantity);
+
+        await product.save({transaction});
+        await models.InvoiceProduct.create(invoiceProduct, {transaction});
+        await createdNotice.save({transaction});
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
+    return {code: 201, message:'Avizul a fost creat'}
   }
 
   async createInvoice(invoiceToAdd: CreateInvoiceDto, models: any) {
