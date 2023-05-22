@@ -5,6 +5,7 @@ import {
   Invoice,
   InvoiceAttributes,
   InvoiceProduct,
+  Order,
   Partner,
   Product,
   UserInvoiceSeries,
@@ -35,7 +36,10 @@ class InvoiceService {
 
     return await models.Invoice.findAll({
       where: queryObject,
-      include: [{model: Partner, as: 'buyer'}],
+      include: [
+        {model: Partner, as: 'buyer'},
+        {model: Order, as: 'order_reference'}
+      ],
       order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
   }
@@ -81,7 +85,8 @@ class InvoiceService {
       },
       include: [
         {model: Partner, as: 'buyer'},
-        {model: Partner, as: 'client'}
+        {model: Partner, as: 'client'},
+        {model: Order, as: 'order_reference'}
       ],
       order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
@@ -148,7 +153,7 @@ class InvoiceService {
       console.error(err);
     }
 
-    return {code: 201, message:'Avizul a fost creat'}
+    return {code: 201, message: 'Avizul a fost creat'}
   }
 
   async createInvoice(invoiceToAdd: CreateInvoiceDto, models: any) {

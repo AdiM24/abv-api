@@ -1,11 +1,12 @@
 import {
   Contact,
-  initModels,
+  initModels, Invoice,
   InvoiceCreationAttributes,
   InvoiceProductCreationAttributes,
   OrderAttributes,
   OrderCreationAttributes,
   OrderDetails,
+  OrderDetailsAttributes,
   OrderDetailsCreationAttributes,
   Partner,
   UserPartnerMap
@@ -14,9 +15,10 @@ import {sequelize} from "../db/sequelize";
 import UserPartnerMappingService from "./user-partner-mapping.service";
 import {Op, Transaction} from "sequelize";
 import InvoiceService from "./invoice.service";
-import {calculatePercentage, reversePercentage} from "./utils.service";
+import {calculatePercentage} from "./utils.service";
 import {getDateRangeQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
 import {Roles} from "../common/enums/roles";
+import {CreateOrderDetailsDto, CreateOrderDto, OrderDto} from "../dtos/order.dto";
 
 class OrderService {
   applyTax(price: number) {
@@ -57,11 +59,28 @@ class OrderService {
     const orderData: OrderCreationAttributes = {
       ...orderToAdd,
       client_id: userPartnerId,
-      user_id: Number(decodedJwt._id)
+      user_id: Number(decodedJwt._id),
+      invoice_generated: false,
+      profit_currency: 'RON'
     }
 
     orderData.client_price = parseFloat(Number(orderToAdd.client_price).toFixed(2));
     orderData.transporter_price = parseFloat(Number(orderToAdd.transporter_price).toFixed(2));
+
+    if (orderData.transporter_currency !== orderData.client_currency) {
+      const transporterPrice = orderData.transporter_currency === 'EUR'
+        ? parseFloat((orderData.transporter_price * orderToAdd.rate).toFixed(2))
+        : orderData.transporter_price;
+      const clientPrice = orderData.client_currency === 'EUR'
+        ? parseFloat((orderData.client_price * orderToAdd.rate).toFixed(2))
+        : orderData.client_price;
+
+      orderData.profit = parseFloat((clientPrice - transporterPrice).toFixed(2));
+      orderData.profit_currency = 'RON';
+    } else {
+      orderData.profit = parseFloat((orderData.client_price - orderData.transporter_price).toFixed(2));
+      orderData.profit_currency = orderData.client_currency
+    }
 
     // if (orderToAdd.client_currency === 'RON') orderData.client_price = this.applyTax(orderData.client_price);
     // if (orderToAdd.transporter_currency === 'RON') orderData.transporter_price = this.applyTax(orderData.transporter_price);
@@ -304,13 +323,21 @@ class OrderService {
     }
   }
 
-  async generateInvoice(order: OrderAttributes, decodedToken: any) {
+  async generateInvoice(order: OrderDto, decodedToken: any) {
     const models = initModels(sequelize);
+
+    const pickup: string = order?.OrderDetails?.filter(
+      (orderDetailsItem: OrderDetailsAttributes) => orderDetailsItem.type === 'PICKUP')[0]?.address;
+
+    const dropOffList = order?.OrderDetails?.filter(
+      (orderDetailsItem: OrderDetailsAttributes) => orderDetailsItem.type === 'DROPOFF');
+
+    const dropoff = dropOffList[dropOffList.length - 1].address;
 
     let transportService = await models.Product.findOne({
       where: {
         type: 'service',
-        product_name: 'Servicii transport'
+        product_name: `Servicii transport cf. comanda ${order.series}-${order.number}, ruta: ${pickup} -> ${dropoff}, auto: ${order.car_reg_number}, referinta: ${order?.OrderDetails?.[0]?.reference}`
       }
     });
 
@@ -338,7 +365,7 @@ class OrderService {
         if (!transportService) {
           transportService = await models.Product.create({
             type: 'service',
-            product_name: 'Servicii transport',
+            product_name: `Servicii transport cf. comanda ${order.series}-${order.number}, ruta: ${pickup} -> ${dropoff}, auto: ${order.car_reg_number}, referinta: ${order?.OrderDetails?.[0]?.reference}`,
             quantity: 1,
             created_at_utc: currentDate.toString(),
             modified_at_utc: currentDate.toString(),
@@ -374,7 +401,7 @@ class OrderService {
           buyer_id: order.buyer_id
         }
 
-        const createdInvoice = await models.Invoice.create(invoiceData, {transaction: transaction});
+        const createdInvoice: Invoice = await models.Invoice.create(invoiceData, {transaction: transaction});
 
         const invoiceProduct: InvoiceProductCreationAttributes = {
           product_id: transportService.product_id,
@@ -385,6 +412,16 @@ class OrderService {
         }
 
         await models.InvoiceProduct.create(invoiceProduct, {transaction: transaction});
+
+        const existingOrder = await models.Order.findOne({
+          where: {
+            order_id: order.order_id
+          }
+        });
+
+        existingOrder.invoice_generated = true;
+
+        await existingOrder.save();
       });
     } catch (err) {
       console.error(err);

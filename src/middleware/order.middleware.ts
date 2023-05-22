@@ -125,6 +125,32 @@ class OrderMiddleware {
 
     next();
   }
+
+  validateGeneratedInvoice = async (
+    req: CustomRequest,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    const orderId = Number(req?.body?.order_id);
+
+    if (!orderId) {
+      return res.status(400).send({
+        code: 400,
+        message: 'Comanda invalida'
+      });
+    }
+
+    const existingInvoice = await InvoiceService.findInvoice({order_reference_id: orderId});
+
+    if (existingInvoice) {
+      return res.status(400).send({
+        code: 400,
+        message: `Exista deja o factura, cu seria ${existingInvoice?.series}-${existingInvoice?.number}, generata pentru comanda ${req?.body?.series}-${req?.body?.number}`
+      });
+    }
+
+    next();
+  }
 }
 
 export default new OrderMiddleware();

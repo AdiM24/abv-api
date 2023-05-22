@@ -54,6 +54,7 @@ export class OrderRoutes extends CommonRoutesConfig {
     this.app
       .route("/api/orders/generate")
       .post(AuthMiddleware.auth,
+        OrderMiddleware.validateGeneratedInvoice,
         OrderMiddleware.validateUserOrder,
         OrderController.generateInvoice)
     return this.app;
