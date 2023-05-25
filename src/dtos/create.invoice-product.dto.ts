@@ -4,6 +4,7 @@ export interface CreateInvoiceProductDto {
   quantity: number;
   selling_price: number;
   sold_at_utc: string;
+  unit_of_measure?: string;
 }
 
 export interface InvoiceProductInformation {

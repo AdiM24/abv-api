@@ -29,11 +29,13 @@ export interface InvoiceAttributes {
   total_paid_price: number;
   user_id: number;
   order_reference_id?: number;
+  notice_status: "Complet" | "Incomplet";
+  e_transport_generated: boolean;
 }
 
 export type InvoicePk = "invoice_id";
 export type InvoiceId = Invoice[InvoicePk];
-export type InvoiceOptionalAttributes = "invoice_id" | "client_id" | "buyer_id" | "deadline_at_utc" | "created_at_utc" | "sent_status" | "total_price" | "total_vat" | "total_price_incl_vat" | "pickup_address_id" | "drop_off_address_id" | "driver_info" | "car_reg_number" | "currency" | "total_paid_price" | "order_reference_id";
+export type InvoiceOptionalAttributes = "invoice_id" | "client_id" | "buyer_id" | "deadline_at_utc" | "created_at_utc" | "sent_status" | "total_price" | "total_vat" | "total_price_incl_vat" | "pickup_address_id" | "drop_off_address_id" | "driver_info" | "car_reg_number" | "currency" | "total_paid_price" | "order_reference_id" | "notice_status";
 export type InvoiceCreationAttributes = Optional<InvoiceAttributes, InvoiceOptionalAttributes>;
 
 export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes> implements InvoiceAttributes {
@@ -58,6 +60,8 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   total_paid_price!: number;
   user_id!: number;
   order_reference_id?: number;
+  notice_status!: "Complet" | "Incomplet";
+  e_transport_generated!: boolean;
 
   // Invoice belongsTo Address via drop_off_address_id
   drop_off_address!: Address;
@@ -141,12 +145,12 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
     deadline_at_utc: {
       type: DataTypes.DATEONLY,
       allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
     },
     created_at_utc: {
       type: DataTypes.DATEONLY,
       allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
     },
     status: {
       type: DataTypes.ENUM("paid","overdue","incomplete payment","unpaid"),
@@ -231,6 +235,16 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
         model: 'Order',
         key: 'order_id'
       }
+    },
+    notice_status: {
+      type: DataTypes.ENUM("Complet","Incomplet"),
+      allowNull: false,
+      defaultValue: "Incomplet"
+    },
+    e_transport_generated: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     sequelize,

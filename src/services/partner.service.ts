@@ -252,7 +252,7 @@ class PartnerService {
   async updatePartnerAddress(address: UpdateAddressDto) {
     const models = initModels(sequelize);
 
-    const updatedAddress = await models.Address.update(address, {
+    const [rows, updatedAddresses] = await models.Address.update(address, {
       where: {
         address_id: address.address_id,
         partner_id: address.partner_id,
@@ -260,18 +260,56 @@ class PartnerService {
       returning: true,
     });
 
-    return updatedAddress;
+    return updatedAddresses[0];
   }
 
   async addPartnerAddress(addressToAdd: AddressAttributes) {
     const models = initModels(sequelize);
 
     if (addressToAdd.address_id) {
-      return await models.Address.update(addressToAdd, {
+      const [rowCount, updatedAddresses] = await models.Address.update(addressToAdd, {
         where: {
           address_id: addressToAdd.address_id
+        },
+        returning: true
+      });
+
+      const addressId = Number(updatedAddresses[0].address_id);
+      const partnerId = Number(updatedAddresses[0].partner_id);
+
+      const incompleteNotices = await models.Invoice.findAll({
+        where: {
+          [Op.or]: [
+            {
+              drop_off_address_id: addressId
+            },
+            {
+              pickup_address_id: addressId
+            }
+          ],
+          type: 'notice'
         }
       });
+
+      if (incompleteNotices.length > 0) {
+        const incompleteNoticesSave = incompleteNotices.map(async (incompleteNotice) => {
+          if (incompleteNotice.drop_off_address_id === addressId) {
+            incompleteNotice.client_id = partnerId;
+          }
+
+          if (incompleteNotice.pickup_address_id === addressId) {
+            incompleteNotice.buyer_id = partnerId;
+          }
+
+          if (incompleteNotice.buyer_id && incompleteNotice.client_id) incompleteNotice.notice_status = 'Complet';
+
+          await incompleteNotice.save();
+        });
+
+        await Promise.all(incompleteNoticesSave);
+
+        return updatedAddresses[0];
+      }
     }
 
     delete addressToAdd.address_id;

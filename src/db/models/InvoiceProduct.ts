@@ -9,12 +9,13 @@ export interface InvoiceProductAttributes {
   product_id: number;
   quantity: number;
   selling_price: number;
-  sold_at_utc?: string;
+  sold_at_utc: string;
+  unit_of_measure?: string;
 }
 
 export type InvoiceProductPk = "invoice_product_id";
 export type InvoiceProductId = InvoiceProduct[InvoiceProductPk];
-export type InvoiceProductOptionalAttributes = "invoice_product_id" | "quantity" | "sold_at_utc";
+export type InvoiceProductOptionalAttributes = "invoice_product_id" | "quantity" | "sold_at_utc" | "unit_of_measure";
 export type InvoiceProductCreationAttributes = Optional<InvoiceProductAttributes, InvoiceProductOptionalAttributes>;
 
 export class InvoiceProduct extends Model<InvoiceProductAttributes, InvoiceProductCreationAttributes> implements InvoiceProductAttributes {
@@ -24,6 +25,7 @@ export class InvoiceProduct extends Model<InvoiceProductAttributes, InvoiceProdu
   quantity!: number;
   selling_price!: number;
   sold_at_utc!: string;
+  unit_of_measure?: string;
 
   // InvoiceProduct belongsTo Invoice via invoice_id
   invoice!: Invoice;
@@ -73,6 +75,10 @@ export class InvoiceProduct extends Model<InvoiceProductAttributes, InvoiceProdu
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+    },
+    unit_of_measure: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     sequelize,

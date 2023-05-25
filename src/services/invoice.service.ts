@@ -1,5 +1,6 @@
 import {sequelize} from "../db/sequelize";
 import {
+  Address,
   BankAccount,
   initModels,
   Invoice,
@@ -17,7 +18,7 @@ import {
   InvoiceProductInformation,
   UpdateInvoiceProduct
 } from "../dtos/create.invoice-product.dto";
-import {Op, Transaction, WhereOptions} from "sequelize";
+import {Includeable, Op, Transaction, WhereOptions} from "sequelize";
 import {getDateRangeQuery, getInQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
 import UserService from "./user.service";
 import UserPartnerMappingService from "./user-partner-mapping.service";
@@ -38,7 +39,9 @@ class InvoiceService {
       where: queryObject,
       include: [
         {model: Partner, as: 'buyer'},
-        {model: Order, as: 'order_reference'}
+        {model: Order, as: 'order_reference'},
+        {model: Address, as: 'pickup_address'},
+        {model: Address, as: 'drop_off_address'}
       ],
       order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
@@ -46,14 +49,18 @@ class InvoiceService {
 
   async getFilteredInvoices(queryParams: any, decodedJwt: any) {
     const models = initModels(sequelize);
-
     const queryObject = {} as any;
+    const invoiceProductQuery = {} as any;
+    const productQuery = {} as any;
+    const pickupQuery = {} as any;
+    const dropOffQuery = {} as any;
 
     const userPartnerIds = (await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id))).map(
       (userPartner: UserPartnerMap) => userPartner.partner_id);
 
     if (queryParams.type) {
       queryObject.type = getStrictQuery(queryParams.type);
+
       if (queryParams.type === 'issued') {
         queryObject.client_id = getInQuery(userPartnerIds);
       } else if (queryParams.type === 'received') {
@@ -77,17 +84,73 @@ class InvoiceService {
       queryObject.user_id = Number(decodedJwt._id);
     }
 
+    if (queryParams.unit_of_measure) {
+      invoiceProductQuery.unit_of_measure = getStrictQuery(queryParams.unit_of_measure);
+    }
+
+    if (queryParams.product_name) {
+      productQuery.product_name = getLikeQuery(queryParams.product_name);
+    }
+
+    if (queryParams.drop_off_location) {
+      dropOffQuery.nickname = getLikeQuery(queryParams.drop_off_location);
+    }
+
+    if (queryParams.pick_up_location) {
+      pickupQuery.nickname = getLikeQuery(queryParams.pick_up_location);
+    }
+
+    const relations: Includeable | Includeable[] = [
+      {model: Partner, as: 'buyer'},
+      {model: Partner, as: 'client'},
+      {model: Order, as: 'order_reference'},
+    ];
+
+    if (queryParams.type === 'notice') {
+      relations.push({
+        model: InvoiceProduct,
+        as: 'InvoiceProducts',
+        required: true,
+        include: [
+          {
+            model: Product,
+            as: 'product',
+            where: {
+              [Op.and]: {
+                ...productQuery
+              }
+            }
+          }
+        ],
+        where: {
+          [Op.and]: {
+            ...invoiceProductQuery
+          }
+        }
+      });
+      relations.push({
+        model: Address, as: 'pickup_address', where: {
+          [Op.and]: {
+            ...pickupQuery
+          }
+        }
+      });
+      relations.push({
+        model: Address, as: 'drop_off_address', where: {
+          [Op.and]: {
+            ...dropOffQuery
+          }
+        }
+      })
+    }
+
     return await models.Invoice.findAll({
+      include: relations,
       where: {
         [Op.and]: {
           ...queryObject,
         },
       },
-      include: [
-        {model: Partner, as: 'buyer'},
-        {model: Partner, as: 'client'},
-        {model: Order, as: 'order_reference'}
-      ],
       order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
   }
@@ -102,23 +165,43 @@ class InvoiceService {
         const dropOffAddress = noticeToAdd.drop_off_address;
         const pickupAddress = noticeToAdd.pickup_address;
 
-        if (!dropOffAddress?.partner_id) {
-          const newDropOffLocation = await models.Address.create({nickname: dropOffAddress.nickname}, {transaction});
+        const [dropOff, dropOffCreated] = await models.Address.findOrCreate({
+          where: {
+            nickname: dropOffAddress.nickname
+          },
+          defaults: {
+            nickname: dropOffAddress.nickname
+          },
+          transaction
+        });
 
-          notice.drop_off_address_id = newDropOffLocation.address_id;
+        const [pickup, pickUpCreated] = await models.Address.findOrCreate({
+          where: {
+            nickname: pickupAddress.nickname
+          },
+          defaults: {
+            nickname: pickupAddress.nickname
+          },
+          transaction
+        });
+
+        if (dropOffCreated) {
+          notice.drop_off_address_id = dropOff.address_id;
+          notice.notice_status = 'Incomplet';
         } else {
-          notice.drop_off_address_id = dropOffAddress.address_id;
-          notice.buyer_id = dropOffAddress.partner_id;
+          notice.drop_off_address_id = dropOff.address_id;
+          notice.buyer_id = dropOff.partner_id;
         }
 
-        if (!pickupAddress?.partner_id) {
-          const newPickupLocation = await models.Address.create({nickname: pickupAddress.nickname}, {transaction});
-
-          notice.pickup_address_id = newPickupLocation.address_id;
+        if (pickUpCreated) {
+          notice.pickup_address_id = pickup.address_id;
+          notice.notice_status = 'Incomplet'
         } else {
-          notice.pickup_address_id = pickupAddress.address_id;
-          notice.client_id = pickupAddress.partner_id;
+          notice.pickup_address_id = pickup.address_id;
+          notice.client_id = pickup.partner_id;
         }
+
+        if (notice.client_id && notice.buyer_id) notice.notice_status = 'Complet';
 
         notice.type = noticeToAdd.type;
         notice.car_reg_number = noticeToAdd.reg_no;
@@ -136,7 +219,8 @@ class InvoiceService {
           product_id: product.product_id,
           quantity: parseFloat(Number(noticeToAdd.quantity).toFixed(2)),
           selling_price: parseFloat(Number(product.purchase_price).toFixed(2)),
-          sold_at_utc: new Date(Date.now()).toLocaleString()
+          sold_at_utc: new Date(Date.now()).toLocaleString(),
+          unit_of_measure: noticeToAdd.unit_of_measure
         }
 
         createdNotice.total_price = parseFloat((Number(product.purchase_price) * Number(invoiceProduct.quantity)).toFixed(2))
