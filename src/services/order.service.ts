@@ -398,7 +398,8 @@ class OrderService {
           type: 'issued',
           order_reference_id: order.order_id,
           total_paid_price: 0,
-          buyer_id: order.buyer_id
+          buyer_id: order.buyer_id,
+          e_transport_generated: false
         }
 
         const createdInvoice: Invoice = await models.Invoice.create(invoiceData, {transaction: transaction});
