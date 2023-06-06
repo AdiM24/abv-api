@@ -320,6 +320,7 @@ class OrderService {
 
     delete existingOrder.order_id;
     existingOrder.number = nextNumber;
+    existingOrder.invoice_generated = false;
 
     try {
       await sequelize.transaction(async (transaction: Transaction) => {
