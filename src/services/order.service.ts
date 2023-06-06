@@ -263,8 +263,23 @@ class OrderService {
     return latestInvoicesFromSeries;
   }
 
-  async updateOrder(orderToUpdate: OrderAttributes, decodedToken: any) {
+  async updateOrder(orderToUpdate: any, decodedToken: any) {
     const models = initModels(sequelize);
+
+    if (orderToUpdate.transporter_currency !== orderToUpdate.client_currency) {
+      const transporterPrice = orderToUpdate.transporter_currency === 'EUR'
+        ? parseFloat((orderToUpdate.transporter_price * orderToUpdate.rate).toFixed(2))
+        : orderToUpdate.transporter_price;
+      const clientPrice = orderToUpdate.client_currency === 'EUR'
+        ? parseFloat((orderToUpdate.client_price * orderToUpdate.rate).toFixed(2))
+        : orderToUpdate.client_price;
+
+      orderToUpdate.profit = parseFloat((clientPrice - transporterPrice).toFixed(2));
+      orderToUpdate.profit_currency = 'RON';
+    } else {
+      orderToUpdate.profit = parseFloat((orderToUpdate.client_price - orderToUpdate.transporter_price).toFixed(2));
+      orderToUpdate.profit_currency = orderToUpdate.client_currency
+    }
 
     await models.Order.update(orderToUpdate, {where: {order_id: orderToUpdate.order_id}})
 
