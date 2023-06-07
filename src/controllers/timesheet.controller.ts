@@ -15,7 +15,6 @@ class TimesheetController {
   }
 
   async getEmployeesTimesheet(req: CustomRequest, res: express.Response) {
-    console.log("MUEMUEMUE",req.params);
     const employees = await TimesheetService.getEmployeesTimesheet(req.token,Number(req.params?.id));
 
     res.send(employees).status(201);
