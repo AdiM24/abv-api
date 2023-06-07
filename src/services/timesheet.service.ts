@@ -14,7 +14,6 @@ class TimesheetService {
   async getTimesheetEntriesByAddress(id:number){
     const models = initModels(sequelize);
 
-    console.log(id);
     const model=  await models.TimesheetEntry.findAll({
       where:{
         address_id:id
