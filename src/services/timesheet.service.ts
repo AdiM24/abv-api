@@ -1,5 +1,5 @@
 import { sequelize } from "../db/sequelize";
-import {initModels, Partner, TimesheetEntry, UserPartnerMap} from "../db/models/init-models";
+import {Employee, initModels, Partner, TimesheetEntry, UserPartnerMap} from "../db/models/init-models";
 import PartnerService from "./partner.service";
 import { addOrUpdate } from "./utils.service";
 import UserPartnerMappingService from "./user-partner-mapping.service";
@@ -10,6 +10,24 @@ class TimesheetService {
 
     return await models.TimesheetEntry.findAll();
   }
+
+  async getTimesheetEntriesByAddress(id:number){
+    const models = initModels(sequelize);
+
+    const model=  await models.TimesheetEntry.findAll({
+      where:{
+        address_id:id
+      },
+      include:[
+        {
+          model:Employee,
+          as:"employee",
+        },
+      ]
+    });
+
+
+  }
   
   async addTimesheetEntries(timesheetEntriesToAdd: TimesheetEntryAddDto[]) {
     const models = initModels(sequelize);
@@ -19,7 +37,8 @@ class TimesheetService {
         timesheetEntry,
         {
           employee_id: timesheetEntry.employee_id,
-          date: timesheetEntry.date
+          date: timesheetEntry.date,
+          address_id:timesheetEntry.address_id
         },
         models.TimesheetEntry
       )
@@ -31,7 +50,7 @@ class TimesheetService {
     }
   }
 
-  async getEmployeesTimesheet(decodedJwt: any) {
+  async getEmployeesTimesheet(decodedJwt: any,id:number) {
     const models = initModels(sequelize);
 
     const userPartners = await UserPartnerMappingService.getUserPartnerMappings(Number(decodedJwt._id));
@@ -40,7 +59,9 @@ class TimesheetService {
       where: {
         partner_id: userPartners.map((userPartner: UserPartnerMap) => userPartner.partner_id)
       },
-      include: [{model: TimesheetEntry, as: "TimesheetEntries"}]
+      include: [{model: TimesheetEntry, as: "TimesheetEntries", where:{
+        address_id:id
+      }}]
     });
   }
 
@@ -52,7 +73,8 @@ class TimesheetService {
         timesheetEntry,
         {
           employee_id: timesheetEntry.employee_id,
-          date: timesheetEntry.date
+          date: timesheetEntry.date,
+          address_id:timesheetEntry.address_id
         },
         models.TimesheetEntry
       )

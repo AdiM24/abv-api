@@ -2,6 +2,7 @@ import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { Invoice, InvoiceId } from './Invoice';
 import type { Partner, PartnerId } from './Partner';
+import type { TimesheetEntry, TimesheetEntryId } from './TimesheetEntry';
 
 export interface AddressAttributes {
   address_id: number;
@@ -51,6 +52,18 @@ export class Address extends Model<AddressAttributes, AddressCreationAttributes>
   hasPickup_address_Invoice!: Sequelize.HasManyHasAssociationMixin<Invoice, InvoiceId>;
   hasPickup_address_Invoices!: Sequelize.HasManyHasAssociationsMixin<Invoice, InvoiceId>;
   countPickup_address_Invoices!: Sequelize.HasManyCountAssociationsMixin;
+  // Address hasMany TimesheetEntry via address_id
+  TimesheetEntries!: TimesheetEntry[];
+  getTimesheetEntries!: Sequelize.HasManyGetAssociationsMixin<TimesheetEntry>;
+  setTimesheetEntries!: Sequelize.HasManySetAssociationsMixin<TimesheetEntry, TimesheetEntryId>;
+  addTimesheetEntry!: Sequelize.HasManyAddAssociationMixin<TimesheetEntry, TimesheetEntryId>;
+  addTimesheetEntries!: Sequelize.HasManyAddAssociationsMixin<TimesheetEntry, TimesheetEntryId>;
+  createTimesheetEntry!: Sequelize.HasManyCreateAssociationMixin<TimesheetEntry>;
+  removeTimesheetEntry!: Sequelize.HasManyRemoveAssociationMixin<TimesheetEntry, TimesheetEntryId>;
+  removeTimesheetEntries!: Sequelize.HasManyRemoveAssociationsMixin<TimesheetEntry, TimesheetEntryId>;
+  hasTimesheetEntry!: Sequelize.HasManyHasAssociationMixin<TimesheetEntry, TimesheetEntryId>;
+  hasTimesheetEntries!: Sequelize.HasManyHasAssociationsMixin<TimesheetEntry, TimesheetEntryId>;
+  countTimesheetEntries!: Sequelize.HasManyCountAssociationsMixin;
   // Address belongsTo Partner via partner_id
   partner!: Partner;
   getPartner!: Sequelize.BelongsToGetAssociationMixin<Partner>;

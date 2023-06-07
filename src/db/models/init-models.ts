@@ -156,6 +156,8 @@ export function initModels(sequelize: Sequelize) {
   Address.hasMany(Invoice, { as: "Invoices", foreignKey: "drop_off_address_id"});
   Invoice.belongsTo(Address, { as: "pickup_address", foreignKey: "pickup_address_id"});
   Address.hasMany(Invoice, { as: "pickup_address_Invoices", foreignKey: "pickup_address_id"});
+  TimesheetEntry.belongsTo(Address, { as: "address", foreignKey: "address_id"});
+  Address.hasMany(TimesheetEntry, { as: "TimesheetEntries", foreignKey: "address_id"});
   UserVehicle.belongsTo(AutoFleet, { as: "vehicle", foreignKey: "vehicle_id"});
   AutoFleet.hasMany(UserVehicle, { as: "UserVehicles", foreignKey: "vehicle_id"});
   Receipt.belongsTo(BankRegister, { as: "bank_register", foreignKey: "bank_register_id"});

@@ -23,14 +23,24 @@ export class TimesheetRoutes extends CommonRoutesConfig {
       );
 
     this.app
-      .route('/api/timesheet/employee')
+      .route('/api/timesheet/employee/:id')
       .get(
         AuthMiddleware.auth,
         TimesheetController.getEmployeesTimesheet
-      )
+      );
+      
+    this.app
+      .route('/api/timesheet/employee')
       .post(
         AuthMiddleware.auth,
         TimesheetController.updateTimesheetEntries
+      );
+    
+    this.app
+      .route('/api/timesheet/address/:id')
+      .get(
+        AuthMiddleware.auth,
+        TimesheetController.getTimesheetEntriesByAddress
       );
 
     return this.app;

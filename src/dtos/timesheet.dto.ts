@@ -3,4 +3,5 @@ interface TimesheetEntryAddDto {
   employee_id: number;
   hours_worked: string;
   date: string;
+  address_id:number;
 }
