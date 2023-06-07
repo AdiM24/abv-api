@@ -241,6 +241,12 @@ class InvoiceService {
     return {code: 201, message: 'Avizul a fost creat'}
   }
 
+  // async updateNotice(noticeToUpdate: any, token: any) {
+  //   const model = initModels(sequelize);
+  //
+  //
+  // }
+
   async createInvoice(invoiceToAdd: CreateInvoiceDto, models: any) {
     let createdInvoice: Invoice;
 
@@ -352,7 +358,7 @@ class InvoiceService {
         },
         include: [
           {model: Partner, as: "buyer", include: [{model: BankAccount, as: 'BankAccounts'}]},
-          {model: Partner, as: "client"}
+          {model: Partner, as: "client", include: [{model: BankAccount, as: 'BankAccounts'}]}
         ],
         order: [["created_at_utc", "DESC"]]
       }
@@ -660,7 +666,20 @@ class InvoiceService {
     }
 
     try {
+      const orderReference = existingInvoice.order_reference_id;
       await existingInvoice.destroy();
+
+      if (orderReference) {
+        const existingOrder = await models.Order.findOne({
+          where: {
+            order_id: orderReference
+          }
+        });
+
+        existingOrder.invoice_generated = false;
+
+        await existingOrder.save();
+      }
 
       return {code: 200, message: `Invoice successfully deleted`}
     } catch (err) {
