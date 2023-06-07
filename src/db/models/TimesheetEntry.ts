@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { Address, AddressId } from './Address';
 import type { Employee, EmployeeId } from './Employee';
 
 export interface TimesheetEntryAttributes {
@@ -7,11 +8,12 @@ export interface TimesheetEntryAttributes {
   employee_id?: number;
   hours_worked: string;
   date: string;
+  address_id?: number;
 }
 
 export type TimesheetEntryPk = "timesheet_entry_id";
 export type TimesheetEntryId = TimesheetEntry[TimesheetEntryPk];
-export type TimesheetEntryOptionalAttributes = "timesheet_entry_id" | "employee_id";
+export type TimesheetEntryOptionalAttributes = "timesheet_entry_id" | "employee_id" | "address_id";
 export type TimesheetEntryCreationAttributes = Optional<TimesheetEntryAttributes, TimesheetEntryOptionalAttributes>;
 
 export class TimesheetEntry extends Model<TimesheetEntryAttributes, TimesheetEntryCreationAttributes> implements TimesheetEntryAttributes {
@@ -19,7 +21,13 @@ export class TimesheetEntry extends Model<TimesheetEntryAttributes, TimesheetEnt
   employee_id?: number;
   hours_worked!: string;
   date!: string;
+  address_id?: number;
 
+  // TimesheetEntry belongsTo Address via address_id
+  address!: Address;
+  getAddress!: Sequelize.BelongsToGetAssociationMixin<Address>;
+  setAddress!: Sequelize.BelongsToSetAssociationMixin<Address, AddressId>;
+  createAddress!: Sequelize.BelongsToCreateAssociationMixin<Address>;
   // TimesheetEntry belongsTo Employee via employee_id
   employee!: Employee;
   getEmployee!: Sequelize.BelongsToGetAssociationMixin<Employee>;
@@ -51,6 +59,14 @@ export class TimesheetEntry extends Model<TimesheetEntryAttributes, TimesheetEnt
       type: DataTypes.DATEONLY,
       allowNull: false,
       unique: "TimesheetEntry_pk2"
+    },
+    address_id: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      references: {
+        model: 'Address',
+        key: 'address_id'
+      }
     }
   }, {
     sequelize,

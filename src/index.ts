@@ -41,7 +41,7 @@ routes.push(new EmailRoutes(app));
 routes.push(new OrderRoutes(app));
 routes.push(new ImageRoutes(app));
 
-const runningMessage = `Server running at http://localhost:${port}`;
+const runningMessage = `Server running at http://172.17.0.1:${port}`;
 app.get("/api/", (req: express.Request, res: express.Response) => {
   res.status(200).send(runningMessage);
 });

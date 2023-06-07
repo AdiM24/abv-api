@@ -15,7 +15,8 @@ class TimesheetController {
   }
 
   async getEmployeesTimesheet(req: CustomRequest, res: express.Response) {
-    const employees = await TimesheetService.getEmployeesTimesheet(req.token);
+    console.log("MUEMUEMUE",req.params);
+    const employees = await TimesheetService.getEmployeesTimesheet(req.token,Number(req.params?.id));
 
     res.send(employees).status(201);
   }
@@ -24,6 +25,12 @@ class TimesheetController {
     const response = await TimesheetService.updateTimesheetEntries(req.body);
 
     res.send(response).status(201);
+  }
+
+  async getTimesheetEntriesByAddress(req:express.Request,res:express.Response){
+    const response = await TimesheetService.getTimesheetEntriesByAddress(Number(req.params?.id));
+
+    res.send(response).status(200);
   }
 }
 
