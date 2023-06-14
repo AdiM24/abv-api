@@ -1,19 +1,19 @@
 import {
   Contact,
   initModels, Invoice,
-  InvoiceCreationAttributes,
-  InvoiceProductCreationAttributes,
+  InvoiceCreationAttributes, InvoiceProduct,
+  InvoiceProductCreationAttributes, Order,
   OrderAttributes,
   OrderCreationAttributes,
   OrderDetails,
   OrderDetailsAttributes,
   OrderDetailsCreationAttributes,
-  Partner,
+  Partner, Product,
   UserPartnerMap
 } from "../db/models/init-models";
 import {sequelize} from "../db/sequelize";
 import UserPartnerMappingService from "./user-partner-mapping.service";
-import {Op, Transaction} from "sequelize";
+import {Includeable, Op, Transaction} from "sequelize";
 import InvoiceService from "./invoice.service";
 import {calculatePercentage} from "./utils.service";
 import {getDateRangeQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
@@ -169,6 +169,9 @@ class OrderService {
     const models = initModels(sequelize);
 
     const queryObject = {} as any;
+    const transporterQuery = {} as any;
+    const buyerQuery = {} as any;
+    const locationQuery = {} as any;
 
     if (decodedToken.role !== Roles.Administrator) {
       queryObject.user_id = getStrictQuery(Number(decodedToken._id));
@@ -182,30 +185,62 @@ class OrderService {
       queryObject.number = getStrictQuery(queryParams.number);
     }
 
+    if (queryParams.buyer) {
+      buyerQuery.name = getLikeQuery(queryParams.buyer);
+    }
+
+    if (queryParams.transporter) {
+      transporterQuery.name = getLikeQuery(queryParams.transporter);
+    }
+
+    // if (queryParams.pickup_address) {
+    //   locationQuery.location = getLikeQuery(queryParams.pickup_address);
+    //   locationQuery.type = 'PICKUP'
+    // }
+    //
+    // if (queryParams.dropoff_address) {
+    //   locationQuery.location = getLikeQuery(queryParams.dropoff_address);
+    //   locationQuery.type = 'DROPOFF'
+    // }
+
     if (queryParams.created_from || queryParams.created_to) {
       queryObject.created_at_utc = getDateRangeQuery(queryParams.created_from, queryParams.created_to);
     }
 
+    const relations: Includeable | Includeable[] = [
+      {model: Partner, as: 'client'},
+      {model: OrderDetails, as: 'OrderDetails'}
+    ];
+
+    relations.push({
+      model: Partner,
+      as: 'transporter',
+      required: true,
+      where: {
+        [Op.and]: {
+          ...transporterQuery
+        }
+      }
+    });
+
+    relations.push({
+      model: Partner,
+      as: 'buyer',
+      required: true,
+      where: {
+        [Op.and]: {
+          ...buyerQuery
+        }
+      }
+    })
+
     const orders = await models.Order.findAll({
+      include: relations,
       where: {
         [Op.and]: {
           ...queryObject
         }
       },
-      include: [
-        {
-          model: Partner, as: 'buyer',
-        },
-        {
-          model: Partner, as: 'client'
-        },
-        {
-          model: Partner, as: 'transporter'
-        },
-        {
-          model: OrderDetails, as: 'OrderDetails'
-        }
-      ],
       order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
 
