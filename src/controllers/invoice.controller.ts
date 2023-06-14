@@ -76,6 +76,12 @@ class InvoiceController {
       res.status(202).send(result);
     }
   }
+
+  async generateETransport(req: express.Request, res: express.Response) {
+    const result = await InvoiceService.generateETransport();
+
+    res.status(200).send({res: result});
+  }
 }
 
 export default new InvoiceController();

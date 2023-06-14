@@ -24,6 +24,7 @@ import UserService from "./user.service";
 import UserPartnerMappingService from "./user-partner-mapping.service";
 import {Roles} from "../common/enums/roles";
 import {calculatePercentage} from "./utils.service";
+import ETransportService from "./e-transport.service";
 
 class InvoiceService {
   async getInvoices(decodedJwt: any) {
@@ -705,6 +706,12 @@ class InvoiceService {
     }
 
     return latestInvoicesFromSeries[0];
+  }
+
+  async generateETransport() {
+    const xml = await ETransportService.generateETransport(1, {});
+
+    return xml;
   }
 }
 

@@ -4,6 +4,7 @@ import InvoiceController from "../controllers/invoice.controller";
 import InvoiceMiddleware from "../middleware/invoice.middleware";
 import ProductMiddleware from "../middleware/product.middleware";
 import AuthMiddleware from "../middleware/auth.middleware";
+import InvoiceService from "../services/invoice.service";
 
 export class InvoiceRoutes extends CommonRoutesConfig {
   constructor(app: express.Application) {
@@ -59,6 +60,10 @@ export class InvoiceRoutes extends CommonRoutesConfig {
     this.app
       .route("/api/invoices/series")
       .post(AuthMiddleware.auth, InvoiceController.findNextNumberForSeries);
+
+    this.app
+      .route("/api/notices/etransport")
+      .get(AuthMiddleware.auth, InvoiceController.generateETransport)
 
     return this.app;
   }
