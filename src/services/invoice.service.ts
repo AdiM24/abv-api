@@ -358,7 +358,9 @@ class InvoiceService {
         },
         include: [
           {model: Partner, as: "buyer", include: [{model: BankAccount, as: 'BankAccounts'}]},
-          {model: Partner, as: "client", include: [{model: BankAccount, as: 'BankAccounts'}]}
+          {model: Partner, as: "client", include: [{model: BankAccount, as: 'BankAccounts'}]},
+          {model: Address, as: 'pickup_address'},
+          {model: Address, as: 'drop_off_address'}
         ],
         order: [["created_at_utc", "DESC"]]
       }
@@ -400,12 +402,16 @@ class InvoiceService {
     });
 
     existingInvoice.buyer_id = invoiceUpdate.buyer;
-    existingInvoice.created_at_utc = new Date(invoiceUpdate.created_at).toUTCString();
-    existingInvoice.deadline_at_utc = invoiceUpdate.deadline_at ? new Date(invoiceUpdate.deadline_at).toUTCString() : null;
+    existingInvoice.created_at_utc = new Date(invoiceUpdate.created_at_utc).toUTCString();
+    existingInvoice.deadline_at_utc = invoiceUpdate.deadline_at_utc ? new Date(invoiceUpdate.deadline_at_utc).toUTCString() : null;
     existingInvoice.series = invoiceUpdate.series;
     existingInvoice.number = invoiceUpdate.number;
     existingInvoice.status = invoiceUpdate.status;
     existingInvoice.sent_status = invoiceUpdate.sent_status;
+    existingInvoice.drop_off_address_id = invoiceUpdate.drop_off_address_id;
+    existingInvoice.pickup_address_id = invoiceUpdate.pickup_address_id;
+    existingInvoice.driver_info = invoiceUpdate.driver_info;
+    existingInvoice.car_reg_number = invoiceUpdate.car_reg_number;
 
     if (existingInvoice.type === 'order') {
       if (invoiceUpdate.currency === 'RON') {
@@ -596,6 +602,9 @@ class InvoiceService {
 
     existingInvoiceProduct.quantity = parseFloat(Number(invoiceProduct.quantity).toFixed(2));
     existingInvoiceProduct.selling_price = parseFloat(Number(invoiceProduct.purchase_price).toFixed(2));
+    existingInvoiceProduct.unit_of_measure = invoiceProduct.unit_of_measure;
+
+    existingProduct.unit_of_measure = invoiceProduct.unit_of_measure;
 
     try {
       await existingProduct.save();

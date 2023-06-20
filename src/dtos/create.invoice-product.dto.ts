@@ -13,6 +13,7 @@ export interface InvoiceProductInformation {
   quantity: number;
   selling_price?: number;
   purchase_price?: number;
+  unit_of_measure?: string;
 }
 
 export interface UpdateInvoiceProduct {
@@ -22,4 +23,5 @@ export interface UpdateInvoiceProduct {
   quantity: number;
   selling_price?: number;
   purchase_price?: number;
+  unit_of_measure?: string;
 }
