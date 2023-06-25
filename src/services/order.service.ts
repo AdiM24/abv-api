@@ -241,7 +241,7 @@ class OrderService {
           ...queryObject
         }
       },
-      order: [["created_at_utc", "DESC"], ["number", "DESC"]]
+      order: [["number", "DESC"], ["created_at_utc", "DESC"]]
     });
 
     return orders;
