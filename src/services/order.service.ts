@@ -136,9 +136,13 @@ class OrderService {
     const models = initModels(sequelize);
 
     const queryObject: any = {}
+    let order: any;
 
     if (decodedToken.role !== Roles.Administrator) {
       queryObject.user_id = getStrictQuery(Number(decodedToken._id));
+      order = [["number", "DESC"]];
+    } else {
+      order = [["created_at_utc", "DESC"], ["number", "DESC"]];
     }
 
     const orders = await models.Order.findAll({
@@ -159,7 +163,7 @@ class OrderService {
           model: OrderDetails, as: 'OrderDetails'
         }
       ],
-      order: [["created_at_utc", "DESC"], ["number", "DESC"]]
+      order
     });
 
     return orders;
@@ -172,6 +176,13 @@ class OrderService {
     const transporterQuery = {} as any;
     const buyerQuery = {} as any;
     const locationQuery = {} as any;
+    let order: any;
+
+    if (decodedToken.role !== Roles.Administrator || queryParams.series) {
+      order = [["number", "DESC"]];
+    } else {
+      order = [["created_at_utc", "DESC"], ["number", "DESC"]];
+    }
 
     if (decodedToken.role !== Roles.Administrator) {
       queryObject.user_id = getStrictQuery(Number(decodedToken._id));
@@ -241,7 +252,7 @@ class OrderService {
           ...queryObject
         }
       },
-      order: [["number", "DESC"], ["created_at_utc", "DESC"]]
+      order
     });
 
     return orders;
