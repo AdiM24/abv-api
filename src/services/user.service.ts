@@ -1,5 +1,5 @@
 import {sequelize} from "../db/sequelize";
-import {initModels, Partner, UserInvoiceSeries, UserInvoiceSeriesAttributes} from "../db/models/init-models";
+import { initModels, Partner, User, UserInvoiceSeries, UserInvoiceSeriesAttributes } from "../db/models/init-models";
 import {CreateUserDto} from "../dtos/create.user.dto";
 import {cryptPassword, encryptPassword} from "../common/encryption";
 import debug from "debug";
@@ -59,7 +59,8 @@ class UserService {
     const models = initModels(sequelize);
 
     return await models.User.findOne({
-      attributes: ['first_name', 'last_name'],
+      attributes: ["user_id",'email','first_name', 'last_name','phone',
+        'id_card_series','id_card_number','id_card_issued_by'],
       where: {
         user_id: user_id
       }
@@ -310,6 +311,32 @@ class UserService {
     });
 
     return vehicle;
+  }
+
+  async updateUser(user: User) {
+    const existingUser = await this.getUser(user.user_id);
+    const userByEmail = await this.getUserByEmail(user.email);
+    if(userByEmail && userByEmail.user_id != user.user_id){
+      return {code: 400, message: 'Mai exista deja alt utilizator cu aceeasi adresa de e-mail'};
+    }
+
+    existingUser.email = user.email;
+    existingUser.first_name = user.first_name;
+    existingUser.last_name = user.last_name;
+    existingUser.phone = user.phone;
+    existingUser.id_card_series = user.id_card_series;
+    existingUser.id_card_number = user.id_card_number;
+    existingUser.id_card_issued_by = user.id_card_issued_by;
+
+    try {
+      await existingUser.update(existingUser);
+      await existingUser.save();
+    } catch (error) {
+      console.error(error);
+      return { code: 500, message: error.message };
+    }
+    return {code: 200, message: 'Utilizatorul a fost actualizat'};
+
   }
 }
 
