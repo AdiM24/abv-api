@@ -92,6 +92,21 @@ class UsersController {
 
     return res.status(200).send(result);
   }
+
+  async getCurrentUser(req: CustomRequest, res: express.Response) {
+    const userId = (req.token as any)._id;
+    const user = await UserService.getUser(userId);
+
+    res.status(200).send(user);
+  }
+
+  async updateCurrentUser(req: CustomRequest, res: express.Response) {
+    const userId = (req.token as any)._id;
+    req.body.user_id = userId;
+    const result = await UserService.updateUser(req.body);
+
+    return res.status(result.code).send(result);
+  }
 }
 
 export default new UsersController();

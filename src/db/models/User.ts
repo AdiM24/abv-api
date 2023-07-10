@@ -10,11 +10,15 @@ export interface UserAttributes {
   email: string;
   password: string;
   phone?: string;
+  id_card_series?: string;
+  id_card_number?: string;
+  id_card_issued_by?: string;
 }
 
 export type UserPk = "user_id";
 export type UserId = User[UserPk];
-export type UserOptionalAttributes = "user_id" | "first_name" | "last_name" | "created_at_utc" | "updated_at_utc" | "phone";
+export type UserOptionalAttributes = "user_id" | "first_name" | "last_name" | "created_at_utc" | "updated_at_utc" | "phone"
+  | "id_card_series" | "id_card_number" | "id_card_issued_by";
 export type UserCreationAttributes = Optional<UserAttributes, UserOptionalAttributes>;
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
@@ -26,6 +30,9 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   email!: string;
   password!: string;
   phone?: string;
+  id_card_series?: string;
+  id_card_number?: string;
+  id_card_issued_by?: string;
 
 
   static initModel(sequelize: Sequelize.Sequelize): typeof User {
@@ -65,7 +72,19 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
     phone: {
       type: DataTypes.STRING,
       allowNull: true
-    }
+    },
+    id_card_series: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+    id_card_number: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+    id_card_issued_by: {
+        type: DataTypes.STRING,
+        allowNull: true
+      }
   }, {
     sequelize,
     tableName: 'User',
