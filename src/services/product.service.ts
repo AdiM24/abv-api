@@ -134,12 +134,18 @@ class ProductService {
     if (queryParams.product_name)
       queryObject.product_name = getLikeQuery(queryParams.product_name);
 
+    if (queryParams.nc8Code)
+      queryObject['$nc8Code.code$'] = getLikeQuery(queryParams.nc8Code);
+
     return await models.Product.findAll({
       where: {
         [Op.and]: {
           ...queryObject,
         },
       },
+      include: [
+        {model: Nc8Code, as: 'nc8Code'},
+      ],
     });
   }
 
