@@ -2,6 +2,7 @@ import {CommonRoutesConfig} from "../common/common.routes.config";
 import express from "express";
 import ProductController from "../controllers/product.controller";
 import ProductMiddleware from "../middleware/product.middleware";
+import AuthMiddleware from "../middleware/auth.middleware";
 
 export class ProductRoutes extends CommonRoutesConfig {
   constructor(app: express.Application) {
@@ -33,6 +34,10 @@ export class ProductRoutes extends CommonRoutesConfig {
     this.app
       .route("/api/products/quantity/add")
       .post(ProductController.addProductQuantity)
+
+    this.app
+      .route("/api/products/nc8codes/autocomplete")
+      .get(AuthMiddleware.auth, ProductController.getNc8CodeAutocompleteOptions)
 
     return this.app;
   }
