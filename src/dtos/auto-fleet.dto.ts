@@ -11,4 +11,5 @@ export interface CreateAutoFleetDto {
   casco?: string;
   vignette_hu?: string;
   vignette_slo?: string;
+  max_weight_in_tons: number;
 }

@@ -16,11 +16,12 @@ export interface AutoFleetAttributes {
   vignette_hu?: string;
   vignette_slo?: string;
   casco?: string;
+  max_weight_in_tons: number;
 }
 
 export type AutoFleetPk = "auto_fleet_id";
 export type AutoFleetId = AutoFleet[AutoFleetPk];
-export type AutoFleetOptionalAttributes = "auto_fleet_id" | "vignette_ro" | "itp" | "cmr_insurance" | "rca" | "carbon_copy" | "vignette_hu" | "vignette_slo" | "casco";
+export type AutoFleetOptionalAttributes = "auto_fleet_id" | "vignette_ro" | "itp" | "cmr_insurance" | "rca" | "carbon_copy" | "vignette_hu" | "vignette_slo" | "casco" | "max_weight_in_tons";
 export type AutoFleetCreationAttributes = Optional<AutoFleetAttributes, AutoFleetOptionalAttributes>;
 
 export class AutoFleet extends Model<AutoFleetAttributes, AutoFleetCreationAttributes> implements AutoFleetAttributes {
@@ -37,6 +38,7 @@ export class AutoFleet extends Model<AutoFleetAttributes, AutoFleetCreationAttri
   vignette_hu?: string;
   vignette_slo?: string;
   casco?: string;
+  max_weight_in_tons: number;
 
   // AutoFleet belongsTo Partner via partner_id
   partner!: Partner;
@@ -103,6 +105,10 @@ export class AutoFleet extends Model<AutoFleetAttributes, AutoFleetCreationAttri
     casco: {
       type: DataTypes.DATEONLY,
       allowNull: true
+    },
+    max_weight_in_tons: {
+      type: DataTypes.NUMBER,
+      allowNull: false
     }
   }, {
     sequelize,
