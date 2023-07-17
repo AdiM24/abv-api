@@ -236,6 +236,7 @@ class InvoiceService {
       });
     } catch (err) {
       console.error(err);
+      return {code: 500, message: err.message}
     }
 
     return {code: 201, message: 'Avizul a fost creat'}

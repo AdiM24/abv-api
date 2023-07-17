@@ -4,18 +4,18 @@ import type { User, UserId } from './User';
 
 export interface UserRolesAttributes {
   user_role_id: number;
-  role: string;
+  role: number;
   user_id?: number;
 }
 
 export type UserRolesPk = "user_role_id";
 export type UserRolesId = UserRoles[UserRolesPk];
-export type UserRolesOptionalAttributes = "user_role_id" | "user_id";
+export type UserRolesOptionalAttributes = "user_role_id" | "role" |  "user_id";
 export type UserRolesCreationAttributes = Optional<UserRolesAttributes, UserRolesOptionalAttributes>;
 
 export class UserRoles extends Model<UserRolesAttributes, UserRolesCreationAttributes> implements UserRolesAttributes {
   user_role_id!: number;
-  role!: string;
+  role!: number;
   user_id?: number;
 
   // UserRoles belongsTo User via user_id

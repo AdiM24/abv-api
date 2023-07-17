@@ -16,10 +16,12 @@ export class UserRoutes extends CommonRoutesConfig {
       .route("/api/users")
       .get(AuthMiddleware.auth, UsersController.getUsers)
       .post(
+        AuthMiddleware.auth,
         UsersMiddleware.validateRequiredUserBodyFields,
         UsersMiddleware.validateSameEmailDoesntExist,
         UsersController.createUser
-      );
+      )
+      .put(AuthMiddleware.auth, UsersController.updateUser);
 
     this.app.route("/api/users/bulk").post(UsersController.createUsers);
 
@@ -41,8 +43,13 @@ export class UserRoutes extends CommonRoutesConfig {
       .put(AuthMiddleware.auth, UserMiddleware.validateClaimingUser, UserController.updateUserPartnerEmail)
 
     this.app
-      .route("/api/chp")
-      .post(UserController.changePassword);
+      .route("/api/users/password")
+      .put(AuthMiddleware.auth, UserController.changePassword);
+
+    this.app
+      .route("/api/users/role")
+      .post(AuthMiddleware.auth, UserController.addRole)
+      .put(AuthMiddleware.auth, UserController.changeRole);
 
     this.app
       .route("/api/user/partner")
@@ -56,6 +63,10 @@ export class UserRoutes extends CommonRoutesConfig {
       .route("/api/users/current")
       .get(AuthMiddleware.auth, UsersController.getCurrentUser)
       .put(AuthMiddleware.auth, UsersController.updateCurrentUser);
+
+    this.app.route("/api/users/:id")
+      .get(AuthMiddleware.auth, UsersController.getUser)
+      .delete(AuthMiddleware.auth, UserController.deleteUser)
 
     return this.app;
   }

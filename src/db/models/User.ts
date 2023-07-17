@@ -13,6 +13,7 @@ export interface UserAttributes {
   id_card_series?: string;
   id_card_number?: string;
   id_card_issued_by?: string;
+  deleted?: boolean;
 }
 
 export type UserPk = "user_id";
@@ -21,7 +22,7 @@ export type UserOptionalAttributes = "user_id" | "first_name" | "last_name" | "c
   | "id_card_series" | "id_card_number" | "id_card_issued_by";
 export type UserCreationAttributes = Optional<UserAttributes, UserOptionalAttributes>;
 
-export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
+export class  User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   user_id!: number;
   first_name?: string;
   last_name?: string;
@@ -33,7 +34,8 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   id_card_series?: string;
   id_card_number?: string;
   id_card_issued_by?: string;
-
+  UserRoles?: any
+  deleted?: boolean;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof User {
     return User.init({
@@ -83,6 +85,10 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
       },
     id_card_issued_by: {
         type: DataTypes.STRING,
+        allowNull: true
+      },
+    deleted: {
+        type: DataTypes.BOOLEAN,
         allowNull: true
       }
   }, {

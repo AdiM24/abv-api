@@ -1,18 +1,42 @@
 import {sequelize} from "../db/sequelize";
-import { initModels, Partner, User, UserInvoiceSeries, UserInvoiceSeriesAttributes } from "../db/models/init-models";
+import {
+  initModels,
+  Partner,
+  User,
+  UserInvoiceSeries,
+  UserInvoiceSeriesAttributes,
+  UserRoles
+} from "../db/models/init-models";
 import {CreateUserDto} from "../dtos/create.user.dto";
 import {cryptPassword, encryptPassword} from "../common/encryption";
 import debug from "debug";
 import {CreateUserPartnerEmail, UserDto} from "../dtos/user.dto";
 import {CreateUserInvoiceSeriesDto} from "../dtos/create.user-invoice-series.dto";
+import { CreateUserRoleDto } from "../dtos/create.user.role.dto";
+import { UpdateUserRoleDto } from "../dtos/update.user.role.dto";
+import { getLikeQuery } from "../common/utils/query-utils.service";
+import { Op } from "sequelize";
 
 const log: debug.IDebugger = debug("app:users-controller");
 
 class UserService {
-  async getAll() {
+  async getAll(queryParams: any) {
     const models = initModels(sequelize);
+    const queryObject = {deleted:false} as any;
 
-    const dbUsers = await models.User.findAll();
+    if (queryParams.email) {
+      queryObject.email = getLikeQuery(queryParams.email);
+    }
+
+    const dbUsers = await models.User.findAll({
+      where: {
+        [Op.and]: {
+          ...queryObject,
+        },
+      },
+      include: [
+        {model: UserRoles, as: 'UserRoles'},
+      ]});
 
     return dbUsers.map((dbUser) => {
       return {
@@ -22,17 +46,29 @@ class UserService {
         first_name: dbUser.first_name,
         last_name: dbUser.last_name,
         phone: dbUser.phone,
+        id_card_series: dbUser.id_card_series,
+        id_card_number: dbUser.id_card_number,
+        id_card_issued_by: dbUser.id_card_issued_by,
+        userRoles: dbUser.UserRoles
       } as UserDto;
     });
   }
 
   async createUser(user: CreateUserDto) {
     const models = initModels(sequelize);
+    const userExisting = await this.getUserByEmail(user.email);
+
+    if(userExisting && userExisting.deleted){
+      await this.updateUser(userExisting);
+      return "Successfully created";
+    }
 
     user.password = await cryptPassword(user.password);
 
     try {
       const created = await models.User.create(user);
+      const userRole:CreateUserRoleDto = {role: user.role, user_id: created.user_id};
+      await this.addUserRoles(userRole);
       return "Successfully created";
     } catch (err) {
       log(err);
@@ -63,7 +99,10 @@ class UserService {
         'id_card_series','id_card_number','id_card_issued_by'],
       where: {
         user_id: user_id
-      }
+      },
+     include: [
+      {model: UserRoles, as: 'UserRoles'},
+    ]
     });
   }
 
@@ -168,10 +207,10 @@ class UserService {
     return userSeries;
   }
 
-  async addUserRoles(userRole: any) {
+  async addUserRoles(userRole: CreateUserRoleDto) {
     const models = initModels(sequelize);
 
-    await models.UserRoles.create(userRole);
+    return await models.UserRoles.create(userRole);
   }
 
   async changeUserPassword({email, newPassword}: any) {
@@ -186,6 +225,20 @@ class UserService {
     user.password = await cryptPassword(newPassword);
 
     await user.save();
+  }
+
+  async changeUserRole(userRole: UpdateUserRoleDto) {
+    const models = initModels(sequelize);
+
+    const userRoleExisting = await models.UserRoles.findOne({
+      where: {
+        user_role_id: userRole.user_role_id
+      }
+    });
+
+    userRoleExisting.role = userRole.role;
+
+    await userRoleExisting.save();
   }
 
   async createUserPartnerEmail(userPartnerEmail: CreateUserPartnerEmail) {
@@ -327,6 +380,7 @@ class UserService {
     existingUser.id_card_series = user.id_card_series;
     existingUser.id_card_number = user.id_card_number;
     existingUser.id_card_issued_by = user.id_card_issued_by;
+    existingUser.deleted = false;
 
     try {
       await existingUser.update(existingUser);
@@ -336,6 +390,21 @@ class UserService {
       return { code: 500, message: error.message };
     }
     return {code: 200, message: 'Utilizatorul a fost actualizat'};
+
+  }
+
+  async deleteUser(id: number) {
+    const existingUser = await this.getUser(id);
+    existingUser.deleted = true;
+
+    try {
+      await existingUser.update(existingUser);
+      await existingUser.save();
+    } catch (error) {
+      console.error(error);
+      return { code: 500, message: error.message };
+    }
+    return {code: 200, message: 'Utilizatorul a fost marcat sters.'};
 
   }
 }

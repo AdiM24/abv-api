@@ -18,6 +18,7 @@ class AuthService {
     const user = await models.User.findOne({
       where: {
         email: userLoginInfo.email,
+        deleted: false
       }
     })
 
