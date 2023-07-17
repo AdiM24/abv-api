@@ -58,9 +58,8 @@ class UserService {
     const models = initModels(sequelize);
     const userExisting = await this.getUserByEmail(user.email);
 
-    if(userExisting && userExisting.deleted){
-      await this.updateUser(userExisting);
-      return "Successfully created";
+    if(userExisting && userExisting.deleted) {
+      return await this.reactivateDeletedUser(userExisting, user);
     }
 
     user.password = await cryptPassword(user.password);
@@ -73,6 +72,22 @@ class UserService {
     } catch (err) {
       log(err);
     }
+  }
+
+  private async reactivateDeletedUser(userExisting: User, user: CreateUserDto) {
+    userExisting.email = user.email;
+    userExisting.first_name = user.first_name;
+    userExisting.last_name = user.last_name;
+    userExisting.phone = user.phone;
+    userExisting.id_card_series = user.id_card_series;
+    userExisting.id_card_number = user.id_card_number;
+    userExisting.id_card_issued_by = user.id_card_issued_by;
+    await this.updateUser(userExisting);
+    await this.changeUserPassword({ email: user.email, newPassword: user.password });
+    if (userExisting.UserRoles && userExisting.UserRoles.length == 1) {
+      await this.changeUserRole({ user_role_id: userExisting.UserRoles[0].user_role_id, role: user.role });
+    }
+    return "Successfully created";
   }
 
   async createUsers(users: CreateUserDto[]) {
@@ -113,6 +128,9 @@ class UserService {
       where: {
         email: email,
       },
+      include: [
+        {model: UserRoles, as: 'UserRoles'}
+      ],
     });
   }
 
