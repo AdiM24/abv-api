@@ -4,12 +4,13 @@ import UserService from "../services/user.service";
 import {CustomRequest} from "../middleware/auth.middleware";
 import EmailService from "../services/email.service";
 import UserPartnerMappingService from "../services/user-partner-mapping.service";
+import { ResponseError } from "../common/models/common.types";
 
 const log: debug.IDebugger = debug("app:users-controller");
 
 class UsersController {
   async getUsers(req: express.Request, res: express.Response) {
-    const users = await UserService.getAll();
+    const users = await UserService.getAll(req.query);
 
     res.status(200).send(users);
   }
@@ -106,6 +107,44 @@ class UsersController {
     const result = await UserService.updateUser(req.body);
 
     return res.status(result.code).send(result);
+  }
+
+  async addRole(req: express.Request, res: express.Response) {
+    await UserService.addUserRoles(req.body);
+
+    return res.status(200).send({ message: "success" });
+  }
+
+  async changeRole(req: express.Request, res: express.Response) {
+    await UserService.changeUserRole(req.body);
+
+    return res.status(200).send({ message: "success" });
+  }
+
+
+  async getUser(req: express.Request, res: express.Response) {
+    const userId = Number(req.params.id);
+
+    if (!userId) {
+      res.send({
+        errorCode: 400,
+        message: "User could not be found"
+      } as ResponseError);
+    }
+
+    const user = await UserService.getUser(userId);
+
+    return res.status(200).send(user);
+  }
+
+  async updateUser(req: CustomRequest, res: express.Response) {
+    const result = await UserService.updateUser(req.body);
+    return res.status(200).send(result);
+  }
+
+  async deleteUser(req: CustomRequest, res: express.Response) {
+    const result = await UserService.deleteUser(Number(req.params.id));
+    return res.status(200).send(result);
   }
 }
 
