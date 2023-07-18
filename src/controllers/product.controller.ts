@@ -67,6 +67,10 @@ class ProductController {
 
     return result ? res.status(200).send(result) : res.status(400).send(result);
   }
+
+  async getNc8CodeAutocompleteOptions(req: express.Request, res: express.Response) {
+      res.status(200).send(await ProductService.getNc8CodeAutocompleteOptions(req.query?.searchKey.toString()))
+  }
 }
 
 export default new ProductController();

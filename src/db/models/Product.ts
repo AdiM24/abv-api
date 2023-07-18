@@ -1,6 +1,7 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { InvoiceProduct, InvoiceProductId } from './InvoiceProduct';
+import { Nc8Code, NC8CodeId } from "./Nc8Code";
 
 export interface ProductAttributes {
   product_id: number;
@@ -13,11 +14,12 @@ export interface ProductAttributes {
   unit_of_measure?: string;
   material?: string;
   type?: "service" | "goods";
+  nc8_code_id?: number;
 }
 
 export type ProductPk = "product_id";
 export type ProductId = Product[ProductPk];
-export type ProductOptionalAttributes = "product_id" | "quantity" | "purchase_price" | "vat" | "created_at_utc" | "modified_at_utc" | "unit_of_measure" | "material" | "type";
+export type ProductOptionalAttributes = "product_id" | "quantity" | "purchase_price" | "vat" | "created_at_utc" | "modified_at_utc" | "unit_of_measure" | "material" | "type" | "nc8_code_id";
 export type ProductCreationAttributes = Optional<ProductAttributes, ProductOptionalAttributes>;
 
 export class Product extends Model<ProductAttributes, ProductCreationAttributes> implements ProductAttributes {
@@ -31,6 +33,7 @@ export class Product extends Model<ProductAttributes, ProductCreationAttributes>
   unit_of_measure?: string;
   material?: string;
   type?: "service" | "goods";
+  nc8_code_id?: number;
 
   // Product hasMany InvoiceProduct via product_id
   InvoiceProducts!: InvoiceProduct[];
@@ -44,6 +47,9 @@ export class Product extends Model<ProductAttributes, ProductCreationAttributes>
   hasInvoiceProduct!: Sequelize.HasManyHasAssociationMixin<InvoiceProduct, InvoiceProductId>;
   hasInvoiceProducts!: Sequelize.HasManyHasAssociationsMixin<InvoiceProduct, InvoiceProductId>;
   countInvoiceProducts!: Sequelize.HasManyCountAssociationsMixin;
+  nc8Code?: Nc8Code;
+  getNc8Code?: Sequelize.BelongsToGetAssociationMixin<Nc8Code>;
+  setNc8Code?: Sequelize.BelongsToSetAssociationMixin<Nc8Code, NC8CodeId>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Product {
     return Product.init({
@@ -93,7 +99,11 @@ export class Product extends Model<ProductAttributes, ProductCreationAttributes>
     type: {
       type: DataTypes.ENUM("service","goods"),
       allowNull: true
-    }
+    },
+    nc8_code_id: {
+        type: DataTypes.NUMBER,
+        allowNull: true
+      }
   }, {
     sequelize,
     tableName: 'Product',

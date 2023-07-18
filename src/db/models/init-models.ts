@@ -47,6 +47,8 @@ import { UserRoles as _UserRoles } from "./UserRoles";
 import type { UserRolesAttributes, UserRolesCreationAttributes } from "./UserRoles";
 import { UserVehicle as _UserVehicle } from "./UserVehicle";
 import type { UserVehicleAttributes, UserVehicleCreationAttributes } from "./UserVehicle";
+import { Nc8Code as _Nc8Code } from "./Nc8Code";
+import type { Nc8CodeAttributes, Nc8CodeCreationAttributes } from "./Nc8Code";
 
 export {
   _Address as Address,
@@ -73,6 +75,7 @@ export {
   _UserPartnerMap as UserPartnerMap,
   _UserRoles as UserRoles,
   _UserVehicle as UserVehicle,
+  _Nc8Code as Nc8Code
 };
 
 export type {
@@ -124,6 +127,8 @@ export type {
   UserRolesCreationAttributes,
   UserVehicleAttributes,
   UserVehicleCreationAttributes,
+  Nc8CodeAttributes,
+  Nc8CodeCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -151,6 +156,7 @@ export function initModels(sequelize: Sequelize) {
   const UserPartnerMap = _UserPartnerMap.initModel(sequelize);
   const UserRoles = _UserRoles.initModel(sequelize);
   const UserVehicle = _UserVehicle.initModel(sequelize);
+  const Nc8Code = _Nc8Code.initModel(sequelize);
 
   Invoice.belongsTo(Address, { as: "drop_off_address", foreignKey: "drop_off_address_id"});
   Address.hasMany(Invoice, { as: "Invoices", foreignKey: "drop_off_address_id"});
@@ -230,6 +236,8 @@ export function initModels(sequelize: Sequelize) {
   User.hasMany(UserRoles, { as: "UserRoles", foreignKey: "user_id"});
   UserVehicle.belongsTo(User, { as: "user", foreignKey: "user_id"});
   User.hasMany(UserVehicle, { as: "UserVehicles", foreignKey: "user_id"});
+  Product.belongsTo(Nc8Code,{ as: "nc8Code", foreignKey: "nc8_code_id"});
+  Nc8Code.hasMany(Product, { as: "products", foreignKey: "nc8_code_id"});
 
   return {
     Address: Address,
@@ -256,5 +264,6 @@ export function initModels(sequelize: Sequelize) {
     UserPartnerMap: UserPartnerMap,
     UserRoles: UserRoles,
     UserVehicle: UserVehicle,
+    Nc8Code: Nc8Code,
   };
 }

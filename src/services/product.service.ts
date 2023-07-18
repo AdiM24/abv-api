@@ -4,6 +4,7 @@ import {Op} from "sequelize";
 import {getDateRangeQuery, getLikeQuery,} from "../common/utils/query-utils.service";
 import {CreateProductDto} from "../dtos/create.product.dto";
 import {UpdateProductDto} from "../dtos/update.product.dto";
+import { Nc8Code } from "../db/models/Nc8Code";
 
 class ProductService {
   async addProduct(productToAdd: CreateProductDto) {
@@ -42,7 +43,10 @@ class ProductService {
         [Op.not]: {
           type: 'service'
         }
-      }
+      },
+      include: [
+        {model: Nc8Code, as: 'nc8Code'},
+      ]
     });
 
     products.forEach((product: Product) => {
@@ -83,6 +87,9 @@ class ProductService {
         where: {
           product_id: id,
         },
+        include: [
+          {model: Nc8Code, as: 'nc8Code'},
+        ]
       })
     )?.get();
 
@@ -127,12 +134,18 @@ class ProductService {
     if (queryParams.product_name)
       queryObject.product_name = getLikeQuery(queryParams.product_name);
 
+    if (queryParams.nc8Code)
+      queryObject['$nc8Code.code$'] = getLikeQuery(queryParams.nc8Code);
+
     return await models.Product.findAll({
       where: {
         [Op.and]: {
           ...queryObject,
         },
       },
+      include: [
+        {model: Nc8Code, as: 'nc8Code'},
+      ],
     });
   }
 
@@ -223,6 +236,24 @@ class ProductService {
       console.error(err);
     }
 
+  }
+
+  async getNc8CodeAutocompleteOptions(searchKey: string) {
+    const models = initModels(sequelize);
+
+    let nc8Codes: Nc8Code[];
+
+    try {
+       nc8Codes = await models.Nc8Code.findAll({
+        where: {
+          code: getLikeQuery(searchKey)
+        }
+      })
+    } catch (err) {
+      console.error(err);
+    }
+
+    return nc8Codes;
   }
 }
 
