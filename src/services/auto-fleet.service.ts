@@ -71,6 +71,7 @@ class AutoFleetService {
     autoFleet.vignette_hu = autoFleet.vignette_hu || null;
     autoFleet.vignette_ro = autoFleet.vignette_ro || null;
     autoFleet.vignette_slo = autoFleet.vignette_slo || null;
+    autoFleet.max_weight_in_tons = autoFleet.max_weight_in_tons || 0;
 
     return autoFleet;
   }
