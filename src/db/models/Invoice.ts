@@ -145,12 +145,12 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
     deadline_at_utc: {
       type: DataTypes.DATEONLY,
       allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     },
     created_at_utc: {
       type: DataTypes.DATEONLY,
       allowNull: true,
-      defaultValue: Sequelize.Sequelize.literal('(now() AT TIME ZONE utc')
+      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
     },
     status: {
       type: DataTypes.ENUM("paid","overdue","incomplete payment","unpaid"),
