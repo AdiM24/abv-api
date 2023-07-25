@@ -408,14 +408,13 @@ class InvoiceService {
       existingInvoice.buyer_id = invoiceUpdate.buyer_id;
     }
 
-    existingInvoice.created_at_utc = new Date(invoiceUpdate.created_at_utc).toUTCString();
     existingInvoice.deadline_at_utc = invoiceUpdate.deadline_at_utc ? new Date(invoiceUpdate.deadline_at_utc).toUTCString() : null;
     existingInvoice.series = invoiceUpdate.series;
     existingInvoice.number = Number(invoiceUpdate.number);
     existingInvoice.status = invoiceUpdate.status;
     existingInvoice.sent_status = invoiceUpdate.sent_status;
-    existingInvoice.drop_off_address_id = Number(invoiceUpdate.drop_off_address_id);
-    existingInvoice.pickup_address_id = Number(invoiceUpdate.pickup_address_id);
+    existingInvoice.drop_off_address_id = invoiceUpdate.drop_off_address_id ? Number(invoiceUpdate.drop_off_address_id) : undefined;
+    existingInvoice.pickup_address_id = invoiceUpdate.pickup_address_id ? Number(invoiceUpdate.pickup_address_id) : undefined;
     existingInvoice.driver_info = invoiceUpdate.driver_info;
     existingInvoice.car_reg_number = invoiceUpdate.car_reg_number;
 
