@@ -32,6 +32,12 @@ class PartnerController {
     res.status(200).send(partners);
   }
 
+  async getUserPartners(req: CustomRequest, res: express.Response) {
+    const userPartners = await PartnerService.getUserPartners(req.token);
+
+    res.status(200).send(userPartners);
+  }
+
   async getPartner(req: express.Request, res: express.Response) {
     const partnerId = Number(req.params.id);
 

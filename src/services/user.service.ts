@@ -4,8 +4,8 @@ import {
   Partner,
   User,
   UserInvoiceSeries,
-  UserInvoiceSeriesAttributes,
-  UserRoles
+  UserInvoiceSeriesAttributes, UserPartnerMap,
+  UserRoles, UserVehicle
 } from "../db/models/init-models";
 import {CreateUserDto} from "../dtos/create.user.dto";
 import {cryptPassword, encryptPassword} from "../common/encryption";
@@ -16,6 +16,8 @@ import { CreateUserRoleDto } from "../dtos/create.user.role.dto";
 import { UpdateUserRoleDto } from "../dtos/update.user.role.dto";
 import { getLikeQuery } from "../common/utils/query-utils.service";
 import { Op } from "sequelize";
+import {CreateUserPartnerDto} from "../dtos/create.user-partner.dto";
+import {CreateUserVehicleDto} from "../dtos/create.user-vehicle.dto";
 
 const log: debug.IDebugger = debug("app:users-controller");
 
@@ -67,7 +69,13 @@ class UserService {
     try {
       const created = await models.User.create(user);
       const userRole:CreateUserRoleDto = {role: user.role, user_id: created.user_id};
+      const userPartner: CreateUserPartnerDto = {user_id: created.user_id, partner_id: Number(user.partner.partner_id)};
+      const userVehicle: CreateUserVehicleDto = {user_id: created.user_id, vehicle_id: Number(user.vehicle.auto_fleet_id)};
+
       await this.addUserRoles(userRole);
+      await models.UserPartnerMap.create(userPartner);
+      await models.UserVehicle.create(userVehicle);
+
       return "Successfully created";
     } catch (err) {
       log(err);

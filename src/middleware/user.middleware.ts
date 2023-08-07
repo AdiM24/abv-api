@@ -12,7 +12,7 @@ class UsersMiddleware {
         const user = await UserService.getUserByEmail(req.body.email);
 
         if (user && !user.deleted) {
-            res.status(400).send({error: `User email already exists`});
+            res.status(400).send({error: `Exista deja un utilizator cu adresa de e-mail introdusa.`});
         } else {
             next();
         }

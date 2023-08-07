@@ -17,6 +17,10 @@ export class PartnerRoutes extends CommonRoutesConfig {
       .put(AuthMiddleware.auth, PartnerMiddleware.validatePartnerUpdate, PartnerController.updatePartner);
 
     this.app
+      .route("/api/partners/user")
+      .get(AuthMiddleware.auth, PartnerController.getUserPartners);
+
+    this.app
       .route("/api/partners/comments")
       .get(AuthMiddleware.auth, PartnerController.getPartnerComments)
       .post(AuthMiddleware.auth, PartnerMiddleware.validateUserPartner, PartnerController.addPartnerComment)

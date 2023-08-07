@@ -1,4 +1,6 @@
 import { Roles } from "../common/enums/roles";
+import {Partner} from "../db/models/Partner";
+import {AutoFleet} from "../db/models/AutoFleet";
 
 export interface CreateUserDto {
     email: string;
@@ -10,4 +12,7 @@ export interface CreateUserDto {
     id_card_number?: string;
     id_card_issued_by?: string;
     role: Roles;
+    partner: Partner;
+    vehicle: AutoFleet;
 }
+

@@ -155,7 +155,7 @@ class AutoFleetService {
     })).map((userPartner) => userPartner.partner_id);
 
     const autoFleetOptions = await models.AutoFleet.findAll({
-      attributes: ['reg_no'],
+      attributes: ['reg_no', 'auto_fleet_id'],
       where: {
         partner_id: userPartnerIds
       }

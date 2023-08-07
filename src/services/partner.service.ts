@@ -203,6 +203,25 @@ class PartnerService {
     return partner;
   }
 
+  async getUserPartners(decodedToken: any){
+    const models = initModels(sequelize);
+
+    const userPartnerIds = (await models.UserPartnerMap.findAll({
+      attributes: ['partner_id'],
+       where: {
+         user_id: Number(decodedToken?._id)
+       }
+    })).map((userPartners) => userPartners.partner_id);
+
+    const userPartners = await models.Partner.findAll({
+      where: {
+        partner_id: userPartnerIds
+      }
+    });
+
+    return userPartners;
+  }
+
   // Addresses
   async getPartnerAddress(address_id: number) {
     const models = initModels(sequelize);
