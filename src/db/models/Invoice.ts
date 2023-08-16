@@ -53,7 +53,8 @@ export type InvoiceOptionalAttributes =
   | "currency"
   | "total_paid_price"
   | "order_reference_id"
-  | "notice_status";
+  | "notice_status"
+  | "driver_name";
 export type InvoiceCreationAttributes = Optional<InvoiceAttributes, InvoiceOptionalAttributes>;
 
 export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes> implements InvoiceAttributes {
