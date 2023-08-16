@@ -34,7 +34,8 @@ export class  User extends Model<UserAttributes, UserCreationAttributes> impleme
   id_card_series?: string;
   id_card_number?: string;
   id_card_issued_by?: string;
-  UserRoles?: any
+  UserRoles?: any;
+  vehicle?: any;
   deleted?: boolean;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof User {

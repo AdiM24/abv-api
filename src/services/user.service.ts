@@ -1,5 +1,6 @@
 import {sequelize} from "../db/sequelize";
 import {
+  AutoFleet,
   initModels,
   Partner,
   User,
@@ -12,10 +13,10 @@ import {cryptPassword, encryptPassword} from "../common/encryption";
 import debug from "debug";
 import {CreateUserPartnerEmail, UserDto} from "../dtos/user.dto";
 import {CreateUserInvoiceSeriesDto} from "../dtos/create.user-invoice-series.dto";
-import { CreateUserRoleDto } from "../dtos/create.user.role.dto";
-import { UpdateUserRoleDto } from "../dtos/update.user.role.dto";
-import { getLikeQuery } from "../common/utils/query-utils.service";
-import { Op } from "sequelize";
+import {CreateUserRoleDto} from "../dtos/create.user.role.dto";
+import {UpdateUserRoleDto} from "../dtos/update.user.role.dto";
+import {getLikeQuery} from "../common/utils/query-utils.service";
+import {Op, where} from "sequelize";
 import {CreateUserPartnerDto} from "../dtos/create.user-partner.dto";
 import {CreateUserVehicleDto} from "../dtos/create.user-vehicle.dto";
 
@@ -24,7 +25,7 @@ const log: debug.IDebugger = debug("app:users-controller");
 class UserService {
   async getAll(queryParams: any) {
     const models = initModels(sequelize);
-    const queryObject = {deleted:false} as any;
+    const queryObject = {deleted: false} as any;
 
     if (queryParams.email) {
       queryObject.email = getLikeQuery(queryParams.email);
@@ -38,7 +39,8 @@ class UserService {
       },
       include: [
         {model: UserRoles, as: 'UserRoles'},
-      ]});
+      ]
+    });
 
     return dbUsers.map((dbUser) => {
       return {
@@ -60,7 +62,7 @@ class UserService {
     const models = initModels(sequelize);
     const userExisting = await this.getUserByEmail(user.email);
 
-    if(userExisting && userExisting.deleted) {
+    if (userExisting && userExisting.deleted) {
       return await this.reactivateDeletedUser(userExisting, user);
     }
 
@@ -68,9 +70,12 @@ class UserService {
 
     try {
       const created = await models.User.create(user);
-      const userRole:CreateUserRoleDto = {role: user.role, user_id: created.user_id};
+      const userRole: CreateUserRoleDto = {role: user.role, user_id: created.user_id};
       const userPartner: CreateUserPartnerDto = {user_id: created.user_id, partner_id: Number(user.partner.partner_id)};
-      const userVehicle: CreateUserVehicleDto = {user_id: created.user_id, vehicle_id: Number(user.vehicle.auto_fleet_id)};
+      const userVehicle: CreateUserVehicleDto = {
+        user_id: created.user_id,
+        vehicle_id: Number(user.vehicle.auto_fleet_id)
+      };
 
       await this.addUserRoles(userRole);
       await models.UserPartnerMap.create(userPartner);
@@ -80,22 +85,6 @@ class UserService {
     } catch (err) {
       log(err);
     }
-  }
-
-  private async reactivateDeletedUser(userExisting: User, user: CreateUserDto) {
-    userExisting.email = user.email;
-    userExisting.first_name = user.first_name;
-    userExisting.last_name = user.last_name;
-    userExisting.phone = user.phone;
-    userExisting.id_card_series = user.id_card_series;
-    userExisting.id_card_number = user.id_card_number;
-    userExisting.id_card_issued_by = user.id_card_issued_by;
-    await this.updateUser(userExisting);
-    await this.changeUserPassword({ email: user.email, newPassword: user.password });
-    if (userExisting.UserRoles && userExisting.UserRoles.length == 1) {
-      await this.changeUserRole({ user_role_id: userExisting.UserRoles[0].user_role_id, role: user.role });
-    }
-    return "Successfully created";
   }
 
   async createUsers(users: CreateUserDto[]) {
@@ -118,14 +107,15 @@ class UserService {
     const models = initModels(sequelize);
 
     return await models.User.findOne({
-      attributes: ["user_id",'email','first_name', 'last_name','phone',
-        'id_card_series','id_card_number','id_card_issued_by'],
+      attributes: ["user_id", 'email', 'first_name', 'last_name', 'phone',
+        'id_card_series', 'id_card_number', 'id_card_issued_by'],
       where: {
         user_id: user_id
       },
-     include: [
-      {model: UserRoles, as: 'UserRoles'},
-    ]
+      include: [
+        {model: UserRoles, as: 'UserRoles'},
+        {model: UserVehicle, as: 'UserVehicles', include: [{model: AutoFleet, as: 'vehicle'}]},
+      ]
     });
   }
 
@@ -393,9 +383,11 @@ class UserService {
   }
 
   async updateUser(user: User) {
+    const models = initModels(sequelize);
     const existingUser = await this.getUser(user.user_id);
     const userByEmail = await this.getUserByEmail(user.email);
-    if(userByEmail && userByEmail.user_id != user.user_id){
+
+    if (userByEmail && userByEmail.user_id != user.user_id) {
       return {code: 400, message: 'Mai exista deja alt utilizator cu aceeasi adresa de e-mail'};
     }
 
@@ -409,11 +401,20 @@ class UserService {
     existingUser.deleted = false;
 
     try {
+      await models.UserVehicle.update(
+        {vehicle_id: Number(user.vehicle.auto_fleet_id)},
+        {
+          where: {
+            user_id: Number(user.user_id)
+          }
+        }
+      )
+
       await existingUser.update(existingUser);
       await existingUser.save();
     } catch (error) {
       console.error(error);
-      return { code: 500, message: error.message };
+      return {code: 500, message: error.message};
     }
     return {code: 200, message: 'Utilizatorul a fost actualizat'};
 
@@ -428,10 +429,26 @@ class UserService {
       await existingUser.save();
     } catch (error) {
       console.error(error);
-      return { code: 500, message: error.message };
+      return {code: 500, message: error.message};
     }
     return {code: 200, message: 'Utilizatorul a fost marcat sters.'};
 
+  }
+
+  private async reactivateDeletedUser(userExisting: User, user: CreateUserDto) {
+    userExisting.email = user.email;
+    userExisting.first_name = user.first_name;
+    userExisting.last_name = user.last_name;
+    userExisting.phone = user.phone;
+    userExisting.id_card_series = user.id_card_series;
+    userExisting.id_card_number = user.id_card_number;
+    userExisting.id_card_issued_by = user.id_card_issued_by;
+    await this.updateUser(userExisting);
+    await this.changeUserPassword({email: user.email, newPassword: user.password});
+    if (userExisting.UserRoles && userExisting.UserRoles.length == 1) {
+      await this.changeUserRole({user_role_id: userExisting.UserRoles[0].user_role_id, role: user.role});
+    }
+    return "Successfully created";
   }
 }
 
