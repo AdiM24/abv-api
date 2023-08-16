@@ -211,6 +211,7 @@ class InvoiceService {
         notice.number = await this.findNextSeriesNumber(notice.series, notice.type);
         notice.status = noticeToAdd.status;
         notice.deadline_at_utc = null;
+        notice.driver_name = token.name;
 
         const createdNotice = await models.Invoice.create(notice, {transaction, returning: true});
         const product = await models.Product.findOne({where: {product_id: Number(noticeToAdd.product_id)}});
@@ -256,6 +257,7 @@ class InvoiceService {
 
     try {
       createdInvoice = await models.Invoice.create(invoiceToAdd);
+console.log(createdInvoice);
     } catch (err) {
       console.error(err);
     }
