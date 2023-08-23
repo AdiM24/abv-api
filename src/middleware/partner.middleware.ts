@@ -30,7 +30,8 @@ class PartnerMiddleware {
   };
 
   validatePartnerAlreadyExists = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const tin = req.body?.unique_identification_number;
+    const vatPayer = req.body?.vat_payer;
+    const tin = vatPayer && !req.body?.unique_identification_number.includes("RO") ? `RO${req.body?.unique_identification_number}` : req.body?.unique_identification_number;
 
     const partner = await PartnerService.getPartnerByTin(tin);
 
