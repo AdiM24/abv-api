@@ -5,6 +5,7 @@ import {CustomRequest} from "./auth.middleware";
 import UserPartnerMappingService from "../services/user-partner-mapping.service";
 import {UserPartnerMap} from "../db/models/init-models";
 import UserService from "../services/user.service";
+import {Roles} from "../common/enums/roles";
 
 class OrderMiddleware {
   validateOrderCreationDate = async (
@@ -112,6 +113,10 @@ class OrderMiddleware {
 
     if (!existingOrder) {
       return res.status(404).send({code: 404, message: 'Comanda nu a fost gasita'});
+    }
+
+    if (Number((req.token as any).role) === Roles.Administrator) {
+      return next();
     }
 
     if (Number(existingOrder.user_id) !== Number((req.token as any)._id)) {
