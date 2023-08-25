@@ -257,7 +257,6 @@ class InvoiceService {
 
     try {
       createdInvoice = await models.Invoice.create(invoiceToAdd);
-console.log(createdInvoice);
     } catch (err) {
       console.error(err);
     }
@@ -268,8 +267,9 @@ console.log(createdInvoice);
   async addInvoice(invoiceToAdd: CreateInvoiceDto, decodedJwt: any = undefined) {
     const models = initModels(sequelize);
 
+    invoiceToAdd.user_id = Number(decodedJwt._id);
+
     if (invoiceToAdd.type === 'issued') {
-      invoiceToAdd.user_id = Number(decodedJwt._id);
       invoiceToAdd.number = await this.findNextSeriesNumber(invoiceToAdd.series, invoiceToAdd.type);
     }
 
@@ -283,7 +283,6 @@ console.log(createdInvoice);
       invoiceToAdd.car_reg_number = invoiceToAdd.car_reg_number.replace(/ /g, '').toUpperCase();
       invoiceToAdd.driver_name = decodedJwt.name;
       invoiceToAdd.created_at_utc = new Date(Date.now()).toLocaleDateString('ro-RO');
-      invoiceToAdd.user_id = Number(decodedJwt._id);
     }
 
     const createdInvoice = await this.createInvoice(invoiceToAdd, models);
