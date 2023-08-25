@@ -148,7 +148,7 @@ class InvoiceMiddleware {
     }
 
     if (req.body.type === 'received') {
-      const existingUserPartner = userPartnerMappings.find((userPartner: UserPartnerMap) => userPartner.partner_id === req.body.buyer_id);
+      const existingUserPartner = userPartnerMappings.find((userPartner: UserPartnerMap) => Number(userPartner.partner_id) === Number(req.body.buyer_id));
 
       if (!existingUserPartner) {
         return res.status(404).send({code: 404, message: 'Firma nu este asociata acestui utilizator.'});
