@@ -3,6 +3,7 @@ import {Employee, initModels, Partner, TimesheetEntry, UserPartnerMap} from "../
 import PartnerService from "./partner.service";
 import { addOrUpdate } from "./utils.service";
 import UserPartnerMappingService from "./user-partner-mapping.service";
+import { TimesheetEntryAddDto } from "../dtos/timesheet.dto";
 
 class TimesheetService {
   async getTimesheetEntries() {

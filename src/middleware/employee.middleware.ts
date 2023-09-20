@@ -1,6 +1,7 @@
 import express, {NextFunction} from "express";
 import EmployeeService from "../services/employee.service";
 import {EmployeeAttributes} from "../db/models/Employee";
+import { EmployeeAddDto } from "../dtos/employee.dto";
 
 class EmployeeMiddleware {
   async validateEmployeeDoesNotExist(req: express.Request, res: express.Response, next: NextFunction) {

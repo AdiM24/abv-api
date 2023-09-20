@@ -2,6 +2,7 @@ import express from "express";
 import { decode } from "jsonwebtoken";
 import { CustomRequest } from "../middleware/auth.middleware";
 import TimesheetService from "../services/timesheet.service";
+import { TimesheetEntryAddDto } from "../dtos/timesheet.dto";
 
 class TimesheetController {
   async getTimesheetEntries(req: express.Request, res: express.Response) {

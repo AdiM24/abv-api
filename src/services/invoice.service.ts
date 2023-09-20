@@ -164,7 +164,6 @@ class InvoiceService {
 
         const dropOffAddress = noticeToAdd.drop_off_address;
         const pickupAddress = noticeToAdd.pickup_address;
-
         const [dropOff, dropOffCreated] = await models.Address.findOrCreate({
           where: {
             nickname: dropOffAddress.nickname
@@ -212,6 +211,7 @@ class InvoiceService {
         notice.status = noticeToAdd.status;
         notice.deadline_at_utc = null;
         notice.driver_name = token.name;
+        notice.observation = noticeToAdd.observation;
 
         const createdNotice = await models.Invoice.create(notice, {transaction, returning: true});
         const product = await models.Product.findOne({where: {product_id: Number(noticeToAdd.product_id)}});
@@ -221,7 +221,7 @@ class InvoiceService {
           product_id: product.product_id,
           quantity: parseFloat(Number(noticeToAdd.quantity).toFixed(2)),
           selling_price: parseFloat(Number(product.purchase_price).toFixed(2)),
-          sold_at_utc: new Date(Date.now()).toLocaleString(),
+          sold_at_utc:  new Date(Date.now()).toLocaleString(),
           unit_of_measure: noticeToAdd.unit_of_measure
         }
 
@@ -418,6 +418,7 @@ class InvoiceService {
     existingInvoice.pickup_address_id = invoiceUpdate.pickup_address_id ? Number(invoiceUpdate.pickup_address_id) : undefined;
     existingInvoice.driver_info = invoiceUpdate.driver_info;
     existingInvoice.car_reg_number = invoiceUpdate.car_reg_number;
+    existingInvoice.observation = invoiceUpdate.observation;
 
     if (existingInvoice.type === 'order') {
       if (invoiceUpdate.currency === 'RON') {

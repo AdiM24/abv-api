@@ -1,4 +1,4 @@
-interface EmployeeAddDto {
+export interface EmployeeAddDto {
   partner_id?: number;
   first_name: string;
   last_name?: string;
