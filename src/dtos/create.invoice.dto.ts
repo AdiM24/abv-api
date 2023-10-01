@@ -21,4 +21,5 @@ export interface CreateInvoiceDto {
   total_price?: number;
   total_price_incl_vat?: number;
   user_id?: number;
+  observations?: string;
 }

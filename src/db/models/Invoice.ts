@@ -32,6 +32,7 @@ export interface InvoiceAttributes {
   notice_status: "Complet" | "Incomplet";
   e_transport_generated: boolean;
   driver_name: string;
+  observation: string;
 }
 
 export type InvoicePk = "invoice_id";
@@ -54,7 +55,8 @@ export type InvoiceOptionalAttributes =
   | "total_paid_price"
   | "order_reference_id"
   | "notice_status"
-  | "driver_name";
+  | "driver_name"
+  | "observation";
 export type InvoiceCreationAttributes = Optional<InvoiceAttributes, InvoiceOptionalAttributes>;
 
 export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes> implements InvoiceAttributes {
@@ -82,6 +84,7 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   notice_status!: "Complet" | "Incomplet";
   e_transport_generated!: boolean;
   driver_name: string;
+  observation: string;
 
   // Invoice belongsTo Address via drop_off_address_id
   drop_off_address!: Address;
@@ -269,7 +272,12 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false
-      }
+      },
+      observation:{
+        type: DataTypes.STRING,
+        allowNull: true
+
+      },
     }, {
       sequelize,
       tableName: 'Invoice',
