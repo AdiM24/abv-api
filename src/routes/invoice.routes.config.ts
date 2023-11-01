@@ -1,4 +1,4 @@
-import {CommonRoutesConfig} from "../common/common.routes.config";
+import { CommonRoutesConfig } from "../common/common.routes.config";
 import express from "express";
 import InvoiceController from "../controllers/invoice.controller";
 import InvoiceMiddleware from "../middleware/invoice.middleware";
@@ -59,6 +59,10 @@ export class InvoiceRoutes extends CommonRoutesConfig {
     this.app
       .route("/api/invoices/series")
       .post(AuthMiddleware.auth, InvoiceController.findNextNumberForSeries);
+
+    this.app
+      .route("/api/invoices/send/:id")
+      .put(InvoiceController.sendInvoice)
 
     return this.app;
   }

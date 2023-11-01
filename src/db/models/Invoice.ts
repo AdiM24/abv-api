@@ -33,6 +33,8 @@ export interface InvoiceAttributes {
   e_transport_generated: boolean;
   driver_name: string;
   observation: string;
+  index_incarcare_anaf: string;
+  status_incarcare_anaf: boolean;
 }
 
 export type InvoicePk = "invoice_id";
@@ -56,7 +58,9 @@ export type InvoiceOptionalAttributes =
   | "order_reference_id"
   | "notice_status"
   | "driver_name"
-  | "observation";
+  | "observation"
+  | "index_incarcare_anaf"
+  | "status_incarcare_anaf";
 export type InvoiceCreationAttributes = Optional<InvoiceAttributes, InvoiceOptionalAttributes>;
 
 export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes> implements InvoiceAttributes {
@@ -85,6 +89,8 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   e_transport_generated!: boolean;
   driver_name: string;
   observation: string;
+  index_incarcare_anaf: string;
+  status_incarcare_anaf: boolean;
 
   // Invoice belongsTo Address via drop_off_address_id
   drop_off_address!: Address;
@@ -278,6 +284,15 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
         allowNull: true
 
       },
+      index_incarcare_anaf: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      status_incarcare_anaf: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      }
     }, {
       sequelize,
       tableName: 'Invoice',

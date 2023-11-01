@@ -1,4 +1,4 @@
-import {sequelize} from "../db/sequelize";
+import { sequelize } from "../db/sequelize";
 import {
   Address,
   BankAccount,
@@ -8,22 +8,24 @@ import {
   InvoiceProduct,
   Order,
   Partner,
+  PartnerAttributes,
   Product,
   UserInvoiceSeries,
   UserPartnerMap
 } from "../db/models/init-models";
-import {CreateInvoiceDto} from "../dtos/create.invoice.dto";
+import { CreateInvoiceDto } from "../dtos/create.invoice.dto";
 import {
   CreateInvoiceProductDto,
   InvoiceProductInformation,
   UpdateInvoiceProduct
 } from "../dtos/create.invoice-product.dto";
-import {Includeable, Op, Transaction, WhereOptions} from "sequelize";
-import {getDateRangeQuery, getInQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
+import { Includeable, Op, Transaction, WhereOptions } from "sequelize";
+import { getDateRangeQuery, getInQuery, getLikeQuery, getStrictQuery } from "../common/utils/query-utils.service";
 import UserService from "./user.service";
 import UserPartnerMappingService from "./user-partner-mapping.service";
-import {Roles} from "../common/enums/roles";
-import {calculatePercentage} from "./utils.service";
+import { Roles } from "../common/enums/roles";
+import { calculatePercentage } from "./utils.service";
+import partnerService from './partner.service';
 
 class InvoiceService {
   async getInvoices(decodedJwt: any) {
@@ -38,10 +40,10 @@ class InvoiceService {
     return await models.Invoice.findAll({
       where: queryObject,
       include: [
-        {model: Partner, as: 'buyer'},
-        {model: Order, as: 'order_reference'},
-        {model: Address, as: 'pickup_address'},
-        {model: Address, as: 'drop_off_address'}
+        { model: Partner, as: 'buyer' },
+        { model: Order, as: 'order_reference' },
+        { model: Address, as: 'pickup_address' },
+        { model: Address, as: 'drop_off_address' }
       ],
       order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
@@ -101,9 +103,9 @@ class InvoiceService {
     }
 
     const relations: Includeable | Includeable[] = [
-      {model: Partner, as: 'buyer'},
-      {model: Partner, as: 'client'},
-      {model: Order, as: 'order_reference'},
+      { model: Partner, as: 'buyer' },
+      { model: Partner, as: 'client' },
+      { model: Order, as: 'order_reference' },
     ];
 
     if (queryParams.type === 'notice') {
@@ -213,15 +215,15 @@ class InvoiceService {
         notice.driver_name = token.name;
         notice.observation = noticeToAdd.observation;
 
-        const createdNotice = await models.Invoice.create(notice, {transaction, returning: true});
-        const product = await models.Product.findOne({where: {product_id: Number(noticeToAdd.product_id)}});
+        const createdNotice = await models.Invoice.create(notice, { transaction, returning: true });
+        const product = await models.Product.findOne({ where: { product_id: Number(noticeToAdd.product_id) } });
 
         const invoiceProduct: CreateInvoiceProductDto = {
           invoice_id: createdNotice.get('invoice_id'),
           product_id: product.product_id,
           quantity: parseFloat(Number(noticeToAdd.quantity).toFixed(2)),
           selling_price: parseFloat(Number(product.purchase_price).toFixed(2)),
-          sold_at_utc:  new Date(Date.now()).toLocaleString(),
+          sold_at_utc: new Date(Date.now()).toLocaleString(),
           unit_of_measure: noticeToAdd.unit_of_measure
         }
 
@@ -231,16 +233,16 @@ class InvoiceService {
 
         product.quantity = Number(product.quantity) - Number(noticeToAdd.quantity);
 
-        await product.save({transaction});
-        await models.InvoiceProduct.create(invoiceProduct, {transaction});
-        await createdNotice.save({transaction});
+        await product.save({ transaction });
+        await models.InvoiceProduct.create(invoiceProduct, { transaction });
+        await createdNotice.save({ transaction });
       });
     } catch (err) {
       console.error(err);
-      return {code: 500, message: err.message}
+      return { code: 500, message: err.message }
     }
 
-    return {code: 201, message: 'Avizul a fost creat'}
+    return { code: 201, message: 'Avizul a fost creat' }
   }
 
   // async updateNotice(noticeToUpdate: any, token: any) {
@@ -359,10 +361,10 @@ class InvoiceService {
           invoice_id: invoiceId
         },
         include: [
-          {model: Partner, as: "buyer", include: [{model: BankAccount, as: 'BankAccounts'}]},
-          {model: Partner, as: "client", include: [{model: BankAccount, as: 'BankAccounts'}]},
-          {model: Address, as: 'pickup_address'},
-          {model: Address, as: 'drop_off_address'}
+          { model: Partner, as: "buyer", include: [{ model: BankAccount, as: 'BankAccounts' }] },
+          { model: Partner, as: "client", include: [{ model: BankAccount, as: 'BankAccounts' }] },
+          { model: Address, as: 'pickup_address' },
+          { model: Address, as: 'drop_off_address' }
         ],
         order: [["created_at_utc", "DESC"]]
       }
@@ -374,7 +376,7 @@ class InvoiceService {
           invoice_id: invoiceId
         },
         include: [
-          {model: Product, as: "product"}
+          { model: Product, as: "product" }
         ]
       }
     );
@@ -391,7 +393,7 @@ class InvoiceService {
       productList.push(product)
     });
 
-    return {invoice, productList};
+    return { invoice, productList };
   }
 
   async updateInvoice(invoiceUpdate: any) {
@@ -437,10 +439,10 @@ class InvoiceService {
       await existingInvoice.save();
     } catch (err) {
       console.error(err);
-      return {errorCode: 400, message: err}
+      return { errorCode: 400, message: err }
     }
 
-    return {message: "Invoice update successful"}
+    return { message: "Invoice update successful" }
   }
 
   async addInvoiceProduct(productData: InvoiceProductInformation) {
@@ -484,7 +486,7 @@ class InvoiceService {
 
         default: {
           console.error(`Invalid invoice type, ${existingInvoice}`)
-          return {message: 'Invalid invoice type'}
+          return { message: 'Invalid invoice type' }
         }
       }
     } else {
@@ -507,7 +509,7 @@ class InvoiceService {
       await invoiceProduct.save();
       await existingProduct.save();
 
-      return {message: "Invoice product successfully updated"};
+      return { message: "Invoice product successfully updated" };
     } catch (error) {
       console.error(error);
     }
@@ -549,7 +551,7 @@ class InvoiceService {
     }
 
     if (existingProduct.type === 'service') {
-      return {message: "Invoice successfully updated"};
+      return { message: "Invoice successfully updated" };
     }
 
     if (existingInvoice.type === 'issued' || existingInvoice.type === 'notice') {
@@ -562,7 +564,7 @@ class InvoiceService {
 
     try {
       await existingProduct.save();
-      return {message: "Invoice and product successfully updated"}
+      return { message: "Invoice and product successfully updated" }
     } catch (error) {
       console.error(error);
     }
@@ -618,7 +620,7 @@ class InvoiceService {
       await existingInvoiceProduct.save();
       await existingInvoice.save();
 
-      return {code: 200, message: 'Update was successful'};
+      return { code: 200, message: 'Update was successful' };
     } catch (err) {
       console.error(err);
     }
@@ -697,9 +699,9 @@ class InvoiceService {
         await existingOrder.save();
       }
 
-      return {code: 200, message: `Invoice successfully deleted`}
+      return { code: 200, message: `Invoice successfully deleted` }
     } catch (err) {
-      return {code: 500, message: `Factura nu poate fi stearsa.`}
+      return { code: 500, message: `Factura nu poate fi stearsa.` }
     }
 
   }
@@ -721,6 +723,165 @@ class InvoiceService {
     }
 
     return latestInvoicesFromSeries[0];
+  }
+
+  async sendInvoice(invoiceId: any) {
+    const { invoice, productList } = await this.getInvoiceWithDetails(invoiceId);
+    const supplier = await partnerService.getPartner(invoice.client_id) as PartnerAttributes;
+    // Solution for the moment because only one ID exists
+    const customer = await partnerService.getPartner(1) as PartnerAttributes;
+
+    const invoiceLines = productList.map(product => {
+      return {
+        unitCode: "C62",
+        invoicedQuantity: product.quantity,
+        name: product.product_name,
+        classifiedTaxCategory: "S",
+        classifiedTaxPercent: product.vat,
+        priceAmount: product.purchase_price,
+        baseQuantity: product.quantity
+      }
+    });
+
+    const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050";
+
+    const sendInvoice = await fetch(`${microServiceUrl}/api/anaf/send-efactura`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      // Dynamic fields - it will work only if VAT are correct and CIF exists on anaf SPV
+      // body: JSON.stringify({
+      //   cif: supplier.unique_identification_number,
+      //   headers: {
+      //     invoiceId: invoice.invoice_id,
+      //     issueDate: invoice.created_at_utc,
+      //     dueDate: (invoice.deadline_at_utc ? invoice.deadline_at_utc : "2023-12-31"),
+      //     currencyCode: invoice.currency
+      //   },
+      //   supplierInfo: {
+      //     supplierName: supplier.name,
+      //     supplierStreet: "line1",
+      //     supplierCity: "SECTOR1",
+      //     supplierCountrySubentity: "RO-B",
+      //     supplierCountryCode: "RO",
+      //     supplierId: supplier.unique_identification_number,
+      //     supplierLegallyInfo: supplier.trade_register_registration_number
+      //   },
+      //   customerInfo: {
+      //     customerName: customer.name,
+      //     customerStreet: "street1",
+      //     customerCity: "SECTOR3",
+      //     customerCountrySubentity: "RO-AR",
+      //     customerCountryCode: "RO",
+      //     customerId: customer.unique_identification_number,
+      //     customerRegistrationName: customer.trade_register_registration_number
+      //   },
+      //   paymentMeans: {
+      //     paymentMeansCode: "31"
+      //   },
+      //   taxTotal: {
+      //     taxAmount: invoice.total_vat,
+      //     currency: invoice.currency,
+      //     taxSubtotal: {
+      //       taxableAmount: invoice.total_price,
+      //       subtotalTaxAmount: invoice.total_vat,
+      //       taxCategory: "S",
+      //       taxPercent: "19.00"
+      //     }
+      //   },
+      //   legalMonetaryTotal: {
+      //     lineExtensionAmount: invoice.total_price,
+      //     taxExclusiveAmount: invoice.total_price,
+      //     taxInclusiveAmount: invoice.total_price_incl_vat,
+      //     payableAmount: invoice.total_price_incl_vat
+      //   },
+      //   invoiceLines: invoiceLines
+      // })
+
+      // Testing purpose with correct data - dummy
+      body: JSON.stringify({
+        cif: "16912984",
+        headers: {
+          invoiceId: "6422451356",
+          issueDate: "2024-05-30",
+          dueDate: "2024-05-30",
+          notes: "some notes for invoice",
+          currencyCode: "RON"
+        },
+        supplierInfo: {
+          supplierName: "Seller SRL",
+          supplierStreet: "line1",
+          supplierCity: "SECTOR1",
+          supplierCountrySubentity: "RO-B",
+          supplierCountryCode: "RO",
+          supplierId: "RO42350206",
+          supplierLegallyInfo: "J40/12345/1998"
+        },
+        customerInfo: {
+          customerName: "Customer name",
+          customerStreet: "street1",
+          customerCity: "SECTOR3",
+          customerCountrySubentity: "RO-AR",
+          customerCountryCode: "RO",
+          customerId: "RO42350206",
+          customerRegistrationName: "Customer SRL"
+        },
+        paymentMeans: {
+          paymentMeansCode: "31"
+        },
+        taxTotal: {
+          taxAmount: "5.14",
+          currency: "RON",
+          taxSubtotal: {
+            taxableAmount: "27.00",
+            subtotalTaxAmount: "5.14",
+            taxCategory: "S",
+            taxPercent: "19.00"
+          }
+        },
+        legalMonetaryTotal: {
+          lineExtensionAmount: "27.00",
+          taxExclusiveAmount: "27.00",
+          taxInclusiveAmount: "32.14",
+          payableAmount: "32.14"
+        },
+        invoiceLines: [
+          {
+            unitCode: "C62",
+            invoicedQuantity: "35.00",
+            lineExtensionAmount: "13.50",
+            name: "item1",
+            classifiedTaxCategory: "S",
+            classifiedTaxPercent: "19.00",
+            priceAmount: "0.3857",
+            baseQuantity: "1"
+          },
+          {
+            unitCode: "C62",
+            invoicedQuantity: "20.00",
+            lineExtensionAmount: "13.50",
+            name: "item2",
+            sellersItemIdentification: "0520",
+            classifiedTaxCategory: "S",
+            classifiedTaxPercent: "19.00",
+            priceAmount: "0.3857",
+            baseQuantity: "1"
+          }
+        ]
+      })
+    });
+
+    const anafResponse = await sendInvoice.json();
+    try {
+      invoice.index_incarcare_anaf = anafResponse.indexIncarcare;
+      invoice.status_incarcare_anaf = true;
+      await invoice.save();
+    } catch (err) {
+      console.log(err);
+    }
+
+    return anafResponse;
   }
 }
 
