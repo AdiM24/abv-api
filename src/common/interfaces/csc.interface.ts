@@ -6,5 +6,5 @@ export interface ICountry extends Document {
     emoji: string;
 }
 
-export interface ICounty extends ICountry {}
-export interface ICity extends ICounty {}
+export type ICounty = ICountry
+export type ICity = ICounty
