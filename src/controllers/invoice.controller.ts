@@ -78,11 +78,7 @@ class InvoiceController {
   }
 
   async sendInvoice(req: express.Request, res: express.Response) {
-    const result = await InvoiceService.sendInvoice(
-      req.params?.id,
-      req.body?.classifiedTaxCategory,
-      req.body?.taxPercent
-    );
+    const result = await InvoiceService.sendInvoice(req.params?.id);
 
     res.send(result).status(201);
   }

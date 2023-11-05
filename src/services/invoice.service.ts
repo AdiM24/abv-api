@@ -727,7 +727,7 @@ class InvoiceService {
     return latestInvoicesFromSeries[0];
   }
 
-  async sendInvoice(invoiceId: string, classifiedTaxCategory: string, taxPercent: string) {
+  async sendInvoice(invoiceId: string) {
     try {
       const { invoice, productList } = await this.getInvoiceWithDetails(Number(invoiceId));
 
@@ -737,6 +737,8 @@ class InvoiceService {
 
       const supplier = await partnerService.getPartner(invoice.client_id) as PartnerAttributes;
       const customer = await partnerService.getPartner(invoice.buyer_id) as PartnerAttributes;
+      const taxPercent = customer.vat_payer === true ? "19" : "0";
+      const classifiedTaxCategory = "S"
       const generatedInvoice = await generateInvoice(productList, invoice, supplier, customer, classifiedTaxCategory, taxPercent);
 
       const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050";
