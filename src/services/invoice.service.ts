@@ -25,7 +25,9 @@ import UserService from "./user.service";
 import UserPartnerMappingService from "./user-partner-mapping.service";
 import { Roles } from "../common/enums/roles";
 import { calculatePercentage } from "./utils.service";
-import partnerService from './partner.service';
+import partnerService from "./partner.service";
+import generateInvoice from "../common/utils/anaf/generateInvoice";
+import generateEtransport from "../common/utils/anaf/generateEtransport";
 
 class InvoiceService {
   async getInvoices(decodedJwt: any) {
@@ -725,163 +727,139 @@ class InvoiceService {
     return latestInvoicesFromSeries[0];
   }
 
-  async sendInvoice(invoiceId: any) {
-    const { invoice, productList } = await this.getInvoiceWithDetails(invoiceId);
-    const supplier = await partnerService.getPartner(invoice.client_id) as PartnerAttributes;
-    // Solution for the moment because only one ID exists
-    const customer = await partnerService.getPartner(1) as PartnerAttributes;
-
-    const invoiceLines = productList.map(product => {
-      return {
-        unitCode: "C62",
-        invoicedQuantity: product.quantity,
-        name: product.product_name,
-        classifiedTaxCategory: "S",
-        classifiedTaxPercent: product.vat,
-        priceAmount: product.purchase_price,
-        baseQuantity: product.quantity
-      }
-    });
-
-    const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050";
-
-    const sendInvoice = await fetch(`${microServiceUrl}/api/anaf/send-efactura`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      // Dynamic fields - it will work only if VAT are correct and CIF exists on anaf SPV
-      // body: JSON.stringify({
-      //   cif: supplier.unique_identification_number,
-      //   headers: {
-      //     invoiceId: invoice.invoice_id,
-      //     issueDate: invoice.created_at_utc,
-      //     dueDate: (invoice.deadline_at_utc ? invoice.deadline_at_utc : "2023-12-31"),
-      //     currencyCode: invoice.currency
-      //   },
-      //   supplierInfo: {
-      //     supplierName: supplier.name,
-      //     supplierStreet: "line1",
-      //     supplierCity: "SECTOR1",
-      //     supplierCountrySubentity: "RO-B",
-      //     supplierCountryCode: "RO",
-      //     supplierId: supplier.unique_identification_number,
-      //     supplierLegallyInfo: supplier.trade_register_registration_number
-      //   },
-      //   customerInfo: {
-      //     customerName: customer.name,
-      //     customerStreet: "street1",
-      //     customerCity: "SECTOR3",
-      //     customerCountrySubentity: "RO-AR",
-      //     customerCountryCode: "RO",
-      //     customerId: customer.unique_identification_number,
-      //     customerRegistrationName: customer.trade_register_registration_number
-      //   },
-      //   paymentMeans: {
-      //     paymentMeansCode: "31"
-      //   },
-      //   taxTotal: {
-      //     taxAmount: invoice.total_vat,
-      //     currency: invoice.currency,
-      //     taxSubtotal: {
-      //       taxableAmount: invoice.total_price,
-      //       subtotalTaxAmount: invoice.total_vat,
-      //       taxCategory: "S",
-      //       taxPercent: "19.00"
-      //     }
-      //   },
-      //   legalMonetaryTotal: {
-      //     lineExtensionAmount: invoice.total_price,
-      //     taxExclusiveAmount: invoice.total_price,
-      //     taxInclusiveAmount: invoice.total_price_incl_vat,
-      //     payableAmount: invoice.total_price_incl_vat
-      //   },
-      //   invoiceLines: invoiceLines
-      // })
-
-      // Testing purpose with correct data - dummy
-      body: JSON.stringify({
-        cif: "16912984",
-        headers: {
-          invoiceId: "6422451356",
-          issueDate: "2024-05-30",
-          dueDate: "2024-05-30",
-          notes: "some notes for invoice",
-          currencyCode: "RON"
-        },
-        supplierInfo: {
-          supplierName: "Seller SRL",
-          supplierStreet: "line1",
-          supplierCity: "SECTOR1",
-          supplierCountrySubentity: "RO-B",
-          supplierCountryCode: "RO",
-          supplierId: "RO42350206",
-          supplierLegallyInfo: "J40/12345/1998"
-        },
-        customerInfo: {
-          customerName: "Customer name",
-          customerStreet: "street1",
-          customerCity: "SECTOR3",
-          customerCountrySubentity: "RO-AR",
-          customerCountryCode: "RO",
-          customerId: "RO42350206",
-          customerRegistrationName: "Customer SRL"
-        },
-        paymentMeans: {
-          paymentMeansCode: "31"
-        },
-        taxTotal: {
-          taxAmount: "5.14",
-          currency: "RON",
-          taxSubtotal: {
-            taxableAmount: "27.00",
-            subtotalTaxAmount: "5.14",
-            taxCategory: "S",
-            taxPercent: "19.00"
-          }
-        },
-        legalMonetaryTotal: {
-          lineExtensionAmount: "27.00",
-          taxExclusiveAmount: "27.00",
-          taxInclusiveAmount: "32.14",
-          payableAmount: "32.14"
-        },
-        invoiceLines: [
-          {
-            unitCode: "C62",
-            invoicedQuantity: "35.00",
-            lineExtensionAmount: "13.50",
-            name: "item1",
-            classifiedTaxCategory: "S",
-            classifiedTaxPercent: "19.00",
-            priceAmount: "0.3857",
-            baseQuantity: "1"
-          },
-          {
-            unitCode: "C62",
-            invoicedQuantity: "20.00",
-            lineExtensionAmount: "13.50",
-            name: "item2",
-            sellersItemIdentification: "0520",
-            classifiedTaxCategory: "S",
-            classifiedTaxPercent: "19.00",
-            priceAmount: "0.3857",
-            baseQuantity: "1"
-          }
-        ]
-      })
-    });
-
-    const anafResponse = await sendInvoice.json();
+  async sendInvoice(invoiceId: string, classifiedTaxCategory: string, taxPercent: string) {
     try {
-      invoice.index_incarcare_anaf = anafResponse.indexIncarcare;
-      invoice.status_incarcare_anaf = true;
-      await invoice.save();
-    } catch (err) {
-      console.log(err);
-    }
+      const { invoice, productList } = await this.getInvoiceWithDetails(Number(invoiceId));
 
-    return anafResponse;
+      if (invoice.status_incarcare_anaf) {
+        return { code: 409, message: `Already sent to anaf. Index incarcare anaf: ${invoice.index_incarcare_anaf}` }
+      }
+
+      const supplier = await partnerService.getPartner(invoice.client_id) as PartnerAttributes;
+      const customer = await partnerService.getPartner(invoice.buyer_id) as PartnerAttributes;
+      const generatedInvoice = await generateInvoice(productList, invoice, supplier, customer, classifiedTaxCategory, taxPercent);
+
+      const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050";
+
+      const sendInvoice = await fetch(`${microServiceUrl}/api/anaf/send-efactura`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(generatedInvoice)
+      });
+
+      const anafResponse = await sendInvoice.json();
+
+      if (!anafResponse?.error) {
+        if (sendInvoice.status === 201) {
+          invoice.index_incarcare_anaf = anafResponse.responseMessage;
+          invoice.status_incarcare_anaf = true;
+          invoice.sent_status = 'sent';
+          await invoice.save();
+        } else {
+          return { code: sendInvoice.status, message: anafResponse.responseMessage }
+        }
+      }
+
+      return anafResponse;
+    } catch (error) {
+      return { code: 500, message: `${error}` };
+    }
+  }
+
+  async sendEtransport(invoiceId: string, codTarifar: string, codScopOperatiune: string[], locStart: any, locFinal: any) {
+    const models = initModels(sequelize);
+    try {
+      const invoice = await models.Invoice.findOne({
+        where: {
+          invoice_id: invoiceId
+        }
+      });
+
+      if (!invoice) {
+        return { code: 404, message: 'Invoice not found.' };
+      }
+
+      if (invoice.e_transport_generated) {
+        return { code: 409, message: 'The eTransport is already generated.' };
+      }
+
+      const order = await models.Order.findOne({
+        where: {
+          order_id: invoice.order_reference_id
+        }
+      });
+
+      if (!order) {
+        return { code: 404, message: 'Order not found.' };
+      }
+
+      const partner = await models.Partner.findOne({
+        where: {
+          partner_id: invoice.client_id
+        },
+        attributes: ['unique_identification_number', 'name']
+      });
+
+      if (!partner) {
+        return { code: 404, message: 'Partner not found.' };
+      }
+
+      const orderDetails = await models.OrderDetails.findOne({
+        where: {
+          order_id: order.order_id
+        }
+      });
+
+      const invoiceProducts = await models.InvoiceProduct.findAll({
+        where: {
+          invoice_id: invoiceId
+        },
+        include: [
+          { model: Product, as: "product" }
+        ]
+      });
+
+      if (invoiceProducts.length < 1) {
+        return { code: 400, message: "This invoice doesn't have products." }
+      }
+
+      const generatedEtransport = await generateEtransport(
+        invoiceProducts,
+        orderDetails,
+        partner,
+        order,
+        codTarifar,
+        codScopOperatiune,
+        locStart,
+        locFinal
+      );
+
+      const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050/";
+
+      const sendEtransport = await fetch(`${microServiceUrl}api/anaf/send-etransport`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(generatedEtransport)
+      });
+
+      const response = await sendEtransport.json();
+
+      if (response?.responseData?.Errors) {
+        return { code: 400, message: response.responseData.Errors }
+      }
+
+      invoice.e_transport_generated = true;
+      invoice.uit = response.UIT;
+      await invoice.save();
+
+      return { code: 201, message: { UIT: response.UIT } };
+    } catch (error) {
+      return { code: 500, message: `${error}` }
+    }
   }
 }
 

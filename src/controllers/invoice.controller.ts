@@ -78,9 +78,25 @@ class InvoiceController {
   }
 
   async sendInvoice(req: express.Request, res: express.Response) {
-    const result = await InvoiceService.sendInvoice(req.params?.id);
+    const result = await InvoiceService.sendInvoice(
+      req.params?.id,
+      req.body?.classifiedTaxCategory,
+      req.body?.taxPercent
+    );
 
     res.send(result).status(201);
+  }
+
+  async sendEtransport(req: express.Request, res: express.Response) {
+    const result = await InvoiceService.sendEtransport(
+      req.params?.id,
+      req.body?.codTarifar,
+      req.body?.codScopOperatiune,
+      req.body?.locStart,
+      req.body?.locFinal
+    );
+
+    res.status(result.code).send(result);
   }
 }
 
