@@ -7,7 +7,7 @@ const generateEtransport = async (
   orderDetails: OrderDetails,
   partner: Partner,
   order: Order,
-  codTarifar: string,
+  codTarifar: string[],
   codScopOperatiune: string[],
   locStart: any,
   locFinal: any

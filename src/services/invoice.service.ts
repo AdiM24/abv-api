@@ -768,7 +768,7 @@ class InvoiceService {
     }
   }
 
-  async sendEtransport(invoiceId: string, codTarifar: string, codScopOperatiune: string[], locStart: any, locFinal: any) {
+  async sendEtransport(invoiceId: string, codTarifar: string[], codScopOperatiune: string[], locStart: any, locFinal: any) {
     const models = initModels(sequelize);
     try {
       const invoice = await models.Invoice.findOne({
