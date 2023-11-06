@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { ICounty } from '../common/interfaces/csc.interface';
 import { sanitizeCountyName } from '../common/utils/csc/csc.utils';
+import fetch, {Headers} from "node-fetch";
 
 dotenv.config();
 
@@ -23,7 +24,7 @@ class CSCService {
                     headers: headers,
                 };
 
-                await fetch(`${cscBaseUri}countries/ro/states`, requestOptions)
+                await fetch(`${cscBaseUri}countries/ro/states`,requestOptions)
                     .then((response) => response.text())
                     .then((result) => {
                         const countiesParsed: Array<ICounty> = JSON.parse(result);
