@@ -1,6 +1,6 @@
 import express from "express";
 import InvoiceService from "../services/invoice.service";
-import {CustomRequest} from "../middleware/auth.middleware";
+import { CustomRequest } from "../middleware/auth.middleware";
 
 class InvoiceController {
   async getInvoices(req: CustomRequest, res: express.Response) {
@@ -14,7 +14,7 @@ class InvoiceController {
   async getInvoice(req: express.Request, res: express.Response) {
     const invoice_id = req.params?.id;
 
-    res.status(200).send(await InvoiceService.findInvoice({invoice_id: invoice_id}));
+    res.status(200).send(await InvoiceService.findInvoice({ invoice_id: invoice_id }));
   }
 
   async getInvoiceWithDetails(req: express.Request, res: express.Response) {
@@ -28,7 +28,7 @@ class InvoiceController {
   async addInvoice(req: CustomRequest, res: express.Response) {
     const addedInvoice = await InvoiceService.addInvoice(req.body, req.token);
 
-    res.status(201).send({created: addedInvoice, msg: "Invoice created"});
+    res.status(201).send({ created: addedInvoice, msg: "Invoice created" });
   }
 
   async addNotice(req: CustomRequest, res: express.Response) {
@@ -40,7 +40,7 @@ class InvoiceController {
   async findNextNumberForSeries(req: express.Request, res: express.Response) {
     const nextNumberForSeries = await InvoiceService.findNextSeriesNumber(req.body?.series, req.body?.type);
 
-    res.status(200).send({number: nextNumberForSeries});
+    res.status(200).send({ number: nextNumberForSeries });
   }
 
   async updateInvoiceData(req: express.Request, res: express.Response) {
@@ -75,6 +75,24 @@ class InvoiceController {
     } else {
       res.status(202).send(result);
     }
+  }
+
+  async sendInvoice(req: express.Request, res: express.Response) {
+    const result = await InvoiceService.sendInvoice(req.params?.id);
+
+    res.send(result).status(201);
+  }
+
+  async sendEtransport(req: express.Request, res: express.Response) {
+    const result = await InvoiceService.sendEtransport(
+      req.params?.id,
+      req.body?.codTarifar,
+      req.body?.codScopOperatiune,
+      req.body?.locStart,
+      req.body?.locFinal
+    );
+
+    res.status(result.code).send(result);
   }
 }
 

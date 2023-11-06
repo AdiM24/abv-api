@@ -1,4 +1,4 @@
-import {sequelize} from "../db/sequelize";
+import { sequelize } from "../db/sequelize";
 import {
   Address,
   BankAccount,
@@ -8,22 +8,26 @@ import {
   InvoiceProduct,
   Order,
   Partner,
+  PartnerAttributes,
   Product,
   UserInvoiceSeries,
   UserPartnerMap
 } from "../db/models/init-models";
-import {CreateInvoiceDto} from "../dtos/create.invoice.dto";
+import { CreateInvoiceDto } from "../dtos/create.invoice.dto";
 import {
   CreateInvoiceProductDto,
   InvoiceProductInformation,
   UpdateInvoiceProduct
 } from "../dtos/create.invoice-product.dto";
-import {Includeable, Op, Transaction, WhereOptions} from "sequelize";
-import {getDateRangeQuery, getInQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
+import { Includeable, Op, Transaction, WhereOptions } from "sequelize";
+import { getDateRangeQuery, getInQuery, getLikeQuery, getStrictQuery } from "../common/utils/query-utils.service";
 import UserService from "./user.service";
 import UserPartnerMappingService from "./user-partner-mapping.service";
-import {Roles} from "../common/enums/roles";
-import {calculatePercentage} from "./utils.service";
+import { Roles } from "../common/enums/roles";
+import { calculatePercentage } from "./utils.service";
+import partnerService from "./partner.service";
+import generateInvoice from "../common/utils/anaf/generateInvoice";
+import generateEtransport from "../common/utils/anaf/generateEtransport";
 
 class InvoiceService {
   async getInvoices(decodedJwt: any) {
@@ -38,10 +42,10 @@ class InvoiceService {
     return await models.Invoice.findAll({
       where: queryObject,
       include: [
-        {model: Partner, as: 'buyer'},
-        {model: Order, as: 'order_reference'},
-        {model: Address, as: 'pickup_address'},
-        {model: Address, as: 'drop_off_address'}
+        { model: Partner, as: 'buyer' },
+        { model: Order, as: 'order_reference' },
+        { model: Address, as: 'pickup_address' },
+        { model: Address, as: 'drop_off_address' }
       ],
       order: [["created_at_utc", "DESC"], ["number", "DESC"]]
     });
@@ -101,9 +105,9 @@ class InvoiceService {
     }
 
     const relations: Includeable | Includeable[] = [
-      {model: Partner, as: 'buyer'},
-      {model: Partner, as: 'client'},
-      {model: Order, as: 'order_reference'},
+      { model: Partner, as: 'buyer' },
+      { model: Partner, as: 'client' },
+      { model: Order, as: 'order_reference' },
     ];
 
     if (queryParams.type === 'notice') {
@@ -213,15 +217,15 @@ class InvoiceService {
         notice.driver_name = token.name;
         notice.observation = noticeToAdd.observation;
 
-        const createdNotice = await models.Invoice.create(notice, {transaction, returning: true});
-        const product = await models.Product.findOne({where: {product_id: Number(noticeToAdd.product_id)}});
+        const createdNotice = await models.Invoice.create(notice, { transaction, returning: true });
+        const product = await models.Product.findOne({ where: { product_id: Number(noticeToAdd.product_id) } });
 
         const invoiceProduct: CreateInvoiceProductDto = {
           invoice_id: createdNotice.get('invoice_id'),
           product_id: product.product_id,
           quantity: parseFloat(Number(noticeToAdd.quantity).toFixed(2)),
           selling_price: parseFloat(Number(product.purchase_price).toFixed(2)),
-          sold_at_utc:  new Date(Date.now()).toLocaleString(),
+          sold_at_utc: new Date(Date.now()).toLocaleString(),
           unit_of_measure: noticeToAdd.unit_of_measure
         }
 
@@ -231,16 +235,16 @@ class InvoiceService {
 
         product.quantity = Number(product.quantity) - Number(noticeToAdd.quantity);
 
-        await product.save({transaction});
-        await models.InvoiceProduct.create(invoiceProduct, {transaction});
-        await createdNotice.save({transaction});
+        await product.save({ transaction });
+        await models.InvoiceProduct.create(invoiceProduct, { transaction });
+        await createdNotice.save({ transaction });
       });
     } catch (err) {
       console.error(err);
-      return {code: 500, message: err.message}
+      return { code: 500, message: err.message }
     }
 
-    return {code: 201, message: 'Avizul a fost creat'}
+    return { code: 201, message: 'Avizul a fost creat' }
   }
 
   // async updateNotice(noticeToUpdate: any, token: any) {
@@ -359,10 +363,10 @@ class InvoiceService {
           invoice_id: invoiceId
         },
         include: [
-          {model: Partner, as: "buyer", include: [{model: BankAccount, as: 'BankAccounts'}]},
-          {model: Partner, as: "client", include: [{model: BankAccount, as: 'BankAccounts'}]},
-          {model: Address, as: 'pickup_address'},
-          {model: Address, as: 'drop_off_address'}
+          { model: Partner, as: "buyer", include: [{ model: BankAccount, as: 'BankAccounts' }] },
+          { model: Partner, as: "client", include: [{ model: BankAccount, as: 'BankAccounts' }] },
+          { model: Address, as: 'pickup_address' },
+          { model: Address, as: 'drop_off_address' }
         ],
         order: [["created_at_utc", "DESC"]]
       }
@@ -374,7 +378,7 @@ class InvoiceService {
           invoice_id: invoiceId
         },
         include: [
-          {model: Product, as: "product"}
+          { model: Product, as: "product" }
         ]
       }
     );
@@ -391,7 +395,7 @@ class InvoiceService {
       productList.push(product)
     });
 
-    return {invoice, productList};
+    return { invoice, productList };
   }
 
   async updateInvoice(invoiceUpdate: any) {
@@ -437,10 +441,10 @@ class InvoiceService {
       await existingInvoice.save();
     } catch (err) {
       console.error(err);
-      return {errorCode: 400, message: err}
+      return { errorCode: 400, message: err }
     }
 
-    return {message: "Invoice update successful"}
+    return { message: "Invoice update successful" }
   }
 
   async addInvoiceProduct(productData: InvoiceProductInformation) {
@@ -484,7 +488,7 @@ class InvoiceService {
 
         default: {
           console.error(`Invalid invoice type, ${existingInvoice}`)
-          return {message: 'Invalid invoice type'}
+          return { message: 'Invalid invoice type' }
         }
       }
     } else {
@@ -507,7 +511,7 @@ class InvoiceService {
       await invoiceProduct.save();
       await existingProduct.save();
 
-      return {message: "Invoice product successfully updated"};
+      return { message: "Invoice product successfully updated" };
     } catch (error) {
       console.error(error);
     }
@@ -549,7 +553,7 @@ class InvoiceService {
     }
 
     if (existingProduct.type === 'service') {
-      return {message: "Invoice successfully updated"};
+      return { message: "Invoice successfully updated" };
     }
 
     if (existingInvoice.type === 'issued' || existingInvoice.type === 'notice') {
@@ -562,7 +566,7 @@ class InvoiceService {
 
     try {
       await existingProduct.save();
-      return {message: "Invoice and product successfully updated"}
+      return { message: "Invoice and product successfully updated" }
     } catch (error) {
       console.error(error);
     }
@@ -618,7 +622,7 @@ class InvoiceService {
       await existingInvoiceProduct.save();
       await existingInvoice.save();
 
-      return {code: 200, message: 'Update was successful'};
+      return { code: 200, message: 'Update was successful' };
     } catch (err) {
       console.error(err);
     }
@@ -697,9 +701,9 @@ class InvoiceService {
         await existingOrder.save();
       }
 
-      return {code: 200, message: `Invoice successfully deleted`}
+      return { code: 200, message: `Invoice successfully deleted` }
     } catch (err) {
-      return {code: 500, message: `Factura nu poate fi stearsa.`}
+      return { code: 500, message: `Factura nu poate fi stearsa.` }
     }
 
   }
@@ -721,6 +725,143 @@ class InvoiceService {
     }
 
     return latestInvoicesFromSeries[0];
+  }
+
+  async sendInvoice(invoiceId: string) {
+    try {
+      const { invoice, productList } = await this.getInvoiceWithDetails(Number(invoiceId));
+
+      if (invoice.status_incarcare_anaf) {
+        return { code: 409, message: `Already sent to anaf. Index incarcare anaf: ${invoice.index_incarcare_anaf}` }
+      }
+
+      const supplier = await partnerService.getPartner(invoice.client_id) as PartnerAttributes;
+      const customer = await partnerService.getPartner(invoice.buyer_id) as PartnerAttributes;
+      const taxPercent = customer.vat_payer === true ? "19" : "0";
+      const classifiedTaxCategory = "S"
+      const generatedInvoice = await generateInvoice(productList, invoice, supplier, customer, classifiedTaxCategory, taxPercent);
+
+      const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050";
+
+      const sendInvoice = await fetch(`${microServiceUrl}/api/anaf/send-efactura`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(generatedInvoice)
+      });
+
+      const anafResponse = await sendInvoice.json();
+
+      if (!anafResponse?.error) {
+        if (sendInvoice.status === 201) {
+          invoice.index_incarcare_anaf = anafResponse.responseMessage;
+          invoice.status_incarcare_anaf = true;
+          invoice.sent_status = 'sent';
+          await invoice.save();
+        } else {
+          return { code: sendInvoice.status, message: anafResponse.responseMessage }
+        }
+      }
+
+      return anafResponse;
+    } catch (error) {
+      return { code: 500, message: `${error}` };
+    }
+  }
+
+  async sendEtransport(invoiceId: string, codTarifar: string[], codScopOperatiune: string[], locStart: any, locFinal: any) {
+    const models = initModels(sequelize);
+    try {
+      const invoice = await models.Invoice.findOne({
+        where: {
+          invoice_id: invoiceId
+        }
+      });
+
+      if (!invoice) {
+        return { code: 404, message: 'Invoice not found.' };
+      }
+
+      if (invoice.e_transport_generated) {
+        return { code: 409, message: 'The eTransport is already generated.' };
+      }
+
+      const order = await models.Order.findOne({
+        where: {
+          order_id: invoice.order_reference_id
+        }
+      });
+
+      if (!order) {
+        return { code: 404, message: 'Order not found.' };
+      }
+
+      const partner = await models.Partner.findOne({
+        where: {
+          partner_id: invoice.client_id
+        },
+        attributes: ['unique_identification_number', 'name']
+      });
+
+      if (!partner) {
+        return { code: 404, message: 'Partner not found.' };
+      }
+
+      const orderDetails = await models.OrderDetails.findOne({
+        where: {
+          order_id: order.order_id
+        }
+      });
+
+      const invoiceProducts = await models.InvoiceProduct.findAll({
+        where: {
+          invoice_id: invoiceId
+        },
+        include: [
+          { model: Product, as: "product" }
+        ]
+      });
+
+      if (invoiceProducts.length < 1) {
+        return { code: 400, message: "This invoice doesn't have products." }
+      }
+
+      const generatedEtransport = await generateEtransport(
+        invoiceProducts,
+        orderDetails,
+        partner,
+        order,
+        codTarifar,
+        codScopOperatiune,
+        locStart,
+        locFinal
+      );
+
+      const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050/";
+
+      const sendEtransport = await fetch(`${microServiceUrl}api/anaf/send-etransport`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(generatedEtransport)
+      });
+
+      const response = await sendEtransport.json();
+
+      if (response?.responseData?.Errors) {
+        return { code: 400, message: response.responseData.Errors }
+      }
+
+      invoice.e_transport_generated = true;
+      invoice.uit = response.UIT;
+      await invoice.save();
+
+      return { code: 201, message: { UIT: response.UIT } };
+    } catch (error) {
+      return { code: 500, message: `${error}` }
+    }
   }
 }
 

@@ -1,8 +1,9 @@
-import {CommonRoutesConfig} from "../common/common.routes.config";
+import { CommonRoutesConfig } from "../common/common.routes.config";
 import express from "express";
 import AuthMiddleware from "../middleware/auth.middleware";
 import OrderMiddleware from "../middleware/order.middleware";
 import OrderController from "../controllers/order.controller";
+import InvoiceController from '../controllers/invoice.controller';
 
 export class OrderRoutes extends CommonRoutesConfig {
   constructor(app: express.Application) {
@@ -56,7 +57,11 @@ export class OrderRoutes extends CommonRoutesConfig {
       .post(AuthMiddleware.auth,
         OrderMiddleware.validateGeneratedInvoice,
         OrderMiddleware.validateUserOrder,
-        OrderController.generateInvoice)
+        OrderController.generateInvoice);
+
+    this.app
+      .route("/api/orders/send/:id")
+      .put(InvoiceController.sendEtransport)
     return this.app;
   }
 }
