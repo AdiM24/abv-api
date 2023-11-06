@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import { ICounty } from '../common/interfaces/csc.interface';
 import { sanitizeCountyName } from '../common/utils/csc/csc.utils';
-import fetch, {Headers} from "node-fetch";
 
 dotenv.config();
 
