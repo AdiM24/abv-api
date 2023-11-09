@@ -22,6 +22,8 @@ export interface EmployeeAttributes {
   employment_type?: "full time" | "part time";
   working_hours?: number;
   profession?: string;
+  salar_a?: number;
+  salar_n?: number;
 }
 
 export type EmployeePk = "employee_id";
@@ -48,6 +50,8 @@ export class Employee extends Model<EmployeeAttributes, EmployeeCreationAttribut
   employment_type?: "full time" | "part time";
   working_hours?: number;
   profession?: string;
+  salar_a?: number;
+  salar_n?: number;
 
   // Employee hasMany TimesheetEntry via employee_id
   TimesheetEntries!: TimesheetEntry[];
@@ -145,6 +149,14 @@ export class Employee extends Model<EmployeeAttributes, EmployeeCreationAttribut
     },
     profession: {
       type: DataTypes.STRING,
+      allowNull: true
+    },
+    salar_a: {
+      type: DataTypes.BIGINT,
+      allowNull: true
+    },
+    salar_n: {
+      type: DataTypes.BIGINT,
       allowNull: true
     }
   }, {

@@ -13,4 +13,6 @@ export interface EmployeeAddDto {
   ssn_provider: string;
   ssn_start_date: string;
   ssn_end_date: string;
+  salar_a?: number;
+  salar_n?: number;
 }

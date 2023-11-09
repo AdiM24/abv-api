@@ -76,6 +76,8 @@ class EmployeeService {
     existingEmployee.ssn_number = employee.ssn_number;
     existingEmployee.phone = employee.phone;
     existingEmployee.address = employee.address;
+    existingEmployee.salar_a = employee.salar_a;
+    existingEmployee.salar_n = employee.salar_n;
 
     try {
       return await existingEmployee.save();
