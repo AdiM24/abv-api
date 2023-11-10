@@ -49,6 +49,8 @@ import { UserVehicle as _UserVehicle } from "./UserVehicle";
 import type { UserVehicleAttributes, UserVehicleCreationAttributes } from "./UserVehicle";
 import { Nc8Code as _Nc8Code } from "./Nc8Code";
 import type { Nc8CodeAttributes, Nc8CodeCreationAttributes } from "./Nc8Code";
+import { Deviz as _Deviz } from "./Deviz";
+import { DevizAttributes, DevizCreationAttributes } from "./Deviz";
 
 export {
   _Address as Address,
@@ -75,7 +77,8 @@ export {
   _UserPartnerMap as UserPartnerMap,
   _UserRoles as UserRoles,
   _UserVehicle as UserVehicle,
-  _Nc8Code as Nc8Code
+  _Nc8Code as Nc8Code,
+  _Deviz as Deviz
 };
 
 export type {
@@ -128,7 +131,9 @@ export type {
   UserVehicleAttributes,
   UserVehicleCreationAttributes,
   Nc8CodeAttributes,
-  Nc8CodeCreationAttributes
+  Nc8CodeCreationAttributes,
+  DevizAttributes,
+  DevizCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -157,87 +162,93 @@ export function initModels(sequelize: Sequelize) {
   const UserRoles = _UserRoles.initModel(sequelize);
   const UserVehicle = _UserVehicle.initModel(sequelize);
   const Nc8Code = _Nc8Code.initModel(sequelize);
+  const Deviz = _Deviz.initModel(sequelize);
 
-  Invoice.belongsTo(Address, { as: "drop_off_address", foreignKey: "drop_off_address_id"});
-  Address.hasMany(Invoice, { as: "Invoices", foreignKey: "drop_off_address_id"});
-  Invoice.belongsTo(Address, { as: "pickup_address", foreignKey: "pickup_address_id"});
-  Address.hasMany(Invoice, { as: "pickup_address_Invoices", foreignKey: "pickup_address_id"});
-  TimesheetEntry.belongsTo(Address, { as: "address", foreignKey: "address_id"});
-  Address.hasMany(TimesheetEntry, { as: "TimesheetEntries", foreignKey: "address_id"});
-  UserVehicle.belongsTo(AutoFleet, { as: "vehicle", foreignKey: "vehicle_id"});
-  AutoFleet.hasMany(UserVehicle, { as: "UserVehicles", foreignKey: "vehicle_id"});
-  Receipt.belongsTo(BankRegister, { as: "bank_register", foreignKey: "bank_register_id"});
-  BankRegister.hasMany(Receipt, { as: "Receipts", foreignKey: "bank_register_id"});
-  Receipt.belongsTo(CashRegister, { as: "cash_register", foreignKey: "cash_register_id"});
-  CashRegister.hasMany(Receipt, { as: "Receipts", foreignKey: "cash_register_id"});
-  TimesheetEntry.belongsTo(Employee, { as: "employee", foreignKey: "employee_id"});
-  Employee.hasMany(TimesheetEntry, { as: "TimesheetEntries", foreignKey: "employee_id"});
-  PartnerImage.belongsTo(ImageFiles, { as: "image", foreignKey: "image_id"});
-  ImageFiles.hasMany(PartnerImage, { as: "PartnerImages", foreignKey: "image_id"});
-  InvoiceProduct.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
-  Invoice.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "invoice_id"});
-  Receipt.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id"});
-  Invoice.hasMany(Receipt, { as: "Receipts", foreignKey: "invoice_id"});
-  Invoice.belongsTo(Order, { as: "order_reference", foreignKey: "order_reference_id"});
-  Order.hasMany(Invoice, { as: "Invoices", foreignKey: "order_reference_id"});
-  OrderDetails.belongsTo(Order, { as: "order", foreignKey: "order_id"});
-  Order.hasMany(OrderDetails, { as: "OrderDetails", foreignKey: "order_id"});
-  Address.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
-  Partner.hasMany(Address, { as: "Addresses", foreignKey: "partner_id"});
-  AutoFleet.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
-  Partner.hasMany(AutoFleet, { as: "AutoFleets", foreignKey: "partner_id"});
-  BankAccount.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
-  Partner.hasMany(BankAccount, { as: "BankAccounts", foreignKey: "partner_id"});
-  BankRegister.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
-  Partner.hasMany(BankRegister, { as: "BankRegisters", foreignKey: "partner_id"});
-  CashRegister.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
-  Partner.hasMany(CashRegister, { as: "CashRegisters", foreignKey: "partner_id"});
-  Contact.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
-  Partner.hasMany(Contact, { as: "Contacts", foreignKey: "partner_id"});
-  Employee.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
-  Partner.hasMany(Employee, { as: "Employees", foreignKey: "partner_id"});
-  Invoice.belongsTo(Partner, { as: "buyer", foreignKey: "buyer_id"});
-  Partner.hasMany(Invoice, { as: "Invoices", foreignKey: "buyer_id"});
-  Invoice.belongsTo(Partner, { as: "client", foreignKey: "client_id"});
-  Partner.hasMany(Invoice, { as: "client_Invoices", foreignKey: "client_id"});
-  Order.belongsTo(Partner, { as: "buyer", foreignKey: "buyer_id"});
-  Partner.hasMany(Order, { as: "Orders", foreignKey: "buyer_id"});
-  Order.belongsTo(Partner, { as: "client", foreignKey: "client_id"});
-  Partner.hasMany(Order, { as: "client_Orders", foreignKey: "client_id"});
-  Order.belongsTo(Partner, { as: "transporter", foreignKey: "transporter_id"});
-  Partner.hasMany(Order, { as: "transporter_Orders", foreignKey: "transporter_id"});
-  PartnerComment.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
-  Partner.hasMany(PartnerComment, { as: "PartnerComments", foreignKey: "partner_id"});
-  PartnerImage.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
-  Partner.hasMany(PartnerImage, { as: "PartnerImages", foreignKey: "partner_id"});
-  Receipt.belongsTo(Partner, { as: "buyer_partner", foreignKey: "buyer_partner_id"});
-  Partner.hasMany(Receipt, { as: "Receipts", foreignKey: "buyer_partner_id"});
-  Receipt.belongsTo(Partner, { as: "seller_partner", foreignKey: "seller_partner_id"});
-  Partner.hasMany(Receipt, { as: "seller_partner_Receipts", foreignKey: "seller_partner_id"});
-  UserPartnerEmail.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
-  Partner.hasMany(UserPartnerEmail, { as: "UserPartnerEmails", foreignKey: "partner_id"});
-  UserPartnerMap.belongsTo(Partner, { as: "partner", foreignKey: "partner_id"});
-  Partner.hasMany(UserPartnerMap, { as: "UserPartnerMaps", foreignKey: "partner_id"});
-  InvoiceProduct.belongsTo(Product, { as: "product", foreignKey: "product_id"});
-  Product.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "product_id"});
-  Invoice.belongsTo(User, { as: "user", foreignKey: "user_id"});
-  User.hasMany(Invoice, { as: "Invoices", foreignKey: "user_id"});
-  Order.belongsTo(User, { as: "user", foreignKey: "user_id"});
-  User.hasMany(Order, { as: "Orders", foreignKey: "user_id"});
-  PartnerComment.belongsTo(User, { as: "user", foreignKey: "user_id"});
-  User.hasMany(PartnerComment, { as: "PartnerComments", foreignKey: "user_id"});
-  UserInvoiceSeries.belongsTo(User, { as: "user", foreignKey: "user_id"});
-  User.hasMany(UserInvoiceSeries, { as: "UserInvoiceSeries", foreignKey: "user_id"});
-  UserPartnerEmail.belongsTo(User, { as: "user", foreignKey: "user_id"});
-  User.hasMany(UserPartnerEmail, { as: "UserPartnerEmails", foreignKey: "user_id"});
-  UserPartnerMap.belongsTo(User, { as: "user", foreignKey: "user_id"});
-  User.hasMany(UserPartnerMap, { as: "UserPartnerMaps", foreignKey: "user_id"});
-  UserRoles.belongsTo(User, { as: "user", foreignKey: "user_id"});
-  User.hasMany(UserRoles, { as: "UserRoles", foreignKey: "user_id"});
-  UserVehicle.belongsTo(User, { as: "user", foreignKey: "user_id"});
-  User.hasMany(UserVehicle, { as: "UserVehicles", foreignKey: "user_id"});
-  Product.belongsTo(Nc8Code,{ as: "nc8Code", foreignKey: "nc8_code_id"});
-  Nc8Code.hasMany(Product, { as: "products", foreignKey: "nc8_code_id"});
+  Invoice.belongsTo(Address, { as: "drop_off_address", foreignKey: "drop_off_address_id" });
+  Address.hasMany(Invoice, { as: "Invoices", foreignKey: "drop_off_address_id" });
+  Invoice.belongsTo(Address, { as: "pickup_address", foreignKey: "pickup_address_id" });
+  Address.hasMany(Invoice, { as: "pickup_address_Invoices", foreignKey: "pickup_address_id" });
+  TimesheetEntry.belongsTo(Address, { as: "address", foreignKey: "address_id" });
+  Address.hasMany(TimesheetEntry, { as: "TimesheetEntries", foreignKey: "address_id" });
+  UserVehicle.belongsTo(AutoFleet, { as: "vehicle", foreignKey: "vehicle_id" });
+  AutoFleet.hasMany(UserVehicle, { as: "UserVehicles", foreignKey: "vehicle_id" });
+  Receipt.belongsTo(BankRegister, { as: "bank_register", foreignKey: "bank_register_id" });
+  BankRegister.hasMany(Receipt, { as: "Receipts", foreignKey: "bank_register_id" });
+  Receipt.belongsTo(CashRegister, { as: "cash_register", foreignKey: "cash_register_id" });
+  CashRegister.hasMany(Receipt, { as: "Receipts", foreignKey: "cash_register_id" });
+  TimesheetEntry.belongsTo(Employee, { as: "employee", foreignKey: "employee_id" });
+  Employee.hasMany(TimesheetEntry, { as: "TimesheetEntries", foreignKey: "employee_id" });
+  PartnerImage.belongsTo(ImageFiles, { as: "image", foreignKey: "image_id" });
+  ImageFiles.hasMany(PartnerImage, { as: "PartnerImages", foreignKey: "image_id" });
+  InvoiceProduct.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id" });
+  Invoice.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "invoice_id" });
+  Receipt.belongsTo(Invoice, { as: "invoice", foreignKey: "invoice_id" });
+  Invoice.hasMany(Receipt, { as: "Receipts", foreignKey: "invoice_id" });
+  Invoice.belongsTo(Order, { as: "order_reference", foreignKey: "order_reference_id" });
+  Order.hasMany(Invoice, { as: "Invoices", foreignKey: "order_reference_id" });
+  OrderDetails.belongsTo(Order, { as: "order", foreignKey: "order_id" });
+  Order.hasMany(OrderDetails, { as: "OrderDetails", foreignKey: "order_id" });
+  Address.belongsTo(Partner, { as: "partner", foreignKey: "partner_id" });
+  Partner.hasMany(Address, { as: "Addresses", foreignKey: "partner_id" });
+  AutoFleet.belongsTo(Partner, { as: "partner", foreignKey: "partner_id" });
+  Partner.hasMany(AutoFleet, { as: "AutoFleets", foreignKey: "partner_id" });
+  BankAccount.belongsTo(Partner, { as: "partner", foreignKey: "partner_id" });
+  Partner.hasMany(BankAccount, { as: "BankAccounts", foreignKey: "partner_id" });
+  BankRegister.belongsTo(Partner, { as: "partner", foreignKey: "partner_id" });
+  Partner.hasMany(BankRegister, { as: "BankRegisters", foreignKey: "partner_id" });
+  CashRegister.belongsTo(Partner, { as: "partner", foreignKey: "partner_id" });
+  Partner.hasMany(CashRegister, { as: "CashRegisters", foreignKey: "partner_id" });
+  Contact.belongsTo(Partner, { as: "partner", foreignKey: "partner_id" });
+  Partner.hasMany(Contact, { as: "Contacts", foreignKey: "partner_id" });
+  Employee.belongsTo(Partner, { as: "partner", foreignKey: "partner_id" });
+  Partner.hasMany(Employee, { as: "Employees", foreignKey: "partner_id" });
+  Invoice.belongsTo(Partner, { as: "buyer", foreignKey: "buyer_id" });
+  Partner.hasMany(Invoice, { as: "Invoices", foreignKey: "buyer_id" });
+  Invoice.belongsTo(Partner, { as: "client", foreignKey: "client_id" });
+  Partner.hasMany(Invoice, { as: "client_Invoices", foreignKey: "client_id" });
+  Order.belongsTo(Partner, { as: "buyer", foreignKey: "buyer_id" });
+  Partner.hasMany(Order, { as: "Orders", foreignKey: "buyer_id" });
+  Order.belongsTo(Partner, { as: "client", foreignKey: "client_id" });
+  Partner.hasMany(Order, { as: "client_Orders", foreignKey: "client_id" });
+  Order.belongsTo(Partner, { as: "transporter", foreignKey: "transporter_id" });
+  Partner.hasMany(Order, { as: "transporter_Orders", foreignKey: "transporter_id" });
+  PartnerComment.belongsTo(Partner, { as: "partner", foreignKey: "partner_id" });
+  Partner.hasMany(PartnerComment, { as: "PartnerComments", foreignKey: "partner_id" });
+  PartnerImage.belongsTo(Partner, { as: "partner", foreignKey: "partner_id" });
+  Partner.hasMany(PartnerImage, { as: "PartnerImages", foreignKey: "partner_id" });
+  Receipt.belongsTo(Partner, { as: "buyer_partner", foreignKey: "buyer_partner_id" });
+  Partner.hasMany(Receipt, { as: "Receipts", foreignKey: "buyer_partner_id" });
+  Receipt.belongsTo(Partner, { as: "seller_partner", foreignKey: "seller_partner_id" });
+  Partner.hasMany(Receipt, { as: "seller_partner_Receipts", foreignKey: "seller_partner_id" });
+  UserPartnerEmail.belongsTo(Partner, { as: "partner", foreignKey: "partner_id" });
+  Partner.hasMany(UserPartnerEmail, { as: "UserPartnerEmails", foreignKey: "partner_id" });
+  UserPartnerMap.belongsTo(Partner, { as: "partner", foreignKey: "partner_id" });
+  Partner.hasMany(UserPartnerMap, { as: "UserPartnerMaps", foreignKey: "partner_id" });
+  InvoiceProduct.belongsTo(Product, { as: "product", foreignKey: "product_id" });
+  Product.hasMany(InvoiceProduct, { as: "InvoiceProducts", foreignKey: "product_id" });
+  Invoice.belongsTo(User, { as: "user", foreignKey: "user_id" });
+  User.hasMany(Invoice, { as: "Invoices", foreignKey: "user_id" });
+  Order.belongsTo(User, { as: "user", foreignKey: "user_id" });
+  User.hasMany(Order, { as: "Orders", foreignKey: "user_id" });
+  PartnerComment.belongsTo(User, { as: "user", foreignKey: "user_id" });
+  User.hasMany(PartnerComment, { as: "PartnerComments", foreignKey: "user_id" });
+  UserInvoiceSeries.belongsTo(User, { as: "user", foreignKey: "user_id" });
+  User.hasMany(UserInvoiceSeries, { as: "UserInvoiceSeries", foreignKey: "user_id" });
+  UserPartnerEmail.belongsTo(User, { as: "user", foreignKey: "user_id" });
+  User.hasMany(UserPartnerEmail, { as: "UserPartnerEmails", foreignKey: "user_id" });
+  UserPartnerMap.belongsTo(User, { as: "user", foreignKey: "user_id" });
+  User.hasMany(UserPartnerMap, { as: "UserPartnerMaps", foreignKey: "user_id" });
+  UserRoles.belongsTo(User, { as: "user", foreignKey: "user_id" });
+  User.hasMany(UserRoles, { as: "UserRoles", foreignKey: "user_id" });
+  UserVehicle.belongsTo(User, { as: "user", foreignKey: "user_id" });
+  User.hasMany(UserVehicle, { as: "UserVehicles", foreignKey: "user_id" });
+  Product.belongsTo(Nc8Code, { as: "nc8Code", foreignKey: "nc8_code_id" });
+  Nc8Code.hasMany(Product, { as: "products", foreignKey: "nc8_code_id" });
+  // Devize
+  Deviz.belongsTo(AutoFleet, { as: "AutoFleet", foreignKey: "auto_fleet_id" });
+  Deviz.belongsTo(Partner, { as: "Partner", foreignKey: "partner_id" });
+  Partner.hasMany(Deviz, { as: "Devize", foreignKey: "deviz_id" })
+  AutoFleet.hasMany(Deviz, { as: "Devize", foreignKey: "deviz_id" })
 
   return {
     Address: Address,
@@ -265,5 +276,6 @@ export function initModels(sequelize: Sequelize) {
     UserRoles: UserRoles,
     UserVehicle: UserVehicle,
     Nc8Code: Nc8Code,
+    Deviz: Deviz
   };
 }

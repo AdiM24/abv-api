@@ -12,9 +12,11 @@ import type { Order, OrderId } from './Order';
 import type { Receipt, ReceiptId } from './Receipt';
 import type { UserPartnerEmail, UserPartnerEmailId } from './UserPartnerEmail';
 import type { UserPartnerMap, UserPartnerMapId } from './UserPartnerMap';
+import { Deviz, DevizId } from './Deviz';
 
 export interface PartnerAttributes {
   partner_id: number;
+  deviz_id?: number;
   name: string;
   unique_identification_number: string;
   trade_register_registration_number: string;
@@ -33,11 +35,12 @@ export interface PartnerAttributes {
 
 export type PartnerPk = "partner_id";
 export type PartnerId = Partner[PartnerPk];
-export type PartnerOptionalAttributes = "partner_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc" | "address" | "type";
+export type PartnerOptionalAttributes = "partner_id" | "deviz_id" | "credit" | "remaining_credit" | "invoice_deadline_days" | "credit_exceedance_percentage" | "created_at_utc" | "modified_at_utc" | "address" | "type";
 export type PartnerCreationAttributes = Optional<PartnerAttributes, PartnerOptionalAttributes>;
 
 export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes> implements PartnerAttributes {
   partner_id!: number;
+  deviz_id?: number;
   name!: string;
   unique_identification_number!: string;
   trade_register_registration_number!: string;
@@ -53,6 +56,15 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
   address?: string;
   type?: "Client" | "Transportator" | "Prospect";
 
+  // Partner hasMany Deviz via partner_id
+  Devize!: Deviz[];
+  getDevize!: Sequelize.HasManyGetAssociationsMixin<Deviz>;
+  setDevize!: Sequelize.HasManySetAssociationsMixin<Deviz, DevizId>;
+  addDeviz!: Sequelize.HasManyAddAssociationMixin<Deviz, DevizId>;
+  createDeviz!: Sequelize.HasManyCreateAssociationMixin<Deviz>;
+  removeDeviz!: Sequelize.HasManyRemoveAssociationMixin<Deviz, DevizId>;
+  hasDeviz!: Sequelize.HasManyHasAssociationMixin<Deviz, DevizId>;
+  countDevize!: Sequelize.HasManyCountAssociationsMixin;
   // Partner hasMany Address via partner_id
   Addresses!: Address[];
   getAddresses!: Sequelize.HasManyGetAssociationsMixin<Address>;
@@ -248,86 +260,86 @@ export class Partner extends Model<PartnerAttributes, PartnerCreationAttributes>
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Partner {
     return Partner.init({
-    partner_id: {
-      autoIncrement: true,
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      primaryKey: true
-    },
-    name: {
-      type: DataTypes.STRING(200),
-      allowNull: false
-    },
-    unique_identification_number: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    trade_register_registration_number: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    credit: {
-      type: DataTypes.DECIMAL(19,4),
-      allowNull: false,
-      defaultValue: 0
-    },
-    remaining_credit: {
-      type: DataTypes.DECIMAL(19,4),
-      allowNull: false,
-      defaultValue: 0
-    },
-    vat_payer: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false
-    },
-    vat_split: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false
-    },
-    vat_collection: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false
-    },
-    invoice_deadline_days: {
-      type: DataTypes.DECIMAL,
-      allowNull: true
-    },
-    credit_exceedance_percentage: {
-      type: DataTypes.DECIMAL,
-      allowNull: true
-    },
-    created_at_utc: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
-    },
-    modified_at_utc: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
-    },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    type: {
-      type: DataTypes.ENUM("Client","Transportator","Prospect"),
-      allowNull: true
-    }
-  }, {
-    sequelize,
-    tableName: 'Partner',
-    schema: 'public',
-    timestamps: false,
-    indexes: [
-      {
-        name: "Partner_pkey",
-        unique: true,
-        fields: [
-          { name: "partner_id" },
-        ]
+      partner_id: {
+        autoIncrement: true,
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        primaryKey: true
       },
-    ]
-  });
+      name: {
+        type: DataTypes.STRING(200),
+        allowNull: false
+      },
+      unique_identification_number: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      trade_register_registration_number: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      credit: {
+        type: DataTypes.DECIMAL(19, 4),
+        allowNull: false,
+        defaultValue: 0
+      },
+      remaining_credit: {
+        type: DataTypes.DECIMAL(19, 4),
+        allowNull: false,
+        defaultValue: 0
+      },
+      vat_payer: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+      },
+      vat_split: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+      },
+      vat_collection: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+      },
+      invoice_deadline_days: {
+        type: DataTypes.DECIMAL,
+        allowNull: true
+      },
+      credit_exceedance_percentage: {
+        type: DataTypes.DECIMAL,
+        allowNull: true
+      },
+      created_at_utc: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      },
+      modified_at_utc: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
+      },
+      address: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      type: {
+        type: DataTypes.ENUM("Client", "Transportator", "Prospect"),
+        allowNull: true
+      }
+    }, {
+      sequelize,
+      tableName: 'Partner',
+      schema: 'public',
+      timestamps: false,
+      indexes: [
+        {
+          name: "Partner_pkey",
+          unique: true,
+          fields: [
+            { name: "partner_id" },
+          ]
+        },
+      ]
+    });
   }
 }

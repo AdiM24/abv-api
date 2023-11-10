@@ -39,3 +39,12 @@ export const getInQuery = (searchArray: any[]) => {
 
   return inQuery;
 }
+
+export const getPretQuery = (rangeValueFrom: any, rangeValueTo: any) => {
+  const rangeFilter: any = {};
+
+  if (rangeValueFrom) rangeFilter[Op.gte] = rangeValueFrom;
+  if (rangeValueTo) rangeFilter[Op.lte] = rangeValueTo;
+
+  return rangeFilter;
+}

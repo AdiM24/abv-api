@@ -1,4 +1,4 @@
-import {CommonRoutesConfig} from "../common/common.routes.config";
+import { CommonRoutesConfig } from "../common/common.routes.config";
 import express from "express";
 import AuthMiddleware from "../middleware/auth.middleware";
 import PartnerMiddleware from "../middleware/partner.middleware";
@@ -36,6 +36,9 @@ export class AutoFleetRoutes extends CommonRoutesConfig {
       .get(AuthMiddleware.auth, AutoFleetMiddleware.validatePartnerAutoFleet, AutoFleetController.getAutoFleet)
       .delete(AuthMiddleware.auth, AutoFleetMiddleware.validatePartnerAutoFleet, AutoFleetController.deleteAutoFleet);
 
+      this.app
+      .route('/api/autofleet/expenses/:id')
+      .get(AuthMiddleware.auth, AutoFleetMiddleware.validatePartnerAutoFleet, AutoFleetController.autoFleetExpenses);
 
     return this.app;
   }
