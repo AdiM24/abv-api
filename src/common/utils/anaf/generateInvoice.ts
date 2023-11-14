@@ -7,7 +7,8 @@ const generateInvoice = async (
   supplier: any,
   customer: any,
   classifiedTaxCategory: string,
-  taxPercent: string
+  taxPercent: string,
+  tokenAnaf: string
 ) => {
   const invoiceLines = productList.map(product => {
     return {
@@ -71,7 +72,8 @@ const generateInvoice = async (
       taxInclusiveAmount: invoice.total_price_incl_vat,
       payableAmount: invoice.total_price_incl_vat
     },
-    invoiceLines: invoiceLines
+    invoiceLines: invoiceLines,
+    token: tokenAnaf
   };
 
   return newInvoice;

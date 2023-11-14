@@ -17,6 +17,7 @@ import { OrderRoutes } from './routes/order.routes.config';
 import morgan from 'morgan';
 import { ImageRoutes } from './routes/image.routes.config';
 import { DevizRoutes } from './routes/deviz.routes.config';
+import { AnafTokenRoutes } from './routes/anafToken.routes.config';
 
 dotenv.config();
 
@@ -42,6 +43,7 @@ routes.push(new EmailRoutes(app));
 routes.push(new OrderRoutes(app));
 routes.push(new ImageRoutes(app));
 routes.push(new DevizRoutes(app));
+routes.push(new AnafTokenRoutes(app));
 
 const runningMessage = `Server running at http://172.17.0.1:${port}`;
 app.get('/api/', (req: express.Request, res: express.Response) => {

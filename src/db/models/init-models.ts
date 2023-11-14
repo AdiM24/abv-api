@@ -78,7 +78,7 @@ export {
   _UserRoles as UserRoles,
   _UserVehicle as UserVehicle,
   _Nc8Code as Nc8Code,
-  _Deviz as Deviz
+  _Deviz as Deviz,
 };
 
 export type {
@@ -133,7 +133,7 @@ export type {
   Nc8CodeAttributes,
   Nc8CodeCreationAttributes,
   DevizAttributes,
-  DevizCreationAttributes
+  DevizCreationAttributes,
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -276,6 +276,6 @@ export function initModels(sequelize: Sequelize) {
     UserRoles: UserRoles,
     UserVehicle: UserVehicle,
     Nc8Code: Nc8Code,
-    Deviz: Deviz
+    Deviz: Deviz,
   };
 }
