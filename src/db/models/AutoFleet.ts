@@ -1,6 +1,7 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { Partner, PartnerId } from './Partner';
+import { Deviz, DevizId } from './Deviz';
 
 export interface AutoFleetAttributes {
   auto_fleet_id: number;
@@ -46,84 +47,97 @@ export class AutoFleet extends Model<AutoFleetAttributes, AutoFleetCreationAttri
   setPartner!: Sequelize.BelongsToSetAssociationMixin<Partner, PartnerId>;
   createPartner!: Sequelize.BelongsToCreateAssociationMixin<Partner>;
 
+  // AutoFleet hasMany Deviz via auto_fleet_id
+  Devize!: Deviz[];
+  getDevize!: Sequelize.HasManyGetAssociationsMixin<Deviz>;
+  setDevize!: Sequelize.HasManySetAssociationsMixin<Deviz, DevizId>;
+  addDeviz!: Sequelize.HasManyAddAssociationMixin<Deviz, DevizId>;
+  addDevize!: Sequelize.HasManyAddAssociationsMixin<Deviz, DevizId>;
+  createDeviz!: Sequelize.HasManyCreateAssociationMixin<Deviz>;
+  removeDeviz!: Sequelize.HasManyRemoveAssociationMixin<Deviz, DevizId>;
+  removeDevize!: Sequelize.HasManyRemoveAssociationsMixin<Deviz, DevizId>;
+  hasDeviz!: Sequelize.HasManyHasAssociationMixin<Deviz, DevizId>;
+  hasDevize!: Sequelize.HasManyHasAssociationsMixin<Deviz, DevizId>;
+  countDevize!: Sequelize.HasManyCountAssociationsMixin;
+
   static initModel(sequelize: Sequelize.Sequelize): typeof AutoFleet {
     return AutoFleet.init({
-    auto_fleet_id: {
-      autoIncrement: true,
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
-    },
-    partner_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'Partner',
-        key: 'partner_id'
-      }
-    },
-    model: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    vin: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    reg_no: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    vignette_ro: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    itp: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    cmr_insurance: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    rca: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    carbon_copy: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    vignette_hu: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    vignette_slo: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    casco: {
-      type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    max_weight_in_tons: {
-      type: DataTypes.NUMBER,
-      allowNull: false
-    }
-  }, {
-    sequelize,
-    tableName: 'AutoFleet',
-    schema: 'public',
-    timestamps: false,
-    indexes: [
-      {
-        name: "AutoFleet_pk",
-        unique: true,
-        fields: [
-          { name: "auto_fleet_id" },
-        ]
+      auto_fleet_id: {
+        autoIncrement: true,
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true
       },
-    ]
-  });
+      partner_id: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        references: {
+          model: 'Partner',
+          key: 'partner_id'
+        }
+      },
+      model: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      vin: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      reg_no: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      vignette_ro: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+      },
+      itp: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+      },
+      cmr_insurance: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+      },
+      rca: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+      },
+      carbon_copy: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+      },
+      vignette_hu: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+      },
+      vignette_slo: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+      },
+      casco: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+      },
+      max_weight_in_tons: {
+        type: DataTypes.NUMBER,
+        allowNull: false
+      }
+    }, {
+      sequelize,
+      tableName: 'AutoFleet',
+      schema: 'public',
+      timestamps: false,
+      indexes: [
+        {
+          name: "AutoFleet_pk",
+          unique: true,
+          fields: [
+            { name: "auto_fleet_id" },
+          ]
+        },
+      ]
+    });
   }
 }

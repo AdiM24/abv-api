@@ -7,6 +7,7 @@ import {
   InvoiceAttributes,
   InvoiceProduct,
   Order,
+  OrderDetails,
   Partner,
   PartnerAttributes,
   Product,
@@ -364,7 +365,11 @@ class InvoiceService {
         },
         include: [
           { model: Partner, as: "buyer", include: [{ model: BankAccount, as: 'BankAccounts' }] },
-          { model: Partner, as: "client", include: [{ model: BankAccount, as: 'BankAccounts' }] },
+          {
+            model: Partner, as: "client", include: [
+              { model: BankAccount, as: 'BankAccounts' }
+            ]
+          },
           { model: Address, as: 'pickup_address' },
           { model: Address, as: 'drop_off_address' }
         ],
@@ -727,19 +732,30 @@ class InvoiceService {
     return latestInvoicesFromSeries[0];
   }
 
-  async sendInvoice(invoiceId: string) {
+  async sendInvoice(invoiceId: string, classifiedTaxCategory: string, taxPercent: string) {
+    const models = initModels(sequelize);
+
     try {
       const { invoice, productList } = await this.getInvoiceWithDetails(Number(invoiceId));
 
       if (invoice.status_incarcare_anaf) {
-        return { code: 409, message: `Already sent to anaf. Index incarcare anaf: ${invoice.index_incarcare_anaf}` }
+        return { code: 409, message: `eFactura a fost deja trimisa la ANAF. Index incarcare anaf: ${invoice.index_incarcare_anaf}` }
       }
 
       const supplier = await partnerService.getPartner(invoice.client_id) as PartnerAttributes;
       const customer = await partnerService.getPartner(invoice.buyer_id) as PartnerAttributes;
-      const taxPercent = customer.vat_payer === true ? "19" : "0";
-      const classifiedTaxCategory = "S"
-      const generatedInvoice = await generateInvoice(productList, invoice, supplier, customer, classifiedTaxCategory, taxPercent);
+      const usertoken = await models.User.findOne({
+        where: {
+          user_id: invoice.user_id
+        },
+        attributes: ['token_anaf']
+      });
+
+      if (!usertoken.token_anaf) {
+        return { code: 409, message: 'Nu aveti token generat de ANAF.' };
+      }
+
+      const generatedInvoice = await generateInvoice(productList, invoice, supplier, customer, classifiedTaxCategory, taxPercent, usertoken.token_anaf);
 
       const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050";
 
@@ -770,72 +786,106 @@ class InvoiceService {
     }
   }
 
-  async sendEtransport(invoiceId: string, codTarifar: string[], codScopOperatiune: string[], locStart: any, locFinal: any) {
+  async sendEtransport(invoiceId: string, codTarifar: string, codScopOperatiune: string[]) {
     const models = initModels(sequelize);
     try {
       const invoice = await models.Invoice.findOne({
         where: {
           invoice_id: invoiceId
-        }
-      });
-
-      if (!invoice) {
-        return { code: 404, message: 'Invoice not found.' };
-      }
-
-      if (invoice.e_transport_generated) {
-        return { code: 409, message: 'The eTransport is already generated.' };
-      }
-
-      const order = await models.Order.findOne({
-        where: {
-          order_id: invoice.order_reference_id
-        }
-      });
-
-      if (!order) {
-        return { code: 404, message: 'Order not found.' };
-      }
-
-      const partner = await models.Partner.findOne({
-        where: {
-          partner_id: invoice.client_id
-        },
-        attributes: ['unique_identification_number', 'name']
-      });
-
-      if (!partner) {
-        return { code: 404, message: 'Partner not found.' };
-      }
-
-      const orderDetails = await models.OrderDetails.findOne({
-        where: {
-          order_id: order.order_id
-        }
-      });
-
-      const invoiceProducts = await models.InvoiceProduct.findAll({
-        where: {
-          invoice_id: invoiceId
         },
         include: [
-          { model: Product, as: "product" }
+          { model: Address, as: 'pickup_address' },
+          { model: Address, as: 'drop_off_address' },
+          {
+            model: InvoiceProduct, as: 'InvoiceProducts',
+            include: [
+              { model: Product, as: 'product' }
+            ]
+          },
+          {
+            model: Order, as: 'order_reference',
+            include: [
+              { model: OrderDetails, as: 'OrderDetails' }
+            ]
+          },
+          {
+            model: Partner, as: 'client',
+            include: [
+              { model: Address, as: 'Addresses' }
+            ],
+            attributes: ['unique_identification_number', 'name']
+          },
         ]
       });
 
-      if (invoiceProducts.length < 1) {
-        return { code: 400, message: "This invoice doesn't have products." }
+      if (!invoice) {
+        return { code: 404, message: 'Invoice nu exista in baza de date.' };
       }
 
+      if (invoice.e_transport_generated) {
+        return { code: 409, message: `eTransport a fost deja trimis la ANAF. UIT: ${invoice.uit}` };
+      }
+
+      const userToken = await models.User.findOne({
+        where: {
+          user_id: invoice.user_id
+        },
+        attributes: ['token_anaf']
+      });
+
+      if (!userToken.token_anaf) {
+        return { code: 409, message: 'Nu aveti token generat de ANAF.' };
+      }
+
+      // const order = await models.Order.findOne({
+      //   where: {
+      //     order_id: invoice.order_reference_id
+      //   }
+      // });
+
+      // if (!order) {
+      //   return { code: 404, message: 'Order not found.' };
+      // }
+
+      // const partner = await models.Partner.findOne({
+      //   where: {
+      //     partner_id: invoice.client_id
+      //   },
+      //   include: [
+      //     { model: Address, as: 'Addresses' }
+      //   ],
+      //   attributes: ['unique_identification_number', 'name']
+      // });
+
+      // if (!partner) {
+      //   return { code: 404, message: 'Partner not found.' };
+      // }
+
+      // const orderDetails = await models.OrderDetails.findOne({
+      //   where: {
+      //     order_id: order.order_id
+      //   }
+      // });
+
+      // const invoiceProducts = await models.InvoiceProduct.findAll({
+      //   where: {
+      //     invoice_id: invoiceId
+      //   },
+      //   include: [
+      //     { model: Product, as: "product" },
+      //     { model: Invoice, as: "invoice" }
+      //   ]
+      // });
+
+      // if (invoiceProducts.length < 1) {
+      //   return { code: 400, message: "This invoice doesn't have products." }
+      // }
+
       const generatedEtransport = await generateEtransport(
-        invoiceProducts,
-        orderDetails,
-        partner,
-        order,
+        invoice,
         codTarifar,
         codScopOperatiune,
-        locStart,
-        locFinal
+        userToken.token_anaf
       );
 
       const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050/";

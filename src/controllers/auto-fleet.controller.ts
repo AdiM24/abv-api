@@ -1,7 +1,6 @@
 import express from "express";
 import AutoFleetService from "../services/auto-fleet.service";
 import {CustomRequest} from "../middleware/auth.middleware";
-import InvoiceService from "../services/invoice.service";
 
 class AutoFleetController {
   async createAutoFleet(req: express.Request, res: express.Response) {
@@ -41,6 +40,15 @@ class AutoFleetController {
 
     res.status(200).send(autoFleetOptions);
   }
+
+  async autoFleetExpenses(req: express.Request, res: express.Response) {
+    const result = await AutoFleetService.autoFleetExpenses(req.params?.id);
+
+    return res.status(result?.code).send({
+      "Cheltuieli Totale": result?.message
+    });
+  }
+
 }
 
 export default new AutoFleetController();

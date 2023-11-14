@@ -203,6 +203,27 @@ class PartnerService {
     return partner;
   }
 
+  async getLoggedInPartner(decodedToken: any) {
+    const models = initModels(sequelize);
+
+    try {
+      const partner = await models.Partner.findOne({
+        where: {
+          partner_id: decodedToken?._id
+        },
+        attributes: ['partner_id', 'name']
+      });
+
+      if (!partner) {
+        return { code: 404, message: 'Partenerul nu a fost gasit.' };
+      }
+
+      return { code: 200, message: partner };
+    } catch (error) {
+      return { code: 500, message: `${error}` };
+    }
+  }
+
   async getUserPartners(decodedToken: any){
     const models = initModels(sequelize);
 

@@ -2,7 +2,7 @@ import { InvoiceProduct } from "../../../db/models/InvoiceProduct";
 
 const generateBunuriTransportate = async (
   invoiceProducts: InvoiceProduct[],
-  codTarifar: string[],
+  codTarifar: string,
   codScopOperatiune: string[],
 ) => {
   return await Promise.all(

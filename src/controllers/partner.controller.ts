@@ -53,6 +53,14 @@ class PartnerController {
     return res.status(200).send(partner);
   }
 
+  async getLoggedInPartner(req: CustomRequest, res: express.Response) {
+    const partner = await PartnerService.getLoggedInPartner(req.token);
+
+    res.status(partner.code).send({
+      message: partner.message
+    });
+  }
+
   async addPartnerBankAccount(req:express.Request, res: express.Response) {
     const result = await PartnerService.addPartnerBankAccount(req.body);
 

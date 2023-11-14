@@ -1,9 +1,9 @@
-import {CreateAutoFleetDto} from "../dtos/auto-fleet.dto";
-import {sequelize} from "../db/sequelize";
-import {AutoFleet, AutoFleetAttributes, initModels, Partner, UserPartnerMap} from "../db/models/init-models";
+import { CreateAutoFleetDto } from "../dtos/auto-fleet.dto";
+import { sequelize } from "../db/sequelize";
+import { AutoFleet, AutoFleetAttributes, initModels, Partner, UserPartnerMap } from "../db/models/init-models";
 import UserPartnerMappingService from "./user-partner-mapping.service";
-import {getInQuery, getLikeQuery} from "../common/utils/query-utils.service";
-import {Op} from "sequelize";
+import { getInQuery, getLikeQuery } from "../common/utils/query-utils.service";
+import { Op } from "sequelize";
 
 class AutoFleetService {
   async getAutoFleets(decodedJwt: any) {
@@ -56,7 +56,7 @@ class AutoFleetService {
       where: {
         auto_fleet_id: auto_fleet_id
       },
-      include: [{model: Partner, as: "partner"}]
+      include: [{ model: Partner, as: "partner" }]
     });
 
     return autoFleet;
@@ -102,7 +102,7 @@ class AutoFleetService {
         }
       });
 
-      return {code: 200, message: `Masina a fost stearsa.`}
+      return { code: 200, message: `Masina a fost stearsa.` }
     } catch (err) {
       console.error(err);
     }
@@ -128,7 +128,7 @@ class AutoFleetService {
     try {
       await existingAutoFleet.save();
 
-      return {code: 200, message: 'Masina a fost actualizata.'};
+      return { code: 200, message: 'Masina a fost actualizata.' };
     } catch (err) {
       console.error(err);
     }
@@ -162,6 +162,24 @@ class AutoFleetService {
     });
 
     return autoFleetOptions;
+  }
+
+  async autoFleetExpenses(auto_fleet_id: string) {
+    const models = initModels(sequelize);
+    try {
+      const autoFleetDevize = await models.Deviz.findAll({
+        where: {
+          auto_fleet_id: auto_fleet_id
+        },
+        attributes: ['pret']
+      });
+
+      const totalExpenses = autoFleetDevize.reduce((accumulator, currentValue) => accumulator + Number(currentValue.pret), 0);
+      
+      return { code: 200, message: totalExpenses };
+    } catch (error) {
+      return { code: 500, message: `${error}` };
+    }
   }
 }
 
