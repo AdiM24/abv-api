@@ -5,7 +5,7 @@ export interface IDeviz extends Model {
     auto_fleet_id?: number;
     partner_id?: number;
     date: Date;
-    denumire: 'Leasing' | 'Casco' | 'RCA' | 'Diurna Sofer' | 'RO vigneta' | 'Hu vigneta' | 'Cauciucuri' | 'Autostrăzi' | 'Asigurare CMR' | 'Revizii' | 'Chirie' | 'Întreținere' | 'Digi' | 'Asibox' | 'Curieri' | 'CargoTrack' | 'Depozite' | 'Bugetul de Stat' | 'Contribuții Asigurare Munca' | 'TVA' | 'Burse' | 'Salarii Angajați' | 'Bonuri' | 'Consumabile' | 'Alte Cheltuieli';
+    denumire: 'Leasing' | 'Casco' | 'RCA' | 'Diurna Sofer' | 'RO vigneta' | 'Hu vigneta' | 'Cauciucuri' | 'Autostrăzi' | 'Asigurare CMR' | 'Revizii' | 'Chirie' | 'Întreținere' | 'Digi' | 'Asibox' | 'Curieri' | 'CargoTrack' | 'Depozite' | 'Bugetul de stat' | 'Contribuții asig muncă' | 'TVA' | 'Burse' | 'Salarii angajați' | 'Bonuri' | 'Consumabile' | 'Alte cheltuieli';
     pret: number;
     infos?: string;
     AutoFleet?: {

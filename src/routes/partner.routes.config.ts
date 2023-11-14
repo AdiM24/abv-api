@@ -1,4 +1,4 @@
-import {CommonRoutesConfig} from "../common/common.routes.config";
+import { CommonRoutesConfig } from "../common/common.routes.config";
 import express from "express";
 import PartnerController from "../controllers/partner.controller";
 import PartnerMiddleware from "../middleware/partner.middleware";
@@ -15,6 +15,10 @@ export class PartnerRoutes extends CommonRoutesConfig {
       .post(AuthMiddleware.auth, PartnerMiddleware.validatePartnerAlreadyExists, PartnerController.addPartner)
       .get(AuthMiddleware.auth, PartnerMiddleware.validateUser, PartnerController.getPartners)
       .put(AuthMiddleware.auth, PartnerMiddleware.validatePartnerUpdate, PartnerController.updatePartner);
+
+    this.app
+      .route('/api/partners/info')
+      .get(AuthMiddleware.auth, PartnerController.getLoggedInPartner);
 
     this.app
       .route("/api/partners/user")

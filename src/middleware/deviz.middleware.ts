@@ -2,8 +2,8 @@ import express from 'express';
 import { initModels } from '../db/models/init-models';
 import { sequelize } from '../db/sequelize';
 
-const autoFleetTypes = ['Leasing', 'Casco', 'RCA', 'Diurna Sofer', 'RO vigneta', 'Hu vigneta', 'Cauciucuri', 'Autostrăzi', 'Asigurare CMR', 'Revizii', 'Alte Cheltuieli'];
-const partnertypes = ['Chirie', 'Întreținere', 'Digi', 'Asibox', 'Curieri', 'CargoTrack', 'Depozite', 'Bugetul de Stat', 'Contribuții Asigurare Munca', 'TVA', 'Burse', 'Salarii Angajați', 'Bonuri', 'Consumabile', 'Alte Cheltuieli'];
+const autoFleetTypes = ['Leasing', 'Casco', 'RCA', 'Diurna Sofer', 'RO vigneta', 'Hu vigneta', 'Cauciucuri', 'Autostrăzi', 'Asigurare CMR', 'Revizii', 'Alte cheltuieli'];
+const partnertypes = ['Chirie', 'Întreținere', 'Digi', 'Asibox', 'Curieri', 'CargoTrack', 'Depozite', 'Bugetul de stat', 'Contribuții asig muncă', 'TVA', 'Burse', 'Salarii angajați', 'Bonuri', 'Consumabile', 'Alte cheltuieli'];
 
 class DevizMiddleware {
   async validateDevizTypeForCreate(req: express.Request, res: express.Response, next: express.NextFunction) {

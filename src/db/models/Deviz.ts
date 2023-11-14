@@ -8,7 +8,7 @@ export interface DevizAttributes {
   auto_fleet_id?: number;
   partner_id?: number;
   date: Date;
-  denumire: 'Leasing' | 'Casco' | 'RCA' | 'Diurna Sofer' | 'RO vigneta' | 'Hu vigneta' | 'Cauciucuri' | 'Autostrăzi' | 'Asigurare CMR' | 'Revizii' | 'Chirie' | 'Întreținere' | 'Digi' | 'Asibox' | 'Curieri' | 'CargoTrack' | 'Depozite' | 'Bugetul de Stat' | 'Contribuții Asigurare Munca' | 'TVA' | 'Burse' | 'Salarii Angajați' | 'Bonuri' | 'Consumabile' | 'Alte Cheltuieli';
+  denumire: 'Leasing' | 'Casco' | 'RCA' | 'Diurna Sofer' | 'RO vigneta' | 'Hu vigneta' | 'Cauciucuri' | 'Autostrăzi' | 'Asigurare CMR' | 'Revizii' | 'Chirie' | 'Întreținere' | 'Digi' | 'Asibox' | 'Curieri' | 'CargoTrack' | 'Depozite' | 'Bugetul de stat' | 'Contribuții asig muncă' | 'TVA' | 'Burse' | 'Salarii angajați' | 'Bonuri' | 'Consumabile' | 'Alte cheltuieli';
   pret: number;
   infos?: string;
 }
@@ -23,7 +23,7 @@ export class Deviz extends Model<DevizAttributes, DevizCreationAttributes> imple
   auto_fleet_id?: number;
   partner_id?: number;
   date!: Date;
-  denumire!: 'Leasing' | 'Casco' | 'RCA' | 'Diurna Sofer' | 'RO vigneta' | 'Hu vigneta' | 'Cauciucuri' | 'Autostrăzi' | 'Asigurare CMR' | 'Revizii' | 'Chirie' | 'Întreținere' | 'Digi' | 'Asibox' | 'Curieri' | 'CargoTrack' | 'Depozite' | 'Bugetul de Stat' | 'Contribuții Asigurare Munca' | 'TVA' | 'Burse' | 'Salarii Angajați' | 'Bonuri' | 'Consumabile' | 'Alte Cheltuieli';
+  denumire!: 'Leasing' | 'Casco' | 'RCA' | 'Diurna Sofer' | 'RO vigneta' | 'Hu vigneta' | 'Cauciucuri' | 'Autostrăzi' | 'Asigurare CMR' | 'Revizii' | 'Chirie' | 'Întreținere' | 'Digi' | 'Asibox' | 'Curieri' | 'CargoTrack' | 'Depozite' | 'Bugetul de stat' | 'Contribuții asig muncă' | 'TVA' | 'Burse' | 'Salarii angajați' | 'Bonuri' | 'Consumabile' | 'Alte cheltuieli';
   pret: number;
   infos?: string;
 
@@ -69,7 +69,7 @@ export class Deviz extends Model<DevizAttributes, DevizCreationAttributes> imple
         defaultValue: Sequelize.Sequelize.literal("(now() AT TIME ZONE 'utc'::text)")
       },
       denumire: {
-        type: DataTypes.ENUM('Leasing', 'Casco', 'RCA', 'Diurna Sofer', 'RO vigneta', 'Hu vigneta', 'Cauciucuri', 'Autostrăzi', 'Asigurare CMR', 'Revizii', 'Chirie', 'Întreținere', 'Digi', 'Asibox', 'Curieri', 'CargoTrack', 'Depozite', 'Bugetul de Stat', 'Contribuții Asigurare Munca', 'TVA', 'Burse', 'Salarii Angajați', 'Bonuri', 'Consumabile', 'Alte Cheltuieli'),
+        type: DataTypes.ENUM('Leasing', 'Casco', 'RCA', 'Diurna Sofer', 'RO vigneta', 'Hu vigneta', 'Cauciucuri', 'Autostrăzi', 'Asigurare CMR', 'Revizii', 'Chirie', 'Întreținere', 'Digi', 'Asibox', 'Curieri', 'CargoTrack', 'Depozite', 'Bugetul de stat', 'Contribuții asig muncă', 'TVA', 'Burse', 'Salarii angajați', 'Bonuri', 'Consumabile', 'Alte cheltuieli'),
         allowNull: false
       },
       pret: {

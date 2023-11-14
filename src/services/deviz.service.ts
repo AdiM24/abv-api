@@ -71,7 +71,7 @@ class DevizService {
       }
 
       if (queryParams.infos) {
-        queryObject.infos = { [Op.like]: `%${queryParams.infos}%` };
+        queryObject.infos = { [Op.iLike]: `%${queryParams.infos}%` };
       }
 
       let relations: Includeable | Includeable[];
