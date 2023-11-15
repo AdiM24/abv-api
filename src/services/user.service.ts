@@ -112,7 +112,7 @@ class UserService {
 
     return await models.User.findOne({
       attributes: ["user_id", 'email', 'first_name', 'last_name', 'phone',
-        'id_card_series', 'id_card_number', 'id_card_issued_by'],
+        'id_card_series', 'id_card_number', 'id_card_issued_by', 'token_anaf'],
       where: {
         user_id: user_id
       },
