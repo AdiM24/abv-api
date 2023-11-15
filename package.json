@@ -47,6 +47,7 @@
     "@types/node": "^18.11.8",
     "@types/nodemailer": "^6.4.7",
     "@types/sequelize": "^4.28.14",
+    "@types/simple-oauth2": "^5.0.7",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
     "concurrently": "^7.5.0",
