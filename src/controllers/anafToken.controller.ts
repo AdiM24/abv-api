@@ -45,7 +45,7 @@ class AnafTokenController {
     }
 
     async anafAuth(req: Request, res: Response) {
-		const {id} = req.query;
+        const { id } = req.query;
         try {
             const userId = `${id}`;
             const clientId = '901ef31c4b0c585285074496f38d7e8a7e3ee71d711d4e65';
@@ -78,22 +78,26 @@ class AnafTokenController {
             const clientId = '901ef31c4b0c585285074496f38d7e8a7e3ee71d711d4e65';
             const clientSecret = 'bc1defa27b86411888c706acc5384c8d0620603afab07e8a7e3ee71d711d4e65';
 
-            const data = {
-                grant_type: 'authorization_code',
-                code: 'code',
-                redirect_uri: redirectUri,
-            };
+            const code = Array.isArray(query.code) ? query.code[0] : query.code;
 
-            axios
-                .post(tokenUrl, data, {
-                    auth: {
-                        username: clientId,
-                        password: clientSecret,
-                    },
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                })
+            if (typeof code !== 'string') {
+                return res.status(400).json({ error: 'Invalid code parameter' });
+            }
+
+            const params = new URLSearchParams();
+            params.append('grant_type', 'authorization_code');
+            params.append('code', code);
+            params.append('redirect_uri', redirectUri);
+
+            axios.post(tokenUrl, params, {
+                auth: {
+                    username: clientId,
+                    password: clientSecret,
+                },
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            })
                 .then((response) => {
                     const accessToken = response.data.access_token;
                     const refreshToken = response.data.refresh_token;
