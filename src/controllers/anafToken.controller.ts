@@ -49,7 +49,7 @@ class AnafTokenController {
         try {
             const userId = `${id}`;
             const clientId = '901ef31c4b0c585285074496f38d7e8a7e3ee71d711d4e65';
-            const redirectUri = 'https://costavoc.abvsoft.ro/anaf/callback';
+            const redirectUri = 'https://asibox.abvsoft.ro/api/anaf/callback';
             const authorizationUrl = 'https://logincert.anaf.ro/anaf-oauth2/v1/authorize';
 
             // Redirect the user to the authorization URL
@@ -73,31 +73,54 @@ class AnafTokenController {
     async anafCallback(req: Request, res: Response) {
         const query = req.query;
         try {
-            const redirectUri = 'https://costavoc.abvsoft.ro/anaf/callback';
+            // const redirectUri = 'https://asibox.abvsoft.ro/api/anaf/callback';
+            // const tokenUrl = 'https://logincert.anaf.ro/anaf-oauth2/v1/token';
+            // const clientId = '901ef31c4b0c585285074496f38d7e8a7e3ee71d711d4e65';
+            // const clientSecret = 'bc1defa27b86411888c706acc5384c8d0620603afab07e8a7e3ee71d711d4e65';
+
+            // const code = Array.isArray(query.code) ? query.code[0] : query.code;
+
+            // if (typeof code !== 'string') {
+            //     return res.status(400).json({ error: 'Invalid code parameter' });
+            // }
+
+            // const params = new URLSearchParams();
+            // params.append('grant_type', 'authorization_code');
+            // params.append('code', code);
+            // params.append('redirect_uri', redirectUri);
+
+            // axios.post(tokenUrl, params, {
+            //     auth: {
+            //         username: clientId,
+            //         password: clientSecret,
+            //     },
+            //     headers: {
+            //         'Content-Type': 'application/x-www-form-urlencoded',
+            //         'Access-Control-Allow-Origin' : '*',
+            //     },
+            // })
+            const redirectUri = 'https://drauber.abvsoft.ro/api/anaf/callback';
             const tokenUrl = 'https://logincert.anaf.ro/anaf-oauth2/v1/token';
-            const clientId = '901ef31c4b0c585285074496f38d7e8a7e3ee71d711d4e65';
-            const clientSecret = 'bc1defa27b86411888c706acc5384c8d0620603afab07e8a7e3ee71d711d4e65';
+            const clientId = 'dcc8a2cdb860cfb9d412e81791d57e8a7e3ee71dd71a4e65';
+            const clientSecret = 'c08e74035a89911b96d702c7b544eead4a822193ff7d7e8a7e3ee71dd71a4e65';
 
-            const code = Array.isArray(query.code) ? query.code[0] : query.code;
+            const data = {
+                grant_type: 'authorization_code',
+                code: 'code',
+                redirect_uri: redirectUri,
+            };
 
-            if (typeof code !== 'string') {
-                return res.status(400).json({ error: 'Invalid code parameter' });
-            }
-
-            const params = new URLSearchParams();
-            params.append('grant_type', 'authorization_code');
-            params.append('code', code);
-            params.append('redirect_uri', redirectUri);
-
-            axios.post(tokenUrl, params, {
-                auth: {
-                    username: clientId,
-                    password: clientSecret,
-                },
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-            })
+            axios
+                .post(tokenUrl, data, {
+                    auth: {
+                        username: clientId,
+                        password: clientSecret,
+                    },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin' : '*',
+                    },
+                })
                 .then((response) => {
                     const accessToken = response.data.access_token;
                     const refreshToken = response.data.refresh_token;

@@ -11,6 +11,7 @@ import {
   Partner,
   PartnerAttributes,
   Product,
+  Nc8Code,
   UserInvoiceSeries,
   UserPartnerMap
 } from "../db/models/init-models";
@@ -751,9 +752,9 @@ class InvoiceService {
         attributes: ['token_anaf']
       });
 
-      if (!usertoken.token_anaf) {
-        return { code: 409, message: 'Nu aveti token generat de ANAF.' };
-      }
+      // if (!usertoken.token_anaf) {
+      //   return { code: 409, message: 'Nu aveti token generat de ANAF.' };
+      // }
 
       const generatedInvoice = await generateInvoice(productList, invoice, supplier, customer, classifiedTaxCategory, taxPercent, usertoken.token_anaf);
 
@@ -786,7 +787,7 @@ class InvoiceService {
     }
   }
 
-  async sendEtransport(invoiceId: string, codTarifar: string, codScopOperatiune: string[]) {
+  async sendEtransport(invoiceId: string, codTarifar: string, codScopOperatiune: string) {
     const models = initModels(sequelize);
     try {
       const invoice = await models.Invoice.findOne({
@@ -799,7 +800,11 @@ class InvoiceService {
           {
             model: InvoiceProduct, as: 'InvoiceProducts',
             include: [
-              { model: Product, as: 'product' }
+              { model: Product, as: 'product',
+                include: [
+                  {model: Nc8Code, as: 'nc8Code'},
+                ]
+            }
             ]
           },
           {
@@ -833,9 +838,9 @@ class InvoiceService {
         attributes: ['token_anaf']
       });
 
-      if (!userToken.token_anaf) {
-        return { code: 409, message: 'Nu aveti token generat de ANAF.' };
-      }
+      // if (!userToken.token_anaf) {
+      //   return { code: 409, message: 'Nu aveti token generat de ANAF.' };
+      // }
 
       // const order = await models.Order.findOne({
       //   where: {
@@ -883,7 +888,6 @@ class InvoiceService {
 
       const generatedEtransport = await generateEtransport(
         invoice,
-        codTarifar,
         codScopOperatiune,
         userToken.token_anaf
       );
@@ -908,7 +912,9 @@ class InvoiceService {
       invoice.uit = response.UIT;
       await invoice.save();
 
-      return { code: 201, message: { UIT: response.UIT } };
+      const uit = await response.UIT;
+
+      return { code: 201, message: { UIT: uit } };
     } catch (error) {
       return { code: 500, message: `${error}` }
     }

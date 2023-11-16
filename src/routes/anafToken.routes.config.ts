@@ -12,7 +12,7 @@ export class AnafTokenRoutes extends CommonRoutesConfig {
 
         this.app.route('/api/anaf/authorize').get(anafTokenController.anafAuth);
 
-        this.app.route('/anaf/callback').get(anafTokenController.anafCallback);
+        this.app.route('/api/anaf/callback').get(anafTokenController.anafCallback);
 
         return this.app;
     }

@@ -10,7 +10,7 @@ const codJudet = async (county: string) => {
     const indexOfCounty = counties.indexOf(county);
 
     if (indexOfCounty !== -1) {
-        return indexOfCounty;
+        return indexOfCounty + 1;
     } else if (county === 'giurgiu') {
         return 52;
     } else {
