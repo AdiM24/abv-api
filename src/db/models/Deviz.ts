@@ -11,6 +11,7 @@ export interface DevizAttributes {
   denumire: 'Leasing' | 'Casco' | 'RCA' | 'Diurna Sofer' | 'RO vigneta' | 'Hu vigneta' | 'Cauciucuri' | 'Autostrăzi' | 'Asigurare CMR' | 'Revizii' | 'Chirie' | 'Întreținere' | 'Digi' | 'Asibox' | 'Curieri' | 'CargoTrack' | 'Depozite' | 'Bugetul de stat' | 'Contribuții asig muncă' | 'TVA' | 'Burse' | 'Salarii angajați' | 'Bonuri' | 'Consumabile' | 'Alte cheltuieli';
   pret: number;
   infos?: string;
+  currency: 'RON' | 'EUR';
 }
 
 export type DevizPk = 'deviz_id';
@@ -26,6 +27,7 @@ export class Deviz extends Model<DevizAttributes, DevizCreationAttributes> imple
   denumire!: 'Leasing' | 'Casco' | 'RCA' | 'Diurna Sofer' | 'RO vigneta' | 'Hu vigneta' | 'Cauciucuri' | 'Autostrăzi' | 'Asigurare CMR' | 'Revizii' | 'Chirie' | 'Întreținere' | 'Digi' | 'Asibox' | 'Curieri' | 'CargoTrack' | 'Depozite' | 'Bugetul de stat' | 'Contribuții asig muncă' | 'TVA' | 'Burse' | 'Salarii angajați' | 'Bonuri' | 'Consumabile' | 'Alte cheltuieli';
   pret: number;
   infos?: string;
+  currency: 'RON' | 'EUR';
 
   // Deviz belongs to AutoFleet via auto_fleet_id
   AutoFleet!: AutoFleet;
@@ -79,6 +81,10 @@ export class Deviz extends Model<DevizAttributes, DevizCreationAttributes> imple
       infos: {
         type: DataTypes.STRING,
         allowNull: true
+      },
+      currency: {
+        type: DataTypes.ENUM('RON', 'EUR'),
+        allowNull: false
       }
     }, {
       sequelize,

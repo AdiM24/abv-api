@@ -25,6 +25,10 @@ export class PartnerRoutes extends CommonRoutesConfig {
       .get(AuthMiddleware.auth, PartnerController.getUserPartners);
 
     this.app
+      .route('/api/partners/deviz-pdf-data/:partnerId')
+      .get(AuthMiddleware.auth, PartnerController.getPartnerDataForPdf);
+
+    this.app
       .route("/api/partners/comments")
       .get(AuthMiddleware.auth, PartnerController.getPartnerComments)
       .post(AuthMiddleware.auth, PartnerMiddleware.validateUserPartner, PartnerController.addPartnerComment)

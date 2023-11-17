@@ -1,4 +1,4 @@
-import {sequelize} from "../db/sequelize";
+import { sequelize } from "../db/sequelize";
 import {
   Address,
   AddressAttributes,
@@ -7,15 +7,17 @@ import {
   initModels,
   Partner,
   User,
+  UserPartnerEmail,
   UserPartnerMap,
 } from "../db/models/init-models";
-import {CreateAddressDto, CreateBankAccountDto, CreateContactDto, CreatePartnerDto,} from "../dtos/create.partner.dto";
-import {addOrUpdate} from "./utils.service";
-import {Op} from "sequelize";
-import {getLikeQuery, getStrictQuery,} from "../common/utils/query-utils.service";
-import {UpdateAddressDto, UpdateBankAccountDto, UpdateContactDto, UpdatePartnerDto,} from "../dtos/update.partner.dto";
+import { CreateAddressDto, CreateBankAccountDto, CreateContactDto, CreatePartnerDto, } from "../dtos/create.partner.dto";
+import { addOrUpdate } from "./utils.service";
+import { Op } from "sequelize";
+import { getLikeQuery, getStrictQuery, } from "../common/utils/query-utils.service";
+import { UpdateAddressDto, UpdateBankAccountDto, UpdateContactDto, UpdatePartnerDto, } from "../dtos/update.partner.dto";
 import UserPartnerMappingService from "./user-partner-mapping.service";
-import {PartnerCommentCreationAttributes} from "../db/models/PartnerComment";
+import { PartnerCommentCreationAttributes } from "../db/models/PartnerComment";
+import imageService from './image.service';
 
 class PartnerService {
   async addPartner(partnerToAdd: CreatePartnerDto, decodedToken: any) {
@@ -45,7 +47,7 @@ class PartnerService {
           contact,
           {
             personal_identification_number:
-            contact.personal_identification_number,
+              contact.personal_identification_number,
           },
           contactEntity,
           () => {
@@ -125,7 +127,7 @@ class PartnerService {
       console.error(error);
     }
 
-    return {code: 200, message: 'Partenerul a fost actualizat'};
+    return { code: 200, message: 'Partenerul a fost actualizat' };
   }
 
   async getPartners() {
@@ -133,9 +135,9 @@ class PartnerService {
 
     const partners = await models.Partner.findAll({
       include: [
-        {model: Address, as: "Addresses"},
-        {model: BankAccount, as: "BankAccounts"},
-        {model: Contact, as: "Contacts"},
+        { model: Address, as: "Addresses" },
+        { model: BankAccount, as: "BankAccounts" },
+        { model: Contact, as: "Contacts" },
       ],
     });
 
@@ -163,10 +165,10 @@ class PartnerService {
         })
       } else {
         partners = await models.Partner.findAll({
-            where: {
-              name: getLikeQuery(searchKey)
-            },
-          }
+          where: {
+            name: getLikeQuery(searchKey)
+          },
+        }
         )
       }
     } catch (err) {
@@ -189,15 +191,15 @@ class PartnerService {
           partner_id: id,
         },
         include: [
-          {model: Address, as: "Addresses"},
-          {model: BankAccount, as: "BankAccounts"},
-          {model: Contact, as: "Contacts"},
+          { model: Address, as: "Addresses" },
+          { model: BankAccount, as: "BankAccounts" },
+          { model: Contact, as: "Contacts" },
         ],
       })
     )?.get();
 
     if (!partner) {
-      return {errorCode: 404, message: `No partner found for id ${id}`};
+      return { errorCode: 404, message: `No partner found for id ${id}` };
     }
 
     return partner;
@@ -207,31 +209,37 @@ class PartnerService {
     const models = initModels(sequelize);
 
     try {
-      const partner = await models.Partner.findOne({
+      const userPartnerId = (await models.UserPartnerMap.findOne({
+        attributes: ['partner_id'],
         where: {
-          partner_id: decodedToken?._id
+          user_id: Number(decodedToken?._id)
+        }
+      }));
+
+      const userPartners = await models.Partner.findOne({
+        where: {
+          partner_id: userPartnerId.partner_id
         },
         attributes: ['partner_id', 'name']
       });
-
-      if (!partner) {
-        return { code: 404, message: 'Partenerul nu a fost gasit.' };
+      if (!userPartners) {
+        return { code: 404, message: 'Nu aveti niciun un partener..' };
       }
 
-      return { code: 200, message: partner };
+      return { code: 200, message: userPartners };
     } catch (error) {
       return { code: 500, message: `${error}` };
     }
   }
 
-  async getUserPartners(decodedToken: any){
+  async getUserPartners(decodedToken: any) {
     const models = initModels(sequelize);
 
     const userPartnerIds = (await models.UserPartnerMap.findAll({
       attributes: ['partner_id'],
-       where: {
-         user_id: Number(decodedToken?._id)
-       }
+      where: {
+        user_id: Number(decodedToken?._id)
+      }
     })).map((userPartners) => userPartners.partner_id);
 
     const userPartners = await models.Partner.findAll({
@@ -241,6 +249,53 @@ class PartnerService {
     });
 
     return userPartners;
+  }
+
+  async getPartnerDataForPdf(decodedToken: any, partnerId: any) {
+    const models = initModels(sequelize);
+
+    try {
+      const partner = await models.Partner.findOne({
+        where: {
+          partner_id: partnerId
+        },
+        attributes: ['name', 'unique_identification_number', 'trade_register_registration_number', 'address']
+      });
+
+      if (!partner) {
+        return { code: 404, message: 'Partenerul nu a fost gasit.' };
+      }
+
+      const user = await models.User.findOne({
+        where: {
+          user_id: decodedToken._id
+        },
+        attributes: ['email', 'phone']
+      });
+
+      if (!user) {
+        return { code: 404, message: 'User-ul nu a fost gasit.' };
+      }
+
+      const logo = await imageService.getImage({
+        type: 'LOGO',
+        partner_id: partnerId
+      });
+
+      return {
+        code: 200, message: {
+          name: partner.name,
+          cui: partner.unique_identification_number,
+          registerNumber: partner.trade_register_registration_number,
+          address: partner.address,
+          email: user.email,
+          phone: user.phone,
+          logo: logo
+        }
+      };
+    } catch (error) {
+      return { code: 500, message: `${error}` };
+    }
   }
 
   // Addresses
@@ -458,7 +513,7 @@ class PartnerService {
         partner_id: partner_id
       },
       include: [
-        {model: User, as: 'user', attributes: ["first_name", "last_name"]}
+        { model: User, as: 'user', attributes: ["first_name", "last_name"] }
       ]
     });
 
@@ -489,7 +544,7 @@ class PartnerService {
 
     await models.PartnerComment.create(partnerCommentToAdd);
 
-    return {code: 201, message: 'Comentariul a fost adaugat'}
+    return { code: 201, message: 'Comentariul a fost adaugat' }
   }
 
   async deletePartnerComment(comment_id: number) {
@@ -501,7 +556,7 @@ class PartnerService {
       }
     });
 
-    return {code: 200, message: 'Comentariul a fost sters'}
+    return { code: 200, message: 'Comentariul a fost sters' }
 
   }
 
@@ -514,7 +569,7 @@ class PartnerService {
       }
     });
 
-    return {code: 200, message: 'Contactul a fost sters.'}
+    return { code: 200, message: 'Contactul a fost sters.' }
   }
 
   async deletePartnerBankAccount(bank_account_id: number) {
@@ -526,7 +581,7 @@ class PartnerService {
       }
     });
 
-    return {code: 200, message: 'Contul bancar a fost sters.'}
+    return { code: 200, message: 'Contul bancar a fost sters.' }
   }
 
   async deletePartnerAddress(address_id: number) {
@@ -539,11 +594,11 @@ class PartnerService {
         }
       });
     } catch (err) {
-      return {code: 400, message: 'Adresa nu poate fi stearsa.'};
+      return { code: 400, message: 'Adresa nu poate fi stearsa.' };
     }
 
 
-    return {code: 200, message: 'Adresa a fost stearsa.'}
+    return { code: 200, message: 'Adresa a fost stearsa.' }
   }
 
 }

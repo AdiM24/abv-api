@@ -61,6 +61,12 @@ class PartnerController {
     });
   }
 
+  async getPartnerDataForPdf(req: CustomRequest, res: express.Response) {
+    const partner = await PartnerService.getPartnerDataForPdf(req.token, req.params?.partnerId);
+
+    res.status(partner.code).send(partner.message);
+  }
+
   async addPartnerBankAccount(req:express.Request, res: express.Response) {
     const result = await PartnerService.addPartnerBankAccount(req.body);
 
