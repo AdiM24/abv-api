@@ -1,152 +1,73 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { CustomRequest } from '../middleware/auth.middleware';
-import express from 'express';
 import { AuthorizationCode } from 'simple-oauth2';
-import axios from 'axios';
 
 class AnafTokenController {
-    async generateToken(req: CustomRequest, res: express.Response) {
-        // Configure your OAuth 2.0 Credentials
+
+    async anafAuth(req: CustomRequest, res: Response) {
+        const {id} = req.params;
         const config = {
             client: {
-                id: 'ea0d72df2fe5111362a06bd28ac27e8a7e3ee71d86a22e65',
-                secret: 'dae976ac8550ab6bd6f7355fc9a87f5be607f7384b967e8a7e3ee71d86a22e65',
+                id: '901ef31c4b0c585285074496f38d7e8a7e3ee71d711d4e65',
+                secret: 'bc1defa27b86411888c706acc5384c8d0620603afab07e8a7e3ee71d711d4e65',
             },
             auth: {
-                tokenHost: 'https://logincert.anaf.ro/anaf-oauth2/v1/',
-                tokenPath: 'token',
-                authorizePath: 'authorize',
+                tokenHost: 'https://logincert.anaf.ro/anaf-oauth2/v1',
+                tokenPath: '/token',
+                authorizePath: '/authorize',
             },
         };
 
-        const code = req.query.code;
+        try {
+            const client = new AuthorizationCode(config);
 
-        // Check if 'code' is a string (it should not be an array or an object)
-        if (typeof code !== 'string') {
-            return res.status(400).send('Invalid code parameter.');
+            const authorizationUri = client.authorizeURL({
+                redirect_uri: 'https://asibox.abvsoft.ro/api/anaf/callback',
+                scope: 'authorization',
+                state: `${id}`
+            });
+            return res.redirect(authorizationUri);
+        } catch (error) {
+            return res.status(500).json({
+                error: `${error}`,
+            });
         }
-        // Initialize the OAuth2 Library
-        const client = new AuthorizationCode(config);
-        const options = {
-            code: code,
-            redirect_uri: 'http://localhost:3000/callback',
+    }
+
+    async anafCallback(req: CustomRequest, res: Response) {
+        const config = {
+            client: {
+                id: '901ef31c4b0c585285074496f38d7e8a7e3ee71d711d4e65',
+                secret: 'bc1defa27b86411888c706acc5384c8d0620603afab07e8a7e3ee71d711d4e65',
+            },
+            auth: {
+                tokenHost: 'https://logincert.anaf.ro/anaf-oauth2/v1',
+                tokenPath: '/token',
+                authorizePath: '/authorize',
+            },
         };
-
-        try {
-            const accessToken = await client.getToken(options);
-            console.log('The resulting token: ', accessToken.token);
-
-            // Now you have the access token, you can use it to make API requests
-            res.send('Authentication successful! Check console for details.');
-        } catch (error) {
-            console.error('Access Token Error', error.message);
-            res.status(500).json('Authentication failed');
-        }
-    }
-
-    async anafAuth(req: Request, res: Response) {
-        const { id } = req.query;
-        try {
-            const userId = `${id}`;
-            const clientId = '901ef31c4b0c585285074496f38d7e8a7e3ee71d711d4e65';
-            const redirectUri = 'https://asibox.abvsoft.ro/api/anaf/callback';
-            const authorizationUrl = 'https://logincert.anaf.ro/anaf-oauth2/v1/authorize';
-
-            // Redirect the user to the authorization URL
-            const authParams = {
-                response_type: 'code',
-                client_id: clientId,
-                redirect_uri: redirectUri,
-                state: `${userId}`,
+        const { code } = req.query;
+        if (typeof code === 'string') {
+            const options = {
+                code,
+                redirect_uri: 'https://asibox.abvsoft.ro/api/anaf/callback'
             };
+            try {
 
-            const authUrl = `${authorizationUrl}?response_type=${authParams.response_type}&client_id=${authParams.client_id}&redirect_uri=${authParams.redirect_uri}&state=${authParams.state}`;
+                const client = new AuthorizationCode(config);
+                const accessToken = await client.getToken(options);
+                console.log("accessToken from anaf: ", accessToken);
 
-            return res.redirect(authUrl);
-        } catch (error) {
-            return res.status(500).json({
-                error: `${error}`,
-            });
-        }
-    }
-
-    async anafCallback(req: Request, res: Response) {
-        const query = req.query;
-        try {
-            // const redirectUri = 'https://asibox.abvsoft.ro/api/anaf/callback';
-            // const tokenUrl = 'https://logincert.anaf.ro/anaf-oauth2/v1/token';
-            // const clientId = '901ef31c4b0c585285074496f38d7e8a7e3ee71d711d4e65';
-            // const clientSecret = 'bc1defa27b86411888c706acc5384c8d0620603afab07e8a7e3ee71d711d4e65';
-
-            // const code = Array.isArray(query.code) ? query.code[0] : query.code;
-
-            // if (typeof code !== 'string') {
-            //     return res.status(400).json({ error: 'Invalid code parameter' });
-            // }
-
-            // const params = new URLSearchParams();
-            // params.append('grant_type', 'authorization_code');
-            // params.append('code', code);
-            // params.append('redirect_uri', redirectUri);
-
-            // axios.post(tokenUrl, params, {
-            //     auth: {
-            //         username: clientId,
-            //         password: clientSecret,
-            //     },
-            //     headers: {
-            //         'Content-Type': 'application/x-www-form-urlencoded',
-            //         'Access-Control-Allow-Origin' : '*',
-            //     },
-            // })
-            const redirectUri = 'https://drauber.abvsoft.ro/api/anaf/callback';
-            const tokenUrl = 'https://logincert.anaf.ro/anaf-oauth2/v1/token';
-            const clientId = 'dcc8a2cdb860cfb9d412e81791d57e8a7e3ee71dd71a4e65';
-            const clientSecret = 'c08e74035a89911b96d702c7b544eead4a822193ff7d7e8a7e3ee71dd71a4e65';
-
-            const data = {
-                grant_type: 'authorization_code',
-                code: 'code',
-                redirect_uri: redirectUri,
-            };
-
-            axios
-                .post(tokenUrl, data, {
-                    auth: {
-                        username: clientId,
-                        password: clientSecret,
-                    },
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin' : '*',
-                    },
-                })
-                .then((response) => {
-                    const accessToken = response.data.access_token;
-                    const refreshToken = response.data.refresh_token;
-
-                    /** find user by query.state
-                     * store tokens
-                     */
-
-                    return res.status(200).json({
-                        message: 'Success!',
-                        accessToken,
-                        refreshToken,
-                        query,
-                    });
-                })
-                .catch((err) => {
-                    return res.status(500).json({
-                        error: `${err}`,
-                        query,
-                    });
+                return res.redirect(`https://asibox.abvsoft.ro/settings-anaf?accessToken=${accessToken.token}}`)
+            } catch (error) {
+                return res.status(500).json({
+                    error: `${error}`,
                 });
-        } catch (error) {
-            return res.status(500).json({
-                error: `${error}`,
-                query,
-            });
+            }
+        } else {
+            return res.status(400).json({
+                message: "Invalid code parameter"
+            })
         }
     }
 }
