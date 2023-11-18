@@ -403,6 +403,7 @@ class UserService {
     existingUser.id_card_number = user.id_card_number;
     existingUser.id_card_issued_by = user.id_card_issued_by;
     existingUser.deleted = false;
+    existingUser.token_anaf = user.token_anaf;
 
     try {
       await models.UserVehicle.update(
