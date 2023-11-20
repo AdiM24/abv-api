@@ -50,6 +50,7 @@ class AnafTokenController {
         if (typeof code === 'string') {
             const options = {
                 code,
+                scope: 'authenticate',
                 redirect_uri: 'https://asibox.abvsoft.ro/api/anaf/callback'
             };
             try {
