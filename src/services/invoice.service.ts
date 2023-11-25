@@ -787,7 +787,7 @@ class InvoiceService {
     }
   }
 
-  async sendEtransport(invoiceId: string, codTarifar: string, codScopOperatiune: string) {
+  async sendEtransport(invoiceId: string, codScopOperatiune: string) {
     const models = initModels(sequelize);
     try {
       const invoice = await models.Invoice.findOne({
@@ -901,6 +901,7 @@ class InvoiceService {
         },
         body: JSON.stringify(generatedEtransport)
       });
+      console.log("here")
 
       const response = await sendEtransport.json();
 
