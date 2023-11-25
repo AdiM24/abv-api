@@ -12,4 +12,5 @@ export interface CreateAutoFleetDto {
   vignette_hu?: string;
   vignette_slo?: string;
   max_weight_in_tons: number;
+  net_weight_in_tons: number;
 }

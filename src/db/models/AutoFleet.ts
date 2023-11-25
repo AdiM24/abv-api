@@ -18,6 +18,7 @@ export interface AutoFleetAttributes {
   vignette_slo?: string;
   casco?: string;
   max_weight_in_tons: number;
+  net_weight_in_tons: number;
 }
 
 export type AutoFleetPk = "auto_fleet_id";
@@ -40,6 +41,7 @@ export class AutoFleet extends Model<AutoFleetAttributes, AutoFleetCreationAttri
   vignette_slo?: string;
   casco?: string;
   max_weight_in_tons: number;
+  net_weight_in_tons: number;
 
   // AutoFleet belongsTo Partner via partner_id
   partner!: Partner;
@@ -121,6 +123,10 @@ export class AutoFleet extends Model<AutoFleetAttributes, AutoFleetCreationAttri
         allowNull: true
       },
       max_weight_in_tons: {
+        type: DataTypes.NUMBER,
+        allowNull: false
+      },
+      net_weight_in_tons: {
         type: DataTypes.NUMBER,
         allowNull: false
       }
