@@ -64,6 +64,10 @@ export class InvoiceRoutes extends CommonRoutesConfig {
       .route("/api/invoices/send/:id")
       .put(InvoiceController.sendInvoice)
 
+    this.app
+      .route("/api/invoices/etransport/:id")
+      .put(InvoiceController.sendEtransport)
+
     return this.app;
   }
 }
