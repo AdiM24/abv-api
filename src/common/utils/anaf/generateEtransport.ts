@@ -6,7 +6,9 @@ import codJudet from "./generateCodJudet";
 const generateEtransport = async (
   invoice: Invoice,
   codScopOperatiune: string,
-  tokenAnaf: string
+  tokenAnaf: string,
+  greutateBruta: number,
+  greutateNeta: number
 ) => {
 
   const generatedEtransport = {
@@ -14,7 +16,7 @@ const generateEtransport = async (
     // cif: invoice.client.unique_identification_number.toLowerCase().replace('ro', '').trim(),
     cif: "16912984",
     codTipOperatiune: "30",
-    bunuriTransportate: await generateBunuriTransportate(invoice.InvoiceProducts, codScopOperatiune),
+    bunuriTransportate: await generateBunuriTransportate(invoice.InvoiceProducts, codScopOperatiune, greutateBruta, greutateNeta),
     partenerComercial: {
       codTara: "RO",
       denumire: invoice.client.name,

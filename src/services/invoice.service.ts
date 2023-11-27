@@ -787,7 +787,7 @@ class InvoiceService {
     }
   }
 
-  async sendEtransport(invoiceId: string, codTarifar: string, codScopOperatiune: string) {
+  async sendEtransport(invoiceId: string, codScopOperatiune: string) {
     const models = initModels(sequelize);
     try {
       const invoice = await models.Invoice.findOne({
@@ -800,11 +800,12 @@ class InvoiceService {
           {
             model: InvoiceProduct, as: 'InvoiceProducts',
             include: [
-              { model: Product, as: 'product',
+              {
+                model: Product, as: 'product',
                 include: [
-                  {model: Nc8Code, as: 'nc8Code'},
+                  { model: Nc8Code, as: 'nc8Code' },
                 ]
-            }
+              }
             ]
           },
           {
@@ -886,15 +887,28 @@ class InvoiceService {
       //   return { code: 400, message: "This invoice doesn't have products." }
       // }
 
+      const weights = await models.AutoFleet.findOne({
+        where: {
+          reg_no: invoice.car_reg_number
+        },
+        attributes: ['max_weight_in_tons', 'net_weight_in_tons']
+      });
+
+      if (!weights.max_weight_in_tons || weights.net_weight_in_tons) {
+        return { code: 404, message: 'Masina nu are introduse informatii despre greutatea neta si greutatea bruta.' };
+      }
+
       const generatedEtransport = await generateEtransport(
         invoice,
         codScopOperatiune,
-        userToken.token_anaf
+        userToken.token_anaf,
+        weights.max_weight_in_tons,
+        weights.net_weight_in_tons
       );
 
-      const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050/";
+      const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050";
 
-      const sendEtransport = await fetch(`${microServiceUrl}api/anaf/send-etransport`, {
+      const sendEtransport = await fetch(`${microServiceUrl}/api/anaf/send-etransport`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

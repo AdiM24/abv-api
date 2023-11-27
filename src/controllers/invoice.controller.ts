@@ -90,7 +90,6 @@ class InvoiceController {
   async sendEtransport(req: express.Request, res: express.Response) {
     const result = await InvoiceService.sendEtransport(
       req.params?.id,
-      req.body?.codTarifar,
       req.body?.codScopOperatiune
     );
 
