@@ -14,7 +14,7 @@ const generateEtransport = async (
   const generatedEtransport = {
     // cif-ul trebuie sa aiba drept in SPV
     // cif: invoice.client.unique_identification_number.toLowerCase().replace('ro', '').trim(),
-    cif: "16912984",
+    cif: "3249643",
     codTipOperatiune: "30",
     bunuriTransportate: await generateBunuriTransportate(invoice.InvoiceProducts, codScopOperatiune, greutateBruta, greutateNeta),
     partenerComercial: {

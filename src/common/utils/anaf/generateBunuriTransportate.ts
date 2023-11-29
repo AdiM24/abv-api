@@ -19,15 +19,15 @@ const generateBunuriTransportate = async (
       return {
         denumireMarfa: invoiceProduct.product.product_name,
         codScopOperatiune: codScopOperatiune,
-        cantitate: quantity,
+        cantitate: quantity*1000,
         // valoare dummy deoarece codul din baza de date nu era valid
         // codUnitateMasura: "OPM",
-        codUnitateMasura: invoiceProduct.unit_of_measure.toLocaleUpperCase(),
-        greutateBruta: greutateBruta,
-        greutateNeta: greutateNeta,
+        codUnitateMasura: "KGM",
+        greutateBruta: greutateBruta*1000,
+        greutateNeta: greutateNeta*1000,
         codTarifar: invoiceProduct.product.nc8Code.code,
         // Purchase price este valoarea lei fara tva?
-        valoareLeiFaraTva: invoiceProduct.product.purchase_price
+        valoareLeiFaraTva: invoiceProduct.product.purchase_price*1000
       };
     })
   );

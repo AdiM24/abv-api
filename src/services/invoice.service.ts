@@ -839,54 +839,6 @@ class InvoiceService {
         attributes: ['token_anaf']
       });
 
-      // if (!userToken.token_anaf) {
-      //   return { code: 409, message: 'Nu aveti token generat de ANAF.' };
-      // }
-
-      // const order = await models.Order.findOne({
-      //   where: {
-      //     order_id: invoice.order_reference_id
-      //   }
-      // });
-
-      // if (!order) {
-      //   return { code: 404, message: 'Order not found.' };
-      // }
-
-      // const partner = await models.Partner.findOne({
-      //   where: {
-      //     partner_id: invoice.client_id
-      //   },
-      //   include: [
-      //     { model: Address, as: 'Addresses' }
-      //   ],
-      //   attributes: ['unique_identification_number', 'name']
-      // });
-
-      // if (!partner) {
-      //   return { code: 404, message: 'Partner not found.' };
-      // }
-
-      // const orderDetails = await models.OrderDetails.findOne({
-      //   where: {
-      //     order_id: order.order_id
-      //   }
-      // });
-
-      // const invoiceProducts = await models.InvoiceProduct.findAll({
-      //   where: {
-      //     invoice_id: invoiceId
-      //   },
-      //   include: [
-      //     { model: Product, as: "product" },
-      //     { model: Invoice, as: "invoice" }
-      //   ]
-      // });
-
-      // if (invoiceProducts.length < 1) {
-      //   return { code: 400, message: "This invoice doesn't have products." }
-      // }
-
       const weights = await models.AutoFleet.findOne({
         where: {
           reg_no: invoice.car_reg_number
@@ -894,14 +846,16 @@ class InvoiceService {
         attributes: ['max_weight_in_tons', 'net_weight_in_tons']
       });
 
-      if (!weights.max_weight_in_tons || weights.net_weight_in_tons) {
+      if (!weights.max_weight_in_tons || !weights.net_weight_in_tons) {
         return { code: 404, message: 'Masina nu are introduse informatii despre greutatea neta si greutatea bruta.' };
       }
+
+      const tokenAnaf = 'c33f5e5696447b89d98aae68dfd068b129ab6f09b96f17fea717dd49c95e9083'
 
       const generatedEtransport = await generateEtransport(
         invoice,
         codScopOperatiune,
-        userToken.token_anaf,
+        tokenAnaf,
         weights.max_weight_in_tons,
         weights.net_weight_in_tons
       );
