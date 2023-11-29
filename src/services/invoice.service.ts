@@ -760,7 +760,7 @@ class InvoiceService {
 
       const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050";
 
-      const sendInvoice = await fetch(`${microServiceUrl}/api/anaf/send-efactura`, {
+      const sendInvoice = await fetch(`${microServiceUrl}api/anaf/send-efactura`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -862,7 +862,7 @@ class InvoiceService {
 
       const microServiceUrl = process.env["MICROSERVICE_URL"] || "http://127.0.0.1:5050";
 
-      const sendEtransport = await fetch(`${microServiceUrl}/api/anaf/send-etransport`, {
+      const sendEtransport = await fetch(`${microServiceUrl}api/anaf/send-etransport`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
