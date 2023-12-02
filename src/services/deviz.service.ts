@@ -43,9 +43,36 @@ class DevizService {
         order: [['deviz_id', 'ASC']]
       });
 
-      devize.map(async item => await devizObjectForFrontend(item))
+      let valfaraTvaRon = 0;
+      let tvaRon = 0;
+      let valfaraTvaEuro = 0;
+      let tvaEuro = 0;
 
-      return { code: 200, message: devize };
+      devize.map(async item => {
+        if (item.currency === 'RON') {
+          valfaraTvaRon += Number(item.pret_fara_tva);
+          tvaRon += Number(item.tva);
+        } else if (item.currency === 'EUR') {
+          valfaraTvaEuro += Number(item.pret_fara_tva);
+          tvaEuro += Number(item.tva);
+        };
+        return await devizObjectForFrontend(item);
+      });
+
+      const totalRon = valfaraTvaRon + tvaRon;
+      const totalEuro = valfaraTvaEuro + tvaEuro;
+
+      return {
+        code: 200, message: {
+          devize,
+          valfaraTvaRon,
+          tvaRon,
+          totalRon,
+          valfaraTvaEuro,
+          tvaEuro,
+          totalEuro
+        }
+      };
     } catch (error) {
       return { code: 500, message: `${error}` };
     }
@@ -68,7 +95,7 @@ class DevizService {
       }
 
       if (queryParams.pret_from || queryParams.pret_to) {
-        queryObject.pret = getPretQuery(queryParams.pret_from, queryParams.pret_to);
+        queryObject.pret_fara_tva = getPretQuery(queryParams.pret_from, queryParams.pret_to);
       }
 
       if (queryParams.infos) {
@@ -100,9 +127,36 @@ class DevizService {
         order: [['deviz_id', 'ASC']]
       });
 
-      filteredDevize.map(async item => await devizObjectForFrontend(item));
+      let valfaraTvaRon = 0;
+      let tvaRon = 0;
+      let valfaraTvaEuro = 0;
+      let tvaEuro = 0;
 
-      return { code: 200, message: filteredDevize };
+      filteredDevize.map(async item => {
+        if (item.currency === 'RON') {
+          valfaraTvaRon += Number(item.pret_fara_tva);
+          tvaRon += Number(item.tva);
+        } else if (item.currency === 'EUR') {
+          valfaraTvaEuro += Number(item.pret_fara_tva);
+          tvaEuro += Number(item.tva);
+        };
+        return await devizObjectForFrontend(item);
+      });
+
+      const totalRon = valfaraTvaRon + tvaRon;
+      const totalEuro = valfaraTvaEuro + tvaEuro;
+
+      return {
+        code: 200, message: {
+          filteredDevize,
+          valfaraTvaRon,
+          tvaRon,
+          totalRon,
+          valfaraTvaEuro,
+          tvaEuro,
+          totalEuro
+        }
+      };
     } catch (error) {
       return { code: 500, message: `${error}` };
     }
