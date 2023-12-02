@@ -171,10 +171,10 @@ class AutoFleetService {
         where: {
           auto_fleet_id: auto_fleet_id
         },
-        attributes: ['pret']
+        attributes: ['pret_fara_tva', 'tva']
       });
 
-      const totalExpenses = autoFleetDevize.reduce((accumulator, currentValue) => accumulator + Number(currentValue.pret), 0);
+      const totalExpenses = autoFleetDevize.reduce((accumulator, currentValue) => accumulator + Number(currentValue.pret_fara_tva) + Number(currentValue.tva), 0);
       
       return { code: 200, message: totalExpenses };
     } catch (error) {

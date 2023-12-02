@@ -6,7 +6,9 @@ export interface IDeviz extends Model {
     partner_id?: number;
     date: Date;
     denumire: 'Leasing' | 'Casco' | 'RCA' | 'Diurna Sofer' | 'RO vigneta' | 'Hu vigneta' | 'Cauciucuri' | 'Autostrăzi' | 'Asigurare CMR' | 'Revizii' | 'Chirie' | 'Întreținere' | 'Digi' | 'Asibox' | 'Curieri' | 'CargoTrack' | 'Depozite' | 'Bugetul de stat' | 'Contribuții asig muncă' | 'TVA' | 'Burse' | 'Salarii angajați' | 'Bonuri' | 'Consumabile' | 'Alte cheltuieli';
-    pret: number;
+    cota_tva?: number;
+    pret_fara_tva: number;
+    tva?: number;
     infos?: string;
     currency: 'RON' | 'EUR';
     AutoFleet?: {

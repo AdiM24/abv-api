@@ -4,6 +4,7 @@ import { IDeviz } from "../common/interfaces/deviz.interface";
 import { Includeable, Op } from "sequelize";
 import { getDateRangeQuery, getPretQuery } from "../common/utils/query-utils.service";
 import devizObjectForFrontend from "../common/utils/deviz/devizObjectForFrontend";
+import { calculatePercentage } from "./utils.service";
 
 class DevizService {
   async getDeviz(devizId: string) {
@@ -123,6 +124,12 @@ class DevizService {
           return { code: 404, message: 'Vehiculul nu a fost gasit.' };
         }
 
+        if (!newDeviz?.cota_tva) {
+          newDeviz.cota_tva = 19;
+        }
+
+        newDeviz.tva = parseFloat((calculatePercentage(Number(newDeviz.pret_fara_tva), Number(newDeviz.cota_tva)) - newDeviz.pret_fara_tva).toFixed(2));
+
         await models.Deviz.create(newDeviz);
 
         return { code: 201, message: 'Deviz creat cu succes.' };
@@ -137,6 +144,12 @@ class DevizService {
         if (!existingPartner) {
           return { code: 404, message: 'Firma nu a fost gasita.' };
         }
+
+        if (!newDeviz?.cota_tva) {
+          newDeviz.cota_tva = 19;
+        }
+
+        newDeviz.tva = parseFloat((calculatePercentage(Number(newDeviz.pret_fara_tva), Number(newDeviz.cota_tva)) - newDeviz.pret_fara_tva).toFixed(2));
 
         await models.Deviz.create(newDeviz);
 
@@ -168,6 +181,8 @@ class DevizService {
           existingDeviz.setDataValue(key as keyof DevizAttributes, deviz[key as keyof DevizAttributes]);
         }
       })
+
+      existingDeviz.tva = parseFloat((calculatePercentage(Number(existingDeviz.pret_fara_tva), Number(existingDeviz.cota_tva)) - existingDeviz.pret_fara_tva).toFixed(2));
 
       await existingDeviz.save();
 
