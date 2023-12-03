@@ -67,6 +67,8 @@ class AutoFleetService {
     autoFleet.casco = autoFleet.casco || null;
     autoFleet.rca = autoFleet.rca || null;
     autoFleet.carbon_copy = autoFleet.carbon_copy || null;
+    autoFleet.aviz_medical = autoFleet.aviz_medical || null;
+    autoFleet.aviz_psihologic = autoFleet.aviz_psihologic || null;
     autoFleet.cmr_insurance = autoFleet.cmr_insurance || null;
     autoFleet.vignette_hu = autoFleet.vignette_hu || null;
     autoFleet.vignette_ro = autoFleet.vignette_ro || null;
@@ -171,10 +173,10 @@ class AutoFleetService {
         where: {
           auto_fleet_id: auto_fleet_id
         },
-        attributes: ['pret']
+        attributes: ['pret_fara_tva', 'tva']
       });
 
-      const totalExpenses = autoFleetDevize.reduce((accumulator, currentValue) => accumulator + Number(currentValue.pret), 0);
+      const totalExpenses = autoFleetDevize.reduce((accumulator, currentValue) => accumulator + Number(currentValue.pret_fara_tva) + Number(currentValue.tva), 0);
       
       return { code: 200, message: totalExpenses };
     } catch (error) {
