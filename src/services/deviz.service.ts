@@ -55,7 +55,7 @@ class DevizService {
         } else if (item.currency === 'EUR') {
           valfaraTvaEuro += Number(item.pret_fara_tva);
           tvaEuro += Number(item.tva);
-        };
+        }
         return await devizObjectForFrontend(item);
       });
 
@@ -139,7 +139,7 @@ class DevizService {
         } else if (item.currency === 'EUR') {
           valfaraTvaEuro += Number(item.pret_fara_tva);
           tvaEuro += Number(item.tva);
-        };
+        }
         return await devizObjectForFrontend(item);
       });
 
