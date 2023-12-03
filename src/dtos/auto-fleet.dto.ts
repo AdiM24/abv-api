@@ -8,6 +8,8 @@ export interface CreateAutoFleetDto {
   cmr_insurance?: string;
   rca?: string;
   carbon_copy?: string;
+  aviz_psihologic?: string;
+  aviz_medical?: string;
   casco?: string;
   vignette_hu?: string;
   vignette_slo?: string;
