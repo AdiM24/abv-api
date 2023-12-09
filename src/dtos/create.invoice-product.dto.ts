@@ -5,6 +5,7 @@ export interface CreateInvoiceProductDto {
   selling_price: number;
   sold_at_utc: string;
   unit_of_measure?: string;
+  quantity_stationary?: number;
 }
 
 export interface InvoiceProductInformation {
@@ -14,6 +15,7 @@ export interface InvoiceProductInformation {
   selling_price?: number;
   purchase_price?: number;
   unit_of_measure?: string;
+  quantity_stationary?: number;
 }
 
 export interface UpdateInvoiceProduct {
@@ -24,4 +26,5 @@ export interface UpdateInvoiceProduct {
   selling_price?: number;
   purchase_price?: number;
   unit_of_measure?: string;
+  quantity_stationary?: number;
 }

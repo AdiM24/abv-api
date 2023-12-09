@@ -13,4 +13,7 @@ export interface CreateAutoFleetDto {
   vignette_slo?: string;
   max_weight_in_tons: number;
   net_weight_in_tons: number;
+  stationary_hour: number;
+  work_hour: number;
+  car_type: string;
 }

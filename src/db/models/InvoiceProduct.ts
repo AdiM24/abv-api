@@ -1,3 +1,4 @@
+import { getInQuery } from './../../common/utils/query-utils.service';
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 import type { Invoice, InvoiceId } from './Invoice';
@@ -11,6 +12,7 @@ export interface InvoiceProductAttributes {
   selling_price: number;
   sold_at_utc: string;
   unit_of_measure?: string;
+  quantity_stationary?: number;
 }
 
 export type InvoiceProductPk = "invoice_product_id";
@@ -26,6 +28,7 @@ export class InvoiceProduct extends Model<InvoiceProductAttributes, InvoiceProdu
   selling_price!: number;
   sold_at_utc!: string;
   unit_of_measure?: string;
+  quantity_stationary?: number;
 
   // InvoiceProduct belongsTo Invoice via invoice_id
   invoice!: Invoice;
@@ -79,7 +82,11 @@ export class InvoiceProduct extends Model<InvoiceProductAttributes, InvoiceProdu
     unit_of_measure: {
       type: DataTypes.STRING,
       allowNull: true
-    }
+    },
+    quantity_stationary: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
   }, {
     sequelize,
     tableName: 'InvoiceProduct',

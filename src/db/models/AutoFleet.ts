@@ -19,6 +19,9 @@ export interface AutoFleetAttributes {
   casco?: string;
   max_weight_in_tons: number;
   net_weight_in_tons: number;
+  stationary_hour: number;
+  work_hour: number;
+  car_type: string;
 }
 
 export type AutoFleetPk = "auto_fleet_id";
@@ -42,7 +45,9 @@ export class AutoFleet extends Model<AutoFleetAttributes, AutoFleetCreationAttri
   casco?: string;
   max_weight_in_tons: number;
   net_weight_in_tons: number;
-
+  stationary_hour: number;
+  work_hour: number;
+  car_type: string;
   // AutoFleet belongsTo Partner via partner_id
   partner!: Partner;
   getPartner!: Sequelize.BelongsToGetAssociationMixin<Partner>;
@@ -128,6 +133,18 @@ export class AutoFleet extends Model<AutoFleetAttributes, AutoFleetCreationAttri
       },
       net_weight_in_tons: {
         type: DataTypes.NUMBER,
+        allowNull: false
+      },
+      stationary_hour: {
+        type: DataTypes.NUMBER,
+        allowNull: false
+      },
+      work_hour: {
+        type: DataTypes.NUMBER,
+        allowNull: false
+      },
+      car_type: {
+        type: DataTypes.STRING,
         allowNull: false
       }
     }, {

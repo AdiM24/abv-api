@@ -228,7 +228,8 @@ class InvoiceService {
           quantity: parseFloat(Number(noticeToAdd.quantity).toFixed(2)),
           selling_price: parseFloat(Number(product.purchase_price).toFixed(2)),
           sold_at_utc: new Date(Date.now()).toLocaleString(),
-          unit_of_measure: noticeToAdd.unit_of_measure
+          unit_of_measure: noticeToAdd.unit_of_measure,
+          quantity_stationary: noticeToAdd.quantity_stationary
         }
 
         createdNotice.total_price = parseFloat((Number(product.purchase_price) * Number(invoiceProduct.quantity)).toFixed(2))
@@ -396,6 +397,7 @@ class InvoiceService {
 
       product.dataValues.invoice_product_id = invoiceProduct.invoice_product_id;
       product.dataValues.quantity = parseFloat(Number(invoiceProduct.quantity).toFixed(2));
+      product.dataValues.quantity_stationary =  parseFloat(Number(invoiceProduct.quantity_stationary).toFixed(2));
       product.dataValues.purchase_price = parseFloat(Number(invoiceProduct.selling_price).toFixed(2));
 
       productList.push(product)
@@ -419,7 +421,7 @@ class InvoiceService {
       existingInvoice.buyer_id = invoiceUpdate.buyer_id;
     }
 
-    existingInvoice.deadline_at_utc = invoiceUpdate.deadline_at_utc ? new Date(invoiceUpdate.deadline_at_utc).toUTCString() : null;
+    existingInvoice.created_at_utc = invoiceUpdate.created_at_utc ? new Date(invoiceUpdate.created_at_utc).toUTCString() : null;
     existingInvoice.series = invoiceUpdate.series;
     existingInvoice.number = Number(invoiceUpdate.number);
     existingInvoice.status = invoiceUpdate.status;
@@ -503,7 +505,8 @@ class InvoiceService {
         invoice_id: existingInvoice.invoice_id,
         quantity: parseFloat(Number(productData.quantity).toFixed(2)),
         selling_price: parseFloat(Number(productData.purchase_price).toFixed(2)),
-        sold_at_utc: new Date().toUTCString()
+        sold_at_utc: new Date().toUTCString(),
+        quantity_stationary: productData.quantity_stationary,
       })
     }
 

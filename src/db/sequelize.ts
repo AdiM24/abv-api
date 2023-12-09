@@ -14,4 +14,3 @@ export const sequelize = new Sequelize(process.env["DB"],
     )
 ;
 
-console.log(sequelize);

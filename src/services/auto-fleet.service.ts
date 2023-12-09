@@ -72,6 +72,9 @@ class AutoFleetService {
     autoFleet.vignette_ro = autoFleet.vignette_ro || null;
     autoFleet.vignette_slo = autoFleet.vignette_slo || null;
     autoFleet.max_weight_in_tons = autoFleet.max_weight_in_tons || 0;
+    autoFleet.stationary_hour = autoFleet.stationary_hour || 0;
+    autoFleet.work_hour = autoFleet.work_hour || 0;
+    autoFleet.car_type = autoFleet.car_type || null;  
 
     return autoFleet;
   }
