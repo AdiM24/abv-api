@@ -231,11 +231,16 @@ class InvoiceService {
           unit_of_measure: noticeToAdd.unit_of_measure,
           quantity_stationary: noticeToAdd.quantity_stationary
         }
-
-        createdNotice.total_price = parseFloat((Number(product.purchase_price) * Number(invoiceProduct.quantity)).toFixed(2))
-        createdNotice.total_vat = parseFloat((calculatePercentage(Number(createdNotice.total_price), Number(product.vat)) - createdNotice.total_price).toFixed(2));
-        createdNotice.total_price_incl_vat = parseFloat((createdNotice.total_price + createdNotice.total_vat).toFixed(2));
-
+        if(noticeToAdd.car_type === 'utilaj') {
+          createdNotice.total_price = noticeToAdd.work_hour * noticeToAdd.quantity + noticeToAdd.stationary_hour * noticeToAdd.quantity_stationary; 
+          createdNotice.total_vat = 0;
+          createdNotice.total_price_incl_vat = 0;
+        }else{
+          createdNotice.total_price = parseFloat((Number(product.purchase_price) * Number(invoiceProduct.quantity)).toFixed(2))
+          createdNotice.total_vat = parseFloat((calculatePercentage(Number(createdNotice.total_price), Number(product.vat)) - createdNotice.total_price).toFixed(2));
+          createdNotice.total_price_incl_vat = parseFloat((createdNotice.total_price + createdNotice.total_vat).toFixed(2));
+        }
+      
         product.quantity = Number(product.quantity) - Number(noticeToAdd.quantity);
 
         await product.save({ transaction });
