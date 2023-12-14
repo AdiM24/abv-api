@@ -148,7 +148,7 @@ class DevizService {
 
       return {
         code: 200, message: {
-          filteredDevize,
+          devize:filteredDevize,
           valfaraTvaRon,
           tvaRon,
           totalRon,
