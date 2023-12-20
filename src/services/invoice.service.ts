@@ -163,7 +163,7 @@ class InvoiceService {
 
   async createNotice(noticeToAdd: any, token: any) {
     const models = initModels(sequelize);
-
+    
     try {
       await sequelize.transaction(async (transaction: Transaction) => {
         const notice: InvoiceAttributes = {} as InvoiceAttributes;
@@ -293,15 +293,18 @@ class InvoiceService {
 
     const createdInvoice = await this.createInvoice(invoiceToAdd, models);
 
-    const invoiceProducts: CreateInvoiceProductDto[] = invoiceToAdd.products.map((invoiceProduct: CreateInvoiceProductDto) => {
+    const invoiceProducts: CreateInvoiceProductDto[] = await Promise.all(invoiceToAdd.products.map(async (invoiceProduct: CreateInvoiceProductDto) => {
+
+      const product = await models.Product.findOne({ where: { product_id: Number(invoiceProduct.product_id) } });
       return {
         invoice_id: createdInvoice.get().invoice_id,
         product_id: invoiceProduct.product_id,
         quantity: parseFloat(Number(invoiceProduct.quantity).toFixed(2)),
         selling_price: parseFloat(Number(invoiceProduct.selling_price).toFixed(2)),
-        sold_at_utc: new Date().toUTCString()
+        sold_at_utc: new Date().toUTCString(),
+        vat: product.vat,
       }
-    });
+    }));
 
     try {
       invoiceProducts.map((invoiceProduct: CreateInvoiceProductDto) => {
@@ -310,13 +313,13 @@ class InvoiceService {
     } catch (err) {
       console.error(err);
     }
-
+   
     createdInvoice.total_vat = 0;
     createdInvoice.total_price = 0;
     createdInvoice.total_price_incl_vat = 0;
 
     invoiceProducts.map((invoiceProduct: CreateInvoiceProductDto) => {
-      createdInvoice.total_vat += parseFloat((((invoiceProduct.selling_price * 19) / 100) * invoiceProduct.quantity).toFixed(2));
+      createdInvoice.total_vat += parseFloat((((invoiceProduct.selling_price * invoiceProduct.vat) / 100) * invoiceProduct.quantity).toFixed(2));
       createdInvoice.total_price += parseFloat((invoiceProduct.selling_price * invoiceProduct.quantity).toFixed(2));
     });
 
