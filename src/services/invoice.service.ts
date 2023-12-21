@@ -403,7 +403,7 @@ class InvoiceService {
 
       productList.push(product)
     });
-
+   
     return { invoice, productList };
   }
 
@@ -415,13 +415,18 @@ class InvoiceService {
         invoice_id: invoiceUpdate.invoice_id
       }
     });
-
+    const existingInvoiceProduct: InvoiceProduct = await models.InvoiceProduct.findOne({
+      where: {
+        invoice_id: existingInvoice.invoice_id
+      }
+    });
+    const product = await models.Product.findOne({ where: { product_id: Number(existingInvoiceProduct.product_id) } });
     if (existingInvoice.type === 'notice') {
       existingInvoice.buyer_id = Number(invoiceUpdate?.drop_off_address?.partner_id) || undefined;
     } else {
       existingInvoice.buyer_id = invoiceUpdate.buyer_id;
     }
-
+    console.log(product, "TEST2")
     existingInvoice.deadline_at_utc = invoiceUpdate.deadline_at_utc ? new Date(invoiceUpdate.deadline_at_utc).toUTCString() : null;
     existingInvoice.series = invoiceUpdate.series;
     existingInvoice.number = Number(invoiceUpdate.number);
@@ -435,7 +440,7 @@ class InvoiceService {
 
     if (existingInvoice.type === 'order') {
       if (invoiceUpdate.currency === 'RON') {
-        existingInvoice.total_price_incl_vat = parseFloat((Number(invoiceUpdate.total_price) + (Number(invoiceUpdate.total_price) * 19.0 / 100.0)).toFixed(2))
+        existingInvoice.total_price_incl_vat = parseFloat((Number(invoiceUpdate.total_price) + (Number(invoiceUpdate.total_price) * product.vat / 100.0)).toFixed(2))
       }
 
       if (invoiceUpdate.currency === 'EUR') {
@@ -507,14 +512,14 @@ class InvoiceService {
         quantity: parseFloat(Number(productData.quantity).toFixed(2)),
         selling_price: parseFloat(Number(productData.purchase_price).toFixed(2)),
         sold_at_utc: new Date().toUTCString()
-      })
+      })  
     }
-
-    const productVat = parseFloat((((invoiceProduct.selling_price * 19) / 100) * invoiceProduct.quantity).toFixed(2))
+    const product = await models.Product.findOne({ where: { product_id: Number(invoiceProduct.product_id) } });
+    const productVat = parseFloat((((invoiceProduct.selling_price * product.vat) / 100) * invoiceProduct.quantity).toFixed(2))
     existingInvoice.total_vat = Number((Number(existingInvoice.total_vat) + productVat).toFixed(2));
     existingInvoice.total_price = Number(Number(existingInvoice.total_price) + parseFloat((invoiceProduct.selling_price * invoiceProduct.quantity).toFixed(2)));
     existingInvoice.total_price_incl_vat = Number((existingInvoice.total_vat + existingInvoice.total_price).toFixed(2));
-
+   
     try {
       await existingInvoice.save();
       await invoiceProduct.save();
@@ -549,7 +554,7 @@ class InvoiceService {
     })
 
     try {
-      const productVat = parseFloat((((existingInvoiceProduct.selling_price * 19) / 100) * existingInvoiceProduct.quantity).toFixed(2))
+      const productVat = parseFloat((((existingInvoiceProduct.selling_price * existingProduct.vat) / 100) * existingInvoiceProduct.quantity).toFixed(2))
 
       existingInvoice.total_vat = Number((Number(existingInvoice.total_vat) - productVat).toFixed(2));
       existingInvoice.total_price = Number(Number(existingInvoice.total_price) - parseFloat((existingInvoiceProduct.selling_price * existingInvoiceProduct.quantity).toFixed(2)));
@@ -602,10 +607,10 @@ class InvoiceService {
       }
     })
 
-    const oldVat = parseFloat(((Number(existingInvoiceProduct.selling_price) * 19 / 100) * Number(existingInvoiceProduct.quantity)).toFixed(2));
+    const oldVat = parseFloat(((Number(existingInvoiceProduct.selling_price) * existingProduct.vat / 100) * Number(existingInvoiceProduct.quantity)).toFixed(2));
     const oldPrice = parseFloat((Number(existingInvoiceProduct.selling_price) * Number(existingInvoiceProduct.quantity)).toFixed(2));
 
-    const newVat = parseFloat(((Number(invoiceProduct.purchase_price) * 19 / 100) * Number(invoiceProduct.quantity)).toFixed(2));
+    const newVat = parseFloat(((Number(invoiceProduct.purchase_price) * existingProduct.vat / 100) * Number(invoiceProduct.quantity)).toFixed(2));
     const newPrice = parseFloat((Number(invoiceProduct.purchase_price) * Number(invoiceProduct.quantity)).toFixed(2));
 
     if (existingInvoice.type === 'received') {
