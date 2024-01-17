@@ -1,4 +1,5 @@
 export interface CreateInvoiceProductDto {
+  vat?: number;
   invoice_id: number;
   product_id: number;
   quantity: number;
@@ -8,6 +9,7 @@ export interface CreateInvoiceProductDto {
 }
 
 export interface InvoiceProductInformation {
+  vat: number;
   invoice_id: number;
   product_id: number;
   quantity: number;

@@ -19,6 +19,7 @@ export type InvoiceProductOptionalAttributes = "invoice_product_id" | "quantity"
 export type InvoiceProductCreationAttributes = Optional<InvoiceProductAttributes, InvoiceProductOptionalAttributes>;
 
 export class InvoiceProduct extends Model<InvoiceProductAttributes, InvoiceProductCreationAttributes> implements InvoiceProductAttributes {
+  vat: number;
   invoice_product_id!: number;
   invoice_id!: number;
   product_id!: number;

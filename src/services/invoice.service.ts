@@ -316,7 +316,7 @@ class InvoiceService {
     createdInvoice.total_price_incl_vat = 0;
 
     invoiceProducts.map((invoiceProduct: CreateInvoiceProductDto) => {
-      createdInvoice.total_vat += parseFloat((((invoiceProduct.selling_price * 19) / 100) * invoiceProduct.quantity).toFixed(2));
+      createdInvoice.total_vat += parseFloat((((invoiceProduct.selling_price * invoiceProduct.vat) / 100) * invoiceProduct.quantity).toFixed(2));
       createdInvoice.total_price += parseFloat((invoiceProduct.selling_price * invoiceProduct.quantity).toFixed(2));
     });
 
@@ -456,6 +456,8 @@ class InvoiceService {
   async addInvoiceProduct(productData: InvoiceProductInformation) {
     const models = initModels(sequelize);
 
+    console.log("Invoice service: ", productData);
+
     const existingProduct: Product = await models.Product.findOne({
       where: {
         product_id: productData.product_id
@@ -507,7 +509,12 @@ class InvoiceService {
       })
     }
 
-    const productVat = parseFloat((((invoiceProduct.selling_price * 19) / 100) * invoiceProduct.quantity).toFixed(2))
+    if (productData.vat !== existingProduct.vat) {
+      existingProduct.vat = productData.vat;
+    };
+
+    const productVat = parseFloat((((invoiceProduct.selling_price * existingProduct.vat) / 100) * invoiceProduct.quantity).toFixed(2))
+
     existingInvoice.total_vat = Number((Number(existingInvoice.total_vat) + productVat).toFixed(2));
     existingInvoice.total_price = Number(Number(existingInvoice.total_price) + parseFloat((invoiceProduct.selling_price * invoiceProduct.quantity).toFixed(2)));
     existingInvoice.total_price_incl_vat = Number((existingInvoice.total_vat + existingInvoice.total_price).toFixed(2));
@@ -546,7 +553,11 @@ class InvoiceService {
     })
 
     try {
-      const productVat = parseFloat((((existingInvoiceProduct.selling_price * 19) / 100) * existingInvoiceProduct.quantity).toFixed(2))
+      if (productData.vat !== existingProduct.vat) {
+        existingProduct.vat = productData.vat;
+      };
+  
+      const productVat = parseFloat((((existingInvoiceProduct.selling_price * existingProduct.vat) / 100) * existingInvoiceProduct.quantity).toFixed(2))
 
       existingInvoice.total_vat = Number((Number(existingInvoice.total_vat) - productVat).toFixed(2));
       existingInvoice.total_price = Number(Number(existingInvoice.total_price) - parseFloat((existingInvoiceProduct.selling_price * existingInvoiceProduct.quantity).toFixed(2)));
@@ -599,10 +610,10 @@ class InvoiceService {
       }
     })
 
-    const oldVat = parseFloat(((Number(existingInvoiceProduct.selling_price) * 19 / 100) * Number(existingInvoiceProduct.quantity)).toFixed(2));
+    const oldVat = parseFloat((((existingInvoiceProduct.selling_price * existingProduct.vat) / 100) * existingInvoiceProduct.quantity).toFixed(2))
     const oldPrice = parseFloat((Number(existingInvoiceProduct.selling_price) * Number(existingInvoiceProduct.quantity)).toFixed(2));
 
-    const newVat = parseFloat(((Number(invoiceProduct.purchase_price) * 19 / 100) * Number(invoiceProduct.quantity)).toFixed(2));
+    const newVat = parseFloat((((invoiceProduct.selling_price * existingProduct.vat) / 100) * invoiceProduct.quantity).toFixed(2))
     const newPrice = parseFloat((Number(invoiceProduct.purchase_price) * Number(invoiceProduct.quantity)).toFixed(2));
 
     if (existingInvoice.type === 'received') {
