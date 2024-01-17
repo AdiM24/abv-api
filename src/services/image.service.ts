@@ -2,6 +2,7 @@ import {sequelize} from "../db/sequelize";
 import {ImageFiles, initModels} from "../db/models/init-models";
 import {Transaction} from "sequelize";
 import * as path from "path";
+const fs = require('fs');
 
 class ImageService {
   async getImageDetails(partner_id: number) {
@@ -61,9 +62,39 @@ class ImageService {
 
       return {code: 200, message: 'Imaginea a fost adaugata.'};
     } catch (err) {
-      return {code: 500, message: 'Operatiunea nu a putut s-a putut finaliza.'}
+      return {code: 500, message: 'Operatiunea nu s-a putut finaliza.'}
     }
 
+  }
+
+  async removeImage(partnerId: number): Promise<{ success: boolean; error?: string }> {
+    const models = initModels(sequelize);
+  
+    try {
+      await sequelize.transaction(async (transaction: Transaction) => {
+        const imageToRemove = await models.PartnerImage.findOne({
+          where: {
+            partner_id: partnerId
+          },
+          include: [{ model: models.ImageFiles, as: "image" }]
+        });
+  
+        if (!imageToRemove) {
+          return { success: false, error: 'Image not found for partner' };
+        }
+  
+        const filePath = path.join(path.resolve(), imageToRemove.image.filepath);
+        fs.unlinkSync(filePath);
+  
+        await imageToRemove.destroy({ transaction });
+  
+        return { success: true };
+      });
+  
+    } catch (error) {
+      console.error('Error removing image:', error);
+      return { success: false, error: 'Internal server error' };
+    }
   }
 }
 

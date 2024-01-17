@@ -17,7 +17,7 @@ class ProductController {
     const products = Object.keys(req.query).length
       ? await ProductService.getFilteredProducts(req.query)
       : await ProductService.getProducts();
-
+      
     res.status(200).send(products);
   }
 
