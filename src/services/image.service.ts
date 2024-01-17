@@ -29,6 +29,10 @@ class ImageService {
       include: [{model: ImageFiles, as: "image"}]
     });
 
+    if (!partnerImage) {
+      return {code: 404, message: "Firma nu are un logo"}
+    }
+
     const dirName = path.resolve();
     const fullFilePath = path.join(
       dirName,
@@ -67,35 +71,31 @@ class ImageService {
 
   }
 
-  async removeImage(partnerId: number): Promise<{ success: boolean; error?: string }> {
+  async removeImage(partner_id: number) {
     const models = initModels(sequelize);
   
+    const partnerImage = await models.PartnerImage.findOne({
+      where: {
+        partner_id: partner_id,
+        type: 'LOGO'
+      },
+      include: [{ model: ImageFiles, as: 'image' }]
+    });
+
+    const dirName = path.resolve();
+    const fullFilePath = path.join(dirName, partnerImage.image.filepath);
+  
     try {
-      await sequelize.transaction(async (transaction: Transaction) => {
-        const imageToRemove = await models.PartnerImage.findOne({
-          where: {
-            partner_id: partnerId
-          },
-          include: [{ model: models.ImageFiles, as: "image" }]
-        });
-  
-        if (!imageToRemove) {
-          return { success: false, error: 'Image not found for partner' };
-        }
-  
-        const filePath = path.join(path.resolve(), imageToRemove.image.filepath);
-        fs.unlinkSync(filePath);
-  
-        await imageToRemove.destroy({ transaction });
-  
-        return { success: true };
-      });
-  
+      await fs.promises.unlink(fullFilePath);
     } catch (error) {
-      console.error('Error removing image:', error);
-      return { success: false, error: 'Internal server error' };
+      return {code: 500, message: 'Eroare la ștergerea imaginii.'}
     }
+  
+    await partnerImage.destroy();
+  
+    return {code: 200, message: "Imaginea a fost stearsa !"};
   }
+  
 }
 
 export default new ImageService();

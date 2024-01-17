@@ -14,7 +14,9 @@ export class ImageRoutes extends CommonRoutesConfig {
     console.log();
     this.app.route('/api/images')
       .get(AuthMiddleware.auth, ImageController.getImage)
-      .post(AuthMiddleware.auth, multer({dest: 'images'}).single('image'),  ImageMiddleware.validateOneLogo, ImageController.uploadImage)
+      .post(AuthMiddleware.auth, multer({dest: 'images'}).single('image'), ImageMiddleware.validateOneLogo, ImageController.uploadImage)
+    this.app.route('/api/images/remove')
+      .post(AuthMiddleware.auth, ImageController.removeImage)
 
     return this.app
   }
