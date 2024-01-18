@@ -72,6 +72,7 @@ class UserService {
       const created = await models.User.create(user);
       const userRole: CreateUserRoleDto = {role: user.role, user_id: created.user_id};
       const userPartner: CreateUserPartnerDto = {user_id: created.user_id, partner_id: Number(user.partner.partner_id)};
+
       let userVehicle = {};
 
       if (user.vehicle?.auto_fleet_id) {
@@ -82,7 +83,12 @@ class UserService {
       }
 
       await this.addUserRoles(userRole);
-      await models.UserPartnerMap.create(userPartner);
+      try {
+        await models.UserPartnerMap.create(userPartner);
+      } catch (err) {
+        return "User accoun can't be associate with the partner";
+      };
+
       Object.keys(userVehicle).length > 0 && await models.UserVehicle.create(userVehicle);
 
       return "Successfully created";
