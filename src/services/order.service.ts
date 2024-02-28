@@ -74,6 +74,14 @@ class OrderService {
       }
     });
 
+    if(!orderData.date_from){
+      orderData.date_from = existingOrderDetails.date_from;
+    }
+
+    if(!orderData.date_to){
+      orderData.date_to = existingOrderDetails.date_to;
+    }
+
     await existingOrderDetails.update(orderData);
 
     await existingOrderDetails.save();
