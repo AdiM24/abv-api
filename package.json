@@ -29,7 +29,8 @@
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.25.3",
     "sequelize-auto": "^0.8.8",
-    "simple-oauth2": "^5.0.0"
+    "simple-oauth2": "^5.0.0",
+    "xml2json": "^0.12.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",

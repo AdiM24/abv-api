@@ -36,6 +36,7 @@ export interface InvoiceAttributes {
   index_incarcare_anaf: string;
   status_incarcare_anaf: boolean;
   uit: string;
+  currency_rate?: number;
 }
 
 export type InvoicePk = "invoice_id";
@@ -62,7 +63,8 @@ export type InvoiceOptionalAttributes =
   | "observation"
   | "index_incarcare_anaf"
   | "status_incarcare_anaf"
-  | "uit";
+  | "uit"
+  | "currency_rate";
 export type InvoiceCreationAttributes = Optional<InvoiceAttributes, InvoiceOptionalAttributes>;
 
 export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes> implements InvoiceAttributes {
@@ -94,6 +96,7 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
   index_incarcare_anaf: string;
   status_incarcare_anaf: boolean;
   uit: string;
+  currency_rate?: number;
 
   // Invoice belongsTo Address via drop_off_address_id
   drop_off_address!: Address;
@@ -299,7 +302,12 @@ export class Invoice extends Model<InvoiceAttributes, InvoiceCreationAttributes>
       uit: {
         type: DataTypes.STRING,
         allowNull: true
-      }
+      },
+      currency_rate: {
+        type: DataTypes.DECIMAL,
+        allowNull: true,
+        defaultValue: null
+      },
     }, {
       sequelize,
       tableName: 'Invoice',

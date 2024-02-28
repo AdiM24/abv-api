@@ -30,6 +30,9 @@ export interface OrderAttributes {
   invoice_generated: boolean;
   profit?: number;
   profit_currency: "RON" | "EUR";
+  floor_used_in_meters: number;
+  dropoff_county?: string;
+  dropoff_date?: Date;
 }
 
 export type OrderPk = "order_id";
@@ -45,7 +48,9 @@ export type OrderOptionalAttributes =
   | "client_contact"
   | "transporter_contact"
   | "transporter_vat"
-  | "client_vat";
+  | "client_vat"
+  | "dropoff_county"
+  | "dropoff_date";
 export type OrderCreationAttributes = Optional<OrderAttributes, OrderOptionalAttributes>;
 
 export class Order extends Model<OrderAttributes, OrderCreationAttributes> implements OrderAttributes {
@@ -73,6 +78,9 @@ export class Order extends Model<OrderAttributes, OrderCreationAttributes> imple
   invoice_generated!: boolean;
   profit?: number;
   profit_currency: "RON" | "EUR";
+  floor_used_in_meters: number;
+  dropoff_county?: string;
+  dropoff_date?: Date;
 
   // Order hasMany Invoice via order_reference_id
   Invoices!: Invoice[];
@@ -240,6 +248,18 @@ export class Order extends Model<OrderAttributes, OrderCreationAttributes> imple
         type: DataTypes.ENUM("RON", "EUR"),
         allowNull: false,
         defaultValue: "RON"
+      },
+      floor_used_in_meters: {
+        type: DataTypes.DECIMAL,
+        allowNull: false
+      },
+      dropoff_county: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      dropoff_date: {
+        type: DataTypes.DATE,
+        allowNull: true
       }
     }, {
       sequelize,
