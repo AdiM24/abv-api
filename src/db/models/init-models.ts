@@ -51,6 +51,8 @@ import { Nc8Code as _Nc8Code } from "./Nc8Code";
 import type { Nc8CodeAttributes, Nc8CodeCreationAttributes } from "./Nc8Code";
 import { Deviz as _Deviz } from "./Deviz";
 import { DevizAttributes, DevizCreationAttributes } from "./Deviz";
+import { Locality as _Localitate } from "./Locality";
+import { LocalityAttributes, LocalityCreationAttributes } from "./Locality";
 
 export {
   _Address as Address,
@@ -79,6 +81,7 @@ export {
   _UserVehicle as UserVehicle,
   _Nc8Code as Nc8Code,
   _Deviz as Deviz,
+   _Localitate as Localitate
 };
 
 export type {
@@ -134,6 +137,8 @@ export type {
   Nc8CodeCreationAttributes,
   DevizAttributes,
   DevizCreationAttributes,
+  LocalityAttributes,
+  LocalityCreationAttributes
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -163,6 +168,7 @@ export function initModels(sequelize: Sequelize) {
   const UserVehicle = _UserVehicle.initModel(sequelize);
   const Nc8Code = _Nc8Code.initModel(sequelize);
   const Deviz = _Deviz.initModel(sequelize);
+  const Localitate = _Localitate.initModel(sequelize);
 
   Invoice.belongsTo(Address, { as: "drop_off_address", foreignKey: "drop_off_address_id" });
   Address.hasMany(Invoice, { as: "Invoices", foreignKey: "drop_off_address_id" });
@@ -277,5 +283,6 @@ export function initModels(sequelize: Sequelize) {
     UserVehicle: UserVehicle,
     Nc8Code: Nc8Code,
     Deviz: Deviz,
+    Localitate: Localitate
   };
 }

@@ -19,6 +19,7 @@ export interface CreateOrderDto {
   client_vat: number;
   transporter_vat: number;
   rate: number;
+  floor_used_in_meters: number;
 }
 
 export interface CreateOrderDetailsDto {
@@ -30,6 +31,8 @@ export interface CreateOrderDetailsDto {
   date_to: Date;
   remarks: string;
   type: 'PICKUP' | 'DROPOFF';
+  county: string;
+  city: string;
 }
 
 export interface OrderDto {

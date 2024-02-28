@@ -13,12 +13,52 @@ import {
 } from "../db/models/init-models";
 import {sequelize} from "../db/sequelize";
 import UserPartnerMappingService from "./user-partner-mapping.service";
-import {Includeable, Op, Transaction} from "sequelize";
+import {Includeable, Op, Transaction, where} from "sequelize";
 import InvoiceService from "./invoice.service";
 import {calculatePercentage} from "./utils.service";
 import {getDateRangeQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
 import {Roles} from "../common/enums/roles";
 import {CreateOrderDetailsDto, CreateOrderDto, OrderDto} from "../dtos/order.dto";
+var parser = require('xml2json');
+
+async function getCurrencyRateInEURForPreviousDay(date: Date) {
+  try {
+    const currencyRateResponse = await fetch(`https://bnr.ro/nbrfxrates10days.xml`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      },
+    });
+
+    const xmlData = await currencyRateResponse.text();
+    var json: any = parser.toJson(xmlData);
+
+    const bnrResponse: any = JSON.parse(json);
+    let previousDay = new Date(date);
+    previousDay.setDate(date.getDate() - 1);
+    const formattedDate = previousDay.toISOString().split('T')[0];
+    let rate = bnrResponse?.DataSet?.Body?.Cube?.find((item: any) => item.date == formattedDate)?.Rate?.find((item: any) => item.currency === 'EUR')?.$t;
+
+    if (rate) {
+      return Number(rate);
+    }
+
+    rate = 0;
+    let mostRecentDate = new Date('2010-01-01');
+    bnrResponse?.DataSet?.Body?.Cube?.forEach((item: any) => {
+      const dateItem = new Date(item.date);
+      if (dateItem > mostRecentDate && dateItem < date) {
+        mostRecentDate = dateItem;
+        rate = item.Rate?.find((item: any) => item.currency === 'EUR')?.$t;
+      }
+    });
+
+    return Number(rate);
+  }
+  catch (e) {
+    return 0;
+  }
+}
 
 class OrderService {
   applyTax(price: number) {
@@ -37,7 +77,15 @@ class OrderService {
     await existingOrderDetails.update(orderData);
 
     await existingOrderDetails.save();
-
+    if (orderData.type === "DROPOFF") {
+      const existingOrder = await models.Order.findOne({where: {order_id: existingOrderDetails.order_id}});
+      existingOrder.dropoff_county = orderData.county;
+      if (orderData.date_from) {
+        existingOrder.dropoff_date = orderData.date_from;
+      }
+      await existingOrder.update(existingOrder);
+      await existingOrder.save();
+    }
     return {code: 200, message: 'Detaliile comenzii au fost actualizate'}
   }
 
@@ -80,6 +128,12 @@ class OrderService {
     } else {
       orderData.profit = parseFloat((orderData.client_price - orderData.transporter_price).toFixed(2));
       orderData.profit_currency = orderData.client_currency
+    }
+
+    let dropoff = orderDetailsToAdd?.filter(item => item.type === "DROPOFF")?.reverse()[0];
+    if(dropoff){
+      orderData.dropoff_county = dropoff.county;
+      orderData.dropoff_date = dropoff.date_from;
     }
 
     // if (orderToAdd.client_currency === 'RON') orderData.client_price = this.applyTax(orderData.client_price);
@@ -218,9 +272,21 @@ class OrderService {
       queryObject.created_at_utc = getDateRangeQuery(queryParams.created_from, queryParams.created_to);
     }
 
+    if (queryParams.dropoff_date_from || queryParams.dropoff_date_to) {
+      queryObject.dropoff_date = getDateRangeQuery(queryParams.dropoff_date_from, queryParams.dropoff_date_to);
+    }
+
+    if (queryParams.car_reg_number) {
+      queryObject.car_reg_number = getLikeQuery(queryParams.car_reg_number);
+    }
+
+    if (queryParams.dropoff_county) {
+      queryObject.dropoff_county = getLikeQuery(queryParams.dropoff_county);
+    }
+
     const relations: Includeable | Includeable[] = [
       {model: Partner, as: 'client'},
-      {model: OrderDetails, as: 'OrderDetails'}
+      {model: OrderDetails, as: 'OrderDetails', where:locationQuery}
     ];
 
     relations.push({
@@ -422,6 +488,12 @@ class OrderService {
       deadlineDate = null;
     }
 
+
+    let currencyRate: number = undefined;
+
+    if(order.client_currency === 'EUR') {
+      currencyRate = await getCurrencyRateInEURForPreviousDay(currentDate);
+    }
     try {
       await sequelize.transaction(async (transaction: Transaction) => {
         if (!transportService) {
@@ -434,7 +506,7 @@ class OrderService {
             vat: order.client_vat,
             unit_of_measure: 'OP',
             purchase_price: 1,
-            material: ''
+            material: '',
           }, {transaction: transaction});
         } else {
           transportService.vat = order.client_vat;
@@ -461,7 +533,8 @@ class OrderService {
           order_reference_id: order.order_id,
           total_paid_price: 0,
           buyer_id: order.buyer_id,
-          e_transport_generated: false
+          e_transport_generated: false,
+          currency_rate: currencyRate
         }
 
         const createdInvoice: Invoice = await models.Invoice.create(invoiceData, {transaction: transaction});

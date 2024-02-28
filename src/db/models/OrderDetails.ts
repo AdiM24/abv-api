@@ -13,6 +13,8 @@ export interface OrderDetailsAttributes {
   address?: string;
   location?: string;
   reference?: string;
+  county: string;
+  city: string
 }
 
 export type OrderDetailsPk = "order_details_id";
@@ -31,6 +33,8 @@ export class OrderDetails extends Model<OrderDetailsAttributes, OrderDetailsCrea
   address?: string;
   location?: string;
   reference?: string;
+  county: string;
+  city: string;
 
   // OrderDetails belongsTo Order via order_id
   order!: Order;
@@ -87,7 +91,15 @@ export class OrderDetails extends Model<OrderDetailsAttributes, OrderDetailsCrea
     reference: {
       type: DataTypes.STRING,
       allowNull: true
-    }
+    },
+      county: {
+      type: DataTypes.STRING,
+        allowNull: false
+      },
+      city: {
+      type: DataTypes.STRING,
+        allowNull: false
+      }
   }, {
     sequelize,
     tableName: 'OrderDetails',
