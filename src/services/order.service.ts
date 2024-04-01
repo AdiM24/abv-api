@@ -123,7 +123,7 @@ class OrderService {
     orderData.client_price = parseFloat(Number(orderToAdd.client_price).toFixed(2));
     orderData.transporter_price = parseFloat(Number(orderToAdd.transporter_price).toFixed(2));
 
-    if (orderData.transporter_currency !== orderData.client_currency) {
+    if (orderData.transporter_price && orderData.transporter_currency !== orderData.client_currency) {
       const transporterPrice = orderData.transporter_currency === 'EUR'
         ? parseFloat((orderData.transporter_price * orderToAdd.rate).toFixed(2))
         : orderData.transporter_price;
@@ -386,7 +386,7 @@ class OrderService {
   async updateOrder(orderToUpdate: any, decodedToken: any) {
     const models = initModels(sequelize);
 
-    if (orderToUpdate.transporter_currency !== orderToUpdate.client_currency) {
+    if (orderToUpdate.transporter_price && orderToUpdate.transporter_currency !== orderToUpdate.client_currency) {
       const transporterPrice = orderToUpdate.transporter_currency === 'EUR'
         ? parseFloat((orderToUpdate.transporter_price * orderToUpdate.rate).toFixed(2))
         : orderToUpdate.transporter_price;
