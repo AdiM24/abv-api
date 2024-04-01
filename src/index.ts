@@ -19,6 +19,7 @@ import { ImageRoutes } from './routes/image.routes.config';
 import { DevizRoutes } from './routes/deviz.routes.config';
 import { AnafTokenRoutes } from './routes/anafToken.routes.config';
 import {LocalitiesRoutes} from "./routes/localities.routes.config";
+import {AutoProfitLossRoutes} from "./routes/auto-profit-loss.routes.config";
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ routes.push(new ImageRoutes(app));
 routes.push(new DevizRoutes(app));
 routes.push(new AnafTokenRoutes(app));
 routes.push(new LocalitiesRoutes(app));
+routes.push(new AutoProfitLossRoutes(app));
 
 const runningMessage = `Server running at http://172.17.0.1:${port}`;
 app.get('/api/', (req: express.Request, res: express.Response) => {
