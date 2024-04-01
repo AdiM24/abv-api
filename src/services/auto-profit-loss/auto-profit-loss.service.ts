@@ -14,10 +14,12 @@ class AutoProfitLossService {
 
       let select = "select car, currency, ";
         let groupBy = "group by x.car, x.currency";
+        let orderBy = ' order by profit desc'
 
         if(queryParams.groupByDate == 'true'){
           select += "date, ";
           groupBy += ", date";
+          orderBy = ' order by date desc';
         }
 
       if(queryParams.groupByDescription == 'true'){
@@ -61,7 +63,7 @@ class AutoProfitLossService {
           "             sum(profit)                      as profit\n" +
           "      from \"Order\"\n" +
           "      group by car_reg_number, profit_currency, date, description) x\n" +
-          where + "\n" + groupBy + ' order by date desc'
+          where + "\n" + groupBy + orderBy
           , { type: QueryTypes.SELECT });
 
         const resultTotals = await sequelize.query("select currency, sum(x.profit) as profit, sum(x.loss) as loss\n" +
