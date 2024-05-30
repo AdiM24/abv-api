@@ -19,7 +19,6 @@ import {calculatePercentage} from "./utils.service";
 import {getDateRangeQuery, getLikeQuery, getStrictQuery} from "../common/utils/query-utils.service";
 import {Roles} from "../common/enums/roles";
 import {CreateOrderDetailsDto, CreateOrderDto, OrderDto} from "../dtos/order.dto";
-var parser = require('xml2json');
 
 async function getCurrencyRateInEURForPreviousDay(date: Date) {
   try {
@@ -31,13 +30,17 @@ async function getCurrencyRateInEURForPreviousDay(date: Date) {
     });
 
     const xmlData = await currencyRateResponse.text();
-    var json: any = parser.toJson(xmlData);
+    var parseString = require('xml2js').parseString;
+    var xml = xmlData;
+    var bnrResponse: any;
+    parseString(xml, function (err: any, result: any) {
+      bnrResponse = result;
+    });
 
-    const bnrResponse: any = JSON.parse(json);
     let previousDay = new Date(date);
     previousDay.setDate(date.getDate() - 1);
     const formattedDate = previousDay.toISOString().split('T')[0];
-    let rate = bnrResponse?.DataSet?.Body?.Cube?.find((item: any) => item.date == formattedDate)?.Rate?.find((item: any) => item.currency === 'EUR')?.$t;
+    let rate = bnrResponse?.DataSet?.Body[0]?.Cube?.find((item: any) => item.$.date == formattedDate)?.Rate?.find((item: any) => item.$.currency === 'EUR')?._;
 
     if (rate) {
       return Number(rate);
