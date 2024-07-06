@@ -33,6 +33,7 @@ export interface CreateOrderDetailsDto {
   type: 'PICKUP' | 'DROPOFF';
   county: string;
   city: string;
+  metri_podea_patrati: number;
 }
 
 export interface OrderDto {
