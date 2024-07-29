@@ -20,6 +20,7 @@ export interface CreateOrderDto {
   transporter_vat: number;
   rate: number;
   floor_used_in_meters: number;
+  order_number?: string;
 }
 
 export interface CreateOrderDetailsDto {
@@ -33,6 +34,7 @@ export interface CreateOrderDetailsDto {
   type: 'PICKUP' | 'DROPOFF';
   county: string;
   city: string;
+  metri_podea_patrati: number;
 }
 
 export interface OrderDto {
@@ -60,5 +62,6 @@ export interface OrderDto {
   invoice_generated: boolean;
   profit?: number;
   profit_currency: "RON" | "EUR";
-  OrderDetails: OrderDetailsAttributes[]
+  OrderDetails: OrderDetailsAttributes[],
+  order_number?: string;
 }

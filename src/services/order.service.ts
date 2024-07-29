@@ -76,6 +76,7 @@ class OrderService {
         order_details_id: orderData.order_details_id
       }
     });
+    const existingOrder = await models.Order.findOne({where: {order_id: existingOrderDetails.order_id}});
 
     if(!orderData.date_from){
       orderData.date_from = existingOrderDetails.date_from;
@@ -89,7 +90,7 @@ class OrderService {
 
     await existingOrderDetails.save();
     if (orderData.type === "DROPOFF") {
-      const existingOrder = await models.Order.findOne({where: {order_id: existingOrderDetails.order_id}});
+      
       existingOrder.dropoff_county = orderData.county;
       if (orderData.date_from) {
         existingOrder.dropoff_date = orderData.date_from;
@@ -97,13 +98,35 @@ class OrderService {
       await existingOrder.update(existingOrder);
       await existingOrder.save();
     }
+
+    this.updateOrderMetriPatrati(existingOrder.order_id);
     return {code: 200, message: 'Detaliile comenzii au fost actualizate'}
   }
 
+ async updateOrderMetriPatrati(orderId: any) {
+  const models = initModels(sequelize);
+
+    const existingOrder = await models.Order.findOne({where: {order_id: orderId}, include: [{model: OrderDetails, as: 'OrderDetails'}]});    
+
+    existingOrder.floor_used_in_meters = existingOrder.OrderDetails.filter(item => item.type === "PICKUP")?.reduce((acc, item) => acc + item.metri_podea_patrati, 0) || 0;
+
+    await existingOrder.update(existingOrder);
+    await existingOrder.save();
+
+  
+    
+  return {code: 200, message: 'Detaliile comenzii au fost actualizate'}
+ }
+
   async removeOrderDetails(orderDetailsId: number) {
     const models = initModels(sequelize);
-
+    const existingOrderDetails = await models.OrderDetails.findOne({
+      where: {
+        order_details_id: orderDetailsId
+      }
+    });
     await models.OrderDetails.destroy({where: {order_details_id: orderDetailsId}});
+    await this.updateOrderMetriPatrati(existingOrderDetails.order_id);
   }
 
   async addOrder(orderToAdd: CreateOrderDto, decodedJwt: any = undefined) {
@@ -113,6 +136,8 @@ class OrderService {
       (userPartner: UserPartnerMap) => userPartner.partner_id)[0];
 
     const orderDetailsToAdd: CreateOrderDetailsDto[] = orderToAdd.order_details;
+   
+    orderToAdd.floor_used_in_meters = orderDetailsToAdd?.filter(item => item.type === "PICKUP")?.reduce((acc, item) => acc + Number(item.metri_podea_patrati), 0) || 0;
     delete orderToAdd.order_details;
 
     const orderData: OrderCreationAttributes = {
@@ -153,7 +178,7 @@ class OrderService {
     try {
       await sequelize.transaction(async (transaction: Transaction) => {
         const createdOrder = await models.Order.create(orderData, {transaction: transaction});
-
+       
         const orderDetails: OrderDetailsCreationAttributes[] = orderDetailsToAdd.map((orderDetailsItem: CreateOrderDetailsDto) => {
           return {
             ...orderDetailsItem,
@@ -232,6 +257,42 @@ class OrderService {
     });
 
     return orders;
+  }
+
+  async getAllOrderDetails() {
+    const models = initModels(sequelize);
+
+    return await models.OrderDetails.findAll({
+      where: {
+        type: 'DROPOFF'
+      }
+    });
+  }
+
+ 
+  async getFilteredOrdersDetails(queryParams: any) {
+    const models = initModels(sequelize);
+
+    const queryObject = {} as any;
+    queryObject.type = 'DROPOFF';
+
+    if(queryParams.dropoff_county){
+      queryObject.county = getLikeQuery(queryParams.dropoff_county);
+    }
+
+    if (queryParams.dropoff_date_from || queryParams.dropoff_date_to) {
+      queryObject.date_from = getDateRangeQuery(queryParams.dropoff_date_from, queryParams.dropoff_date_to);
+    }
+
+    const orderDetails = await models.OrderDetails.findAll({
+      where: {
+        [Op.and]: {
+          ...queryObject,
+        }
+      }
+    });
+    
+    return orderDetails;
   }
 
   async getFilteredOrders(queryParams: any, decodedToken: any) {
@@ -337,10 +398,10 @@ class OrderService {
 
   async addOrderDetails(orderDetails: any) {
     const models = initModels(sequelize);
-
+    
     try {
       const createdOrder = await models.OrderDetails.create(orderDetails);
-
+      this.updateOrderMetriPatrati(orderDetails.order_id)
       return {code: 201, message: 'Detaliile comenzii au fost adaugate'};
     } catch (err) {
       console.error(err);
@@ -472,11 +533,13 @@ class OrderService {
       (orderDetailsItem: OrderDetailsAttributes) => orderDetailsItem.type === 'DROPOFF');
 
     const dropoff = dropOffList[dropOffList.length - 1].address;
+    
+    const order_date = new Date(order.created_at_utc).toLocaleDateString('RO-ro');
 
     let transportService = await models.Product.findOne({
       where: {
         type: 'service',
-        product_name: `Servicii transport cf. comanda ${order.series}-${order.number}, ruta: ${pickup} -> ${dropoff}, auto: ${order.car_reg_number}, referinta: ${order?.OrderDetails?.[0]?.reference}`
+        product_name: `Servicii transport cf. comanda ${order.order_number}-${order_date}, ruta: ${pickup} -> ${dropoff}, auto: ${order.car_reg_number}, referinta: ${order?.OrderDetails?.[0]?.reference || ''}`
       }
     });
 
@@ -510,7 +573,7 @@ class OrderService {
         if (!transportService) {
           transportService = await models.Product.create({
             type: 'service',
-            product_name: `Servicii transport cf. comanda ${order.series}-${order.number}, ruta: ${pickup} -> ${dropoff}, auto: ${order.car_reg_number}, referinta: ${order?.OrderDetails?.[0]?.reference}`,
+            product_name: `Servicii transport cf. comanda ${order.order_number}, data: ${order_date}, ruta: ${pickup} -> ${dropoff}, auto: ${order.car_reg_number}, referinta: ${order?.OrderDetails?.[0]?.reference || ''}`,
             quantity: 1,
             created_at_utc: currentDate.toString(),
             modified_at_utc: currentDate.toString(),

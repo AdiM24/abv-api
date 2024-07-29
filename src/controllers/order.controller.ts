@@ -23,7 +23,6 @@ class OrderController {
 
   async removeOrderDetails(req: CustomRequest, res: express.Response) {
     await OrderService.removeOrderDetails(Number(req.params?.id));
-
     res.status(200).send({code: 200, message: 'Detaliile comenzii au fost sterse'});
   }
 
@@ -53,6 +52,13 @@ class OrderController {
     res.status(200).send(orders);
   }
 
+  async getAllOrderDetails(req: express.Request, res: express.Response) {
+    const orderDetails = Object.keys(req.query).length
+    ? await OrderService.getFilteredOrdersDetails(req.query)
+    : await OrderService.getAllOrderDetails();
+
+    res.status(200).send(orderDetails);
+  }
   async removeOrder(req: CustomRequest, res: express.Response) {
     const result = await OrderService.removeOrder(Number(req.params?.id));
 

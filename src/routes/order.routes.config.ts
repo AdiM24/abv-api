@@ -40,6 +40,10 @@ export class OrderRoutes extends CommonRoutesConfig {
         OrderController.removeOrder)
 
     this.app
+      .route("/api/delivery/details")
+      .get(AuthMiddleware.auth, OrderController.getAllOrderDetails)
+
+    this.app
       .route("/api/orders/details/:id")
       .post(AuthMiddleware.auth, OrderController.addOrderDetails)
       .put(AuthMiddleware.auth, OrderController.updateOrderDetails)
