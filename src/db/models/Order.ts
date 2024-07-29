@@ -33,6 +33,7 @@ export interface OrderAttributes {
   floor_used_in_meters: number;
   dropoff_county?: string;
   dropoff_date?: Date;
+  order_number?: string;
 }
 
 export type OrderPk = "order_id";
@@ -50,7 +51,8 @@ export type OrderOptionalAttributes =
   | "transporter_vat"
   | "client_vat"
   | "dropoff_county"
-  | "dropoff_date";
+  | "dropoff_date"
+  | "order_number";
 export type OrderCreationAttributes = Optional<OrderAttributes, OrderOptionalAttributes>;
 
 export class Order extends Model<OrderAttributes, OrderCreationAttributes> implements OrderAttributes {
@@ -81,6 +83,7 @@ export class Order extends Model<OrderAttributes, OrderCreationAttributes> imple
   floor_used_in_meters: number;
   dropoff_county?: string;
   dropoff_date?: Date;
+  order_number?: string;
 
   // Order hasMany Invoice via order_reference_id
   Invoices!: Invoice[];
@@ -259,6 +262,10 @@ export class Order extends Model<OrderAttributes, OrderCreationAttributes> imple
       },
       dropoff_date: {
         type: DataTypes.DATE,
+        allowNull: true
+      },
+      order_number:{
+        type: DataTypes.STRING,
         allowNull: true
       }
     }, {

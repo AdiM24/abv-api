@@ -16,6 +16,7 @@ export interface OrderDetailsAttributes {
   county: string;
   city: string;
   metri_podea_patrati?: number;
+  tonnage?: number;
 }
 
 export type OrderDetailsPk = "order_details_id";
@@ -29,7 +30,8 @@ export type OrderDetailsOptionalAttributes =
   | "address"
   | "location"
   | "reference"
-  | "metri_podea_patrati";
+  | "metri_podea_patrati"
+  | "tonnage";
 export type OrderDetailsCreationAttributes = Optional<
   OrderDetailsAttributes,
   OrderDetailsOptionalAttributes
@@ -52,6 +54,7 @@ export class OrderDetails
   county: string;
   city: string;
   metri_podea_patrati?: number;
+  tonnage?: number;
   // OrderDetails belongsTo Order via order_id
   order!: Order;
   getOrder!: Sequelize.BelongsToGetAssociationMixin<Order>;
@@ -118,6 +121,10 @@ export class OrderDetails
           allowNull: false,
         },
         metri_podea_patrati: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+        },
+        tonnage: {
           type: DataTypes.INTEGER,
           allowNull: true,
         },

@@ -533,11 +533,13 @@ class OrderService {
       (orderDetailsItem: OrderDetailsAttributes) => orderDetailsItem.type === 'DROPOFF');
 
     const dropoff = dropOffList[dropOffList.length - 1].address;
+    
+    const order_date = new Date(order.created_at_utc).toLocaleDateString('RO-ro');
 
     let transportService = await models.Product.findOne({
       where: {
         type: 'service',
-        product_name: `Servicii transport cf. comanda ${order.series}-${order.number}, ruta: ${pickup} -> ${dropoff}, auto: ${order.car_reg_number}, referinta: ${order?.OrderDetails?.[0]?.reference}`
+        product_name: `Servicii transport cf. comanda ${order.order_number}-${order_date}, ruta: ${pickup} -> ${dropoff}, auto: ${order.car_reg_number}, referinta: ${order?.OrderDetails?.[0]?.reference || ''}`
       }
     });
 
@@ -571,7 +573,7 @@ class OrderService {
         if (!transportService) {
           transportService = await models.Product.create({
             type: 'service',
-            product_name: `Servicii transport cf. comanda ${order.series}-${order.number}, ruta: ${pickup} -> ${dropoff}, auto: ${order.car_reg_number}, referinta: ${order?.OrderDetails?.[0]?.reference}`,
+            product_name: `Servicii transport cf. comanda ${order.order_number}, data: ${order_date}, ruta: ${pickup} -> ${dropoff}, auto: ${order.car_reg_number}, referinta: ${order?.OrderDetails?.[0]?.reference || ''}`,
             quantity: 1,
             created_at_utc: currentDate.toString(),
             modified_at_utc: currentDate.toString(),
